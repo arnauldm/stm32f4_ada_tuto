@@ -1,0 +1,14 @@
+
+CC = arm-none-eabi-gcc 
+CFLAGS = -c -g -O0 -Wall 
+ARMFLAGS = -mlittle-endian -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 
+INC = -Isrc/ -I./src/inc/ -I./src/inc/core -I./libst/inc/peripherals/ 
+
+$(CC) $(CFLAGS) $(ARMFLAGS) $(INC) -o build/exception_handler.o src/exception_handler.c 
+$(CC) $(CFLAGS) $(ARMFLAGS) $(INC) -o build/init.o src/init.c 
+$(CC) $(CFLAGS) $(ARMFLAGS) $(INC) -o build/main.o src/main.c 
+$(CC) $(CFLAGS) $(ARMFLAGS) $(INC) -o build/startup_stm32f4xx.o src/startup_stm32f4xx.s 
+
+$(CC) -Tstm32_flash.ld $(ARMFLAGS) -o blinky.elf build/*.o 
+
+arm-none-eabi-objcopy -O ihex blinky.elf blinky.hex
