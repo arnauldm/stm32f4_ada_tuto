@@ -208,9 +208,9 @@ currentLED = (currentLED == LED_GREEN) ? LED_BLUE : LED_GREEN;
 /* Clear Pending Request bit to acknowledge the interrupt (this bit is cleared by programming it to 1 ! */
 EXTI->PR = EXTI_Line0;
 }
-
-
 \end{lstlisting}
+
+Le nom de ce \emph{handler} n'est pas choisi au hasard. Il est lié au fichier \texttt{startup\_stm32f4xx.s} qui contient la table des vecteurs d'interruptions du processeur. Chaque entrée de la table contient une valeur par défaut qui peut être surchargée lors de l'édition de lien grâce à une directive spéciale de \cmd{gcc}.
 
 %%----------------------------------------------------------------------------
 %%----------------------------------------------------------------------------
