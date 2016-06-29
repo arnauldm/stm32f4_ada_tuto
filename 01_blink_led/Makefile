@@ -57,31 +57,7 @@ show:
 	@echo "\t" $(RSRC)
 	@echo "\t\t=> " $(ROBJ)
 
-libcore:
-	if [ ! -f  "rust/libcore/$(TARGET)/$(RUSTBUILD)/libcore.rlib" ];then \
-	    if [ ! -d  "rust/libcore/$(TARGET)/$(RUSTBUILD)/build" ];then mkdir -p \
-			rust/libcore/$(TARGET)/$(RUSTBUILD)/build; \
-		fi;\
-		if [ ! -f  "rust/libcore/$(TARGET)/$(RUSTBUILD)/build/$(TARGET).json" ];\
-			then cp $(TARGET).json rust/libcore/$(TARGET)/$(RUSTBUILD)/build/;\
-		fi;\
-		cd rust/libcore/$(TARGET)/$(RUSTBUILD)/build;\
-		if [ ! -f  rust.tar.gz ]; then	\
-			wget -q -O rust.tar.gz $(RUSTCOREURL); \
-		fi;\
-		tar -zx --strip-components=1 -f rust.tar.gz;\
-		rm rust.tar.gz;\
-		if [ ! -f  "../libcore.rlib" ]; \
-			then $(RUSTC) -C opt-level=2 -Z \
-			no-landing-pads --target $(TARGET) -g src/libcore/lib.rs \
-			--out-dir ../; fi;\
-		rm -rf ../build; \
-	fi;
-
-stlibs:
-	cd libst && make
-
-proj: $(PROJ_NAME).hex $(PROJ_NAME).bin
+proj: $(PROJ_NAME).hex 
 
 $(SOBJ):$(SSRC)
 	$(CC) $< -c $(CFLAGS) -o $@
@@ -96,9 +72,6 @@ $(ROBJ): $(RSRC)
 	$(BUILDDIR)/%.o: $(RSRCDIR)/%.rs
 	$(RUSTC) $< --emit obj --target $(TARGET) -L $(LIBCORE_PATH) -o $@
 
-#$(PROJ_NAME).elf: $(ROBJ) $(OBJ) stlibs $(SOBJ)
-#	$(CC) $(LDFLAGS) -o $(PROJ_NAME).elf $(ROBJ) $(SOBJ) $(OBJ) libst/*.o
-
 $(PROJ_NAME).elf: $(ROBJ) $(OBJ) $(SOBJ)
 	$(CC) $(LDFLAGS) -o $(PROJ_NAME).elf $(ROBJ) $(SOBJ) $(OBJ)
 
@@ -106,25 +79,12 @@ $(PROJ_NAME).elf: $(ROBJ) $(OBJ) $(SOBJ)
 $(PROJ_NAME).hex: $(PROJ_NAME).elf
 	$(OBJCOPY) -O ihex $(PROJ_NAME).elf $(PROJ_NAME).hex
 
-$(PROJ_NAME).bin: $(PROJ_NAME).elf
-	$(OBJCOPY) -O binary $(PROJ_NAME).elf $(PROJ_NAME).bin
-
 cleanlibcore:
 	rm $(LIBCORE_PATH)/libcore.rlib
 
 clean:
-	rm -f $(OBJ) $(ROBJ) $(SOBJ) \
-		  $(ABOJ) $(PROJ_NAME).elf $(PROJ_NAME).hex $(PROJ_NAME).bin; \
-	cd libst && make clean;\
+	rm -f $(OBJ) $(ROBJ) $(SOBJ) $(ABOJ) $(PROJ_NAME).elf $(PROJ_NAME).hex $(PROJ_NAME).bin
 
-burn: $(PROJ_NAME).bin
+flash: 
 	openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg -f ocd.cfg
-
-flash: burn
-
-debug: burn
-	$(STUTIL)
-	#$(GDB) $(PROJ_NAME).elf
-
-
 
