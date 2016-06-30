@@ -23,7 +23,8 @@ void EXTI0_IRQHandler(void)
    /* Change current led */
    currentLED = (currentLED == LED_GREEN) ? LED_BLUE : LED_GREEN;
 
-   /* Clear Pending Request bit to acknowledge the interrupt (this bit is cleared by programming it to 1 ! */
+   /* Clear Pending Request bit to acknowledge the interrupt (this bit is
+    * cleared by programming it to 1 ! */
    EXTI->PR = EXTI_Line0;
 }
 
@@ -93,7 +94,7 @@ int main(void) {
     * Note: 'EXTI0_IRQn' stands for EXTI Line0 Interrupt */
    NVIC->IP[EXTI0_IRQn] = 0;
 
-   /* Enable the Selected IRQ Channels --------------------------------------*/
+   /* Enable the Selected IRQ Channels */
    NVIC->ISER[0] = (uint32_t) 0x01 << EXTI0_IRQn;
 
    while (1){
