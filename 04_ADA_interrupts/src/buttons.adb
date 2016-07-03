@@ -12,24 +12,24 @@ package body buttons is
 
    procedure initialize is
    begin
-	   -- Enable GPIOA periph clock
-	   Interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIOAEN := 1;
-	
-	   -- Set GPIOA pin to input mode
-	   Interfaces.STM32.GPIO.GPIOA_Periph.MODER.Arr (user_button)
-	      := System.STM32.Mode_IN;
-	
-	   -- Push-pull mode 
-	   Interfaces.STM32.GPIO.GPIOA_Periph.OTYPER.OT.Arr (user_button)
-	      := System.STM32.Push_Pull;
-	
-	   -- Pull-down
-	   Interfaces.STM32.GPIO.GPIOA_Periph.PUPDR.Arr (user_button)
-	      := System.STM32.Pull_Down;
-	
-	   -- High speed
-	   Interfaces.STM32.GPIO.GPIOA_Periph.OSPEEDR.Arr (user_button)
-	      := System.STM32.Speed_100MHz;
+      -- Enable GPIOA periph clock
+      Interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIOAEN := 1;
+   
+      -- Set GPIOA pin to input mode
+      Interfaces.STM32.GPIO.GPIOA_Periph.MODER.Arr (user_button)
+         := System.STM32.Mode_IN;
+   
+      -- Push-pull mode 
+      Interfaces.STM32.GPIO.GPIOA_Periph.OTYPER.OT.Arr (user_button)
+         := System.STM32.Push_Pull;
+   
+      -- Pull-down
+      Interfaces.STM32.GPIO.GPIOA_Periph.PUPDR.Arr (user_button)
+         := System.STM32.Pull_Down;
+   
+      -- High speed
+      Interfaces.STM32.GPIO.GPIOA_Periph.OSPEEDR.Arr (user_button)
+         := System.STM32.Speed_100MHz;
 
       -- Select PA for EXTI0
       Interfaces.STM32.SYSCFG.SYSCFG_Periph.EXTICR1.EXTI.Arr (user_button)
