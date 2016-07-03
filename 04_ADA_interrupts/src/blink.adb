@@ -1,51 +1,59 @@
-
-with Last_Chance_Handler;  pragma Unreferenced (Last_Chance_Handler);
-
-with STM32.Device;
-with STM32.Board;
-with STM32.Button;
-with STM32.GPIO;
+with Interfaces.STM32.RCC;
+with Interfaces.STM32.GPIO; 
+with System.STM32;
 with Ada.Real_Time; use Ada.Real_Time;
 
-procedure Blink is
-   Period         : constant Time_Span := Milliseconds (150);
-   Next_Release   : Time := Clock;
+with buttons;
+with registers;
 
-   type Index is mod 4;
-   Blinking_Leds  : array (Index) of STM32.Board.User_LED := (STM32.Board.Blue, STM32.Board.Green, STM32.Board.Orange, STM32.Board.Red);
+procedure blink is
 
-   Current_Led    : Index   := Blinking_Leds'first;
-   CounterWise    : Boolean := True;
+   led_green   : constant := 12;
+   led_blue    : constant := 15;
+   led         : integer  := led_green;
 
-   procedure Initialize_LEDs is
-      Configuration : STM32.GPIO.GPIO_Port_Configuration;
-   begin
-      STM32.Device.Enable_Clock (STM32.Board.All_LEDs);
-      Configuration.Mode        := STM32.GPIO.Mode_Out;
-      Configuration.Output_Type := STM32.GPIO.Push_Pull;
-      Configuration.Speed       := STM32.GPIO.Speed_100MHz;
-      Configuration.Resistors   := STM32.GPIO.Floating;
-      STM32.GPIO.Configure_IO (STM32.Board.All_LEDs, Configuration);
-   end Initialize_LEDs;
+   Period      : constant Ada.Real_Time.Time_Span 
+      := Ada.Real_Time.Milliseconds (50);
 
 begin
 
-   Initialize_LEDs;
-   STM32.Button.Initialize;
+   --
+   -- Set the LEDs
+   --
 
-   STM32.Board.All_LEDs_Off;
-   STM32.Board.Turn_On (Blinking_Leds(Current_Led));
+   -- Enable GPIOD periph clock
+   Interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIODEN := 1;
+
+   -- Set GPIOD pin to output mode
+   Interfaces.STM32.GPIO.GPIOD_Periph.MODER.Arr (led_green)
+      := System.STM32.Mode_OUT;
+
+   Interfaces.STM32.GPIO.GPIOD_Periph.MODER.Arr (led_blue) :=
+      System.STM32.Mode_OUT;
+
+   -- Clear the leds
+   Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led_green) := 0;
+   Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led_blue) := 0;
+
+   -- 
+   -- Init user button
+   -- 
+
+   buttons.initialize;
 
    loop
-      if STM32.Button.Has_Been_Pressed then
-         CounterWise := not CounterWise;
+
+      if buttons.has_been_pressed then
+         Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led) := 0;
+         led := (if led = led_green then led_blue else led_green);
       end if;
 
-      STM32.Board.Turn_Off (Blinking_leds(Current_Led));
-      Current_Led := (if CounterWise then Current_Led + 1 else Current_Led - 1);
-      STM32.Board.Turn_On (Blinking_leds(Current_Led));
+      Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led) := 1;
+      delay until Ada.Real_Time.Clock + Period;
 
-      Next_Release := Next_Release + Period;
-      delay until Next_Release;
+      Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led) := 0;
+      delay until Ada.Real_Time.Clock + Period;
+
    end loop;
-end Blink;
+
+end blink;

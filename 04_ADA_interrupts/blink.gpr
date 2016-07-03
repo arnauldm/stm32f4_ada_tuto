@@ -1,14 +1,12 @@
-with "Ada_Drivers_Library/config.gpr";
-with "Ada_Drivers_Library/boards/stm32f4_discovery.gpr";
+project Blink is
 
-project Blink extends "Ada_Drivers_Library/examples/common/common.gpr" is
-
-   for Runtime ("Ada") use Config.RTS & "-stm32f4";
-   for Target use "arm-eabi";
-   for Main use ("blink.adb");
    for Languages use ("Ada");
-   for Object_Dir use "build";
+   for Main use ("blink.adb");
    for Source_Dirs use ("src");
+   for Object_Dir use "build";
+
+   for Runtime ("Ada") use "ravenscar-sfp-stm32f4";
+   for Target use "arm-eabi";
 
    package Compiler is
       for Default_Switches ("ada") use

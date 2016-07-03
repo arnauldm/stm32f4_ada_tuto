@@ -73,9 +73,10 @@ int main(void) {
     */
 
    /* P<port>x interrupts are managed by the EXTIx interrupt line. Thus,
-    * interrupts on BLUE_BUTTON are managed by EXTI0. EXTI0 can also manage
-    * interrupts on ports PB0, PC0, Pd0, etc. We must indicate in SYSCFG_EXTICR1
-    * register that EXTI0 will only manage BLUE_BUTTON interrupts (p. 293) */
+    * interrupts on BLUE_BUTTON are managed by EXTI0. BLUE_BUTTON is attached
+    * on the PA0 pin but EXTI0 can also manage interrupts on ports PB0, PC0,
+    * Pd0, etc. We must indicate in SYSCFG_EXTICR1 register that EXTI0 will
+    * only manage PAx pins (BLUE_BUTTON) (p. 293) */
    SYSCFG->EXTICR[0] &= 0xfffffff0;
 
    /* Clear EXTI line configuration */
