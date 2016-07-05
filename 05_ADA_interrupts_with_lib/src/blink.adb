@@ -12,7 +12,8 @@ procedure Blink is
    Next_Release   : Time := Clock;
 
    type Index is mod 4;
-   Blinking_Leds  : array (Index) of STM32.Board.User_LED := (STM32.Board.Blue, STM32.Board.Green, STM32.Board.Orange, STM32.Board.Red);
+   Blinking_Leds  : array (Index) of STM32.Board.User_LED :=
+     (STM32.Board.Blue, STM32.Board.Green, STM32.Board.Orange, STM32.Board.Red);
 
    Current_Led    : Index   := Blinking_Leds'first;
    CounterWise    : Boolean := True;

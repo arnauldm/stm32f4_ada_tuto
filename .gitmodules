@@ -2,5 +2,5 @@
 	path = 04_ADA_interrupts/Ada_Drivers_Library
 	url = https://github.com/AdaCore/Ada_Drivers_Library.git
 [submodule "05_ADA_interrupts_with_lib/Ada_Drivers_Library"]
-	path = 05_ADA_interrupts_with_lib/Ada_Drivers_Library
+	path = Ada_Drivers_Library
 	url = https://github.com/AdaCore/Ada_Drivers_Library.git
