@@ -26,6 +26,7 @@
 %%----------------------------------------------------------------------------
 \section{\emph{Hello, world!} : faire clignoter une led}
 
+\subsection{Un premier programme}
 Utilisation du \emph{cross-compiler} \cmd{arm-none-eabi-gcc}.
 La compilation utilise des \emph{flags} spécifiques à l'architecture cible 
 
@@ -82,6 +83,31 @@ udelay (DELAY);
 GPIOD->ODR &= ~(1 << led);  /* led off */
 \end{lstlisting}
 
+\subsection{Charger le binaire sur le micro-contrôleur et deboguer avec \cmd{gdb}}
+
+\begin{lstlisting}
+\$ openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg -f ocd.cfg
+\end{lstlisting}
+
+Avec le fichier \texttt{ocd.cfg} qui contient :
+
+\begin{lstlisting}
+init
+reset halt
+flash write_image erase build/main.elf 
+reset 
+shutdown
+\end{lstlisting}
+
+Il est aussi possible de charger le programme à partir de \cmd{gdb}
+
+\begin{lstlisting}
+\$ openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg
+\$ arm-none-eabi-gdb
+> target remote :3333
+> monitor reset halt
+> load build/blink.elf
+\end{lstlisting}
 
 %%----------------------------------------------------------------------------
 \section{Déclencher une interruption avec un bouton poussoir}
