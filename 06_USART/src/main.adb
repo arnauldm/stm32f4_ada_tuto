@@ -2,9 +2,8 @@ with system;
 with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
 with stm32.device;
-with stm32.gpio; use stm32.gpio;
-with stm32.usarts;
-with ada.real_time; use ada.real_time;
+with stm32.usarts; 
+with ada.real_time;  use ada.real_time;
 
 with leds; pragma unreferenced (leds); -- task blinking_leds
 with serial;

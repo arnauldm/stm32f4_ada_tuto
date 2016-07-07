@@ -1,13 +1,18 @@
 
 with stm32.usarts;
-with stm32.device;
 with stm32.gpio; use stm32.gpio;
 
 package serial is
 
+   type serial_periph is record
+      device   : access stm32.usarts.usart;
+      tx_pin   : stm32.gpio.gpio_point;
+      rx_pin   : stm32.gpio.gpio_point;
+   end record;
+
    procedure initialize_gpio
-     (tx_pin   : gpio_point;
-      rx_pin   : gpio_point);
+     (tx_pin   : stm32.gpio.gpio_point;
+      rx_pin   : stm32.gpio.gpio_point);
 
    procedure configure
      (device    : access stm32.usarts.usart;

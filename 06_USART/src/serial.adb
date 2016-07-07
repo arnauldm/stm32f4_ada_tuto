@@ -1,10 +1,11 @@
+with stm32.device;
 
 package body serial is
 
 
    procedure initialize_gpio
-     (tx_pin   : gpio_point;
-      rx_pin   : gpio_point)
+     (tx_pin   : stm32.gpio.gpio_point;
+      rx_pin   : stm32.gpio.gpio_point)
    is
       config : stm32.gpio.gpio_port_configuration;
    begin
@@ -32,17 +33,21 @@ package body serial is
       control   : stm32.usarts.flow_control := stm32.usarts.NO_FLOW_CONTROL)
    is
    begin
-      stm32.device.enable_clock (device.all);
-      stm32.usarts.disable (device.all);
+      if device /= NULL then
+         stm32.device.enable_clock (device.all);
+         stm32.usarts.disable (device.all);
 
-      stm32.usarts.set_baud_rate (device.all, baud_rate);
-      stm32.usarts.set_mode      (device.all, mode);
-      stm32.usarts.set_parity    (device.all, parity);
-      stm32.usarts.set_word_length  (device.all, data_bits);
-      stm32.usarts.set_stop_bits    (device.all, end_bits);
-      stm32.usarts.set_flow_control (device.all, control);
+         stm32.usarts.set_baud_rate (device.all, baud_rate);
+         stm32.usarts.set_mode      (device.all, mode);
+         stm32.usarts.set_parity    (device.all, parity);
+         stm32.usarts.set_word_length  (device.all, data_bits);
+         stm32.usarts.set_stop_bits    (device.all, end_bits);
+         stm32.usarts.set_flow_control (device.all, control);
 
-      stm32.usarts.enable (device.all);
+         stm32.usarts.enable (device.all);
+      else
+         raise program_error;
+      end if;
    end configure;
 
 
