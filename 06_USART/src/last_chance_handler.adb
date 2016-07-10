@@ -41,6 +41,7 @@ package body last_chance_handler is
    begin
       initialize_leds;  -- in case no other use in the application
       all_leds_off;
+      turn_on (red);
 
       if line /= 0 then
          serial.put (stm32.device.USART_1, ">>> exception at ");
