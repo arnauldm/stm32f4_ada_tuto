@@ -1,7 +1,0 @@
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.ads:7:4:serial_peripheq	16	static
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.ads:7:9:serial_periphip	16	static
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.adb:6:4:initialize_gpio	144	static
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.adb:26:4:configure	24	static
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.adb:54:4:await_send_ready	16	static
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.adb:62:4:putc	24	static
-/home/am/Desktop/STM32F4/stm32f4-tutorial/06_USART/src/serial.adb:72:4:put	48	static
