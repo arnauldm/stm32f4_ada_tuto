@@ -21,10 +21,10 @@ package body leds is
    begin
       init;
       loop
-         stm32.board.all_leds_off;
-         delay until clock + milliseconds (200);
-         stm32.board.all_leds_on;
-         delay until clock + milliseconds (200);
+         stm32.board.turn_on (stm32.board.green);
+         delay until clock + milliseconds (500);
+         stm32.board.turn_off (stm32.board.green);
+         delay until clock + milliseconds (500);
       end loop;
    end blinking_leds;
 
