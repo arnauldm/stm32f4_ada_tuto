@@ -4,6 +4,7 @@ with interfaces; use interfaces;
 
 with stm32.device;
 with stm32.board;
+with stm32.gpio;
 with stm32.usarts; 
 with lis3dsh;       use lis3dsh;
 
@@ -17,8 +18,9 @@ procedure main is
 begin
 
    serial.initialize_gpio
-     (tx_pin => stm32.device.pb7,
-      rx_pin => stm32.device.pb6);
+     (tx_pin => stm32.device.PB6,
+      rx_pin => stm32.device.PB7,
+      af     => stm32.gpio.GPIO_AF_USART1);
 
    serial.configure
      (device      => stm32.device.usart_1'access,

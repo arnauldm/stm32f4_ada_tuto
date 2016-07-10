@@ -1,11 +1,13 @@
 with stm32.device;
+with stm32.board;
 
 package body serial is
 
 
    procedure initialize_gpio
      (tx_pin   : stm32.gpio.gpio_point;
-      rx_pin   : stm32.gpio.gpio_point)
+      rx_pin   : stm32.gpio.gpio_point;
+      af       : stm32.gpio.gpio_alternate_function)
    is
       config : stm32.gpio.gpio_port_configuration;
    begin
@@ -19,21 +21,21 @@ package body serial is
       stm32.gpio.configure_io (rx_pin & tx_pin, config);
 
       stm32.gpio.configure_alternate_function
-        (rx_pin & tx_pin, af => stm32.gpio.GPIO_AF_USART1);
+        (rx_pin & tx_pin, af);
    end initialize_gpio;
 
 
    procedure configure
      (device    : access stm32.usarts.usart;
       baud_rate : stm32.usarts.baud_rates;
-      mode      : stm32.usarts.UART_Modes   := stm32.usarts.TX_RX_MODE;
-      parity    : stm32.usarts.parities     := stm32.usarts.NO_PARITY;
-      data_bits : stm32.usarts.word_lengths := stm32.usarts.WORD_LENGTH_8;
-      end_bits  : stm32.usarts.stop_bits    := stm32.usarts.STOPBITS_1;
-      control   : stm32.usarts.flow_control := stm32.usarts.NO_FLOW_CONTROL)
+      mode      : stm32.usarts.uart_modes   := stm32.usarts.tx_rx_mode;
+      parity    : stm32.usarts.parities     := stm32.usarts.no_parity;
+      data_bits : stm32.usarts.word_lengths := stm32.usarts.word_length_8;
+      end_bits  : stm32.usarts.stop_bits    := stm32.usarts.stopbits_1;
+      control   : stm32.usarts.flow_control := stm32.usarts.no_flow_control)
    is
    begin
-      if device /= NULL then
+      if device /= null then
          stm32.device.enable_clock (device.all);
          stm32.usarts.disable (device.all);
 
@@ -64,8 +66,10 @@ package body serial is
       c        : character)
    is
    begin
+      stm32.board.turn_on (stm32.board.blue);
       await_send_ready (device);
       stm32.usarts.transmit (device, character'pos (c));
+      stm32.board.turn_off (stm32.board.blue);
    end putc;
 
 

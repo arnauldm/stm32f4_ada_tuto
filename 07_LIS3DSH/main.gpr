@@ -20,7 +20,7 @@ project Main is
 
    package Compiler is
       for Default_Switches ("ada") use
-        ("-O0", "-g", "-fstack-usage",
+        ("-O0", "-g", "-fstack-usage", 
          "-gnatwa"); -- turn on all info/warnings marked below with +
    end Compiler;
 

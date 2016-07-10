@@ -1,5 +1,4 @@
 
-with stm32; use stm32;
 with stm32.gpio;
 with stm32.device;
 with stm32.board;
@@ -19,19 +18,13 @@ package body leds is
    end init;
 
    task body blinking_leds is
-      leds : array (1..4) of board.user_led :=
-        (board.blue, board.green, board.orange, board.red);
-      current : integer := 1;
    begin
       init;
-      board.all_leds_off;
-      board.turn_on (leds(current));
       loop
-         board.turn_off (leds(current));
-         current := (if current = leds'last then leds'first else current + 1);
-         delay until clock + milliseconds (200);
-         board.turn_on (leds(current));
-         delay until clock + milliseconds (200);
+         stm32.board.turn_on (stm32.board.green);
+         delay until clock + milliseconds (500);
+         stm32.board.turn_off (stm32.board.green);
+         delay until clock + milliseconds (500);
       end loop;
    end blinking_leds;
 
