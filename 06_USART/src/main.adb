@@ -3,6 +3,7 @@ with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
 with stm32.device;
 with stm32.usarts; 
+with stm32.gpio;
 with ada.real_time;  use ada.real_time;
 
 with leds; pragma unreferenced (leds); -- task blinking_leds
@@ -14,8 +15,9 @@ procedure main is
 begin
 
    serial.initialize_gpio
-     (tx_pin => stm32.device.PB7,
-      rx_pin => stm32.device.PB6);
+     (tx_pin => stm32.device.PB6,
+      rx_pin => stm32.device.PB7,
+      af     => stm32.gpio.gpio_af_usart1);
 
    serial.configure
      (device      => stm32.device.USART_1'access,
@@ -28,7 +30,7 @@ begin
 
    loop
 
-      delay until clock + milliseconds (2000);
+      delay until clock + milliseconds (1000);
 
       serial.put (stm32.device.USART_1,
          "[" & integer'image(counter) & "]  hello, world!" & ASCII.CR);

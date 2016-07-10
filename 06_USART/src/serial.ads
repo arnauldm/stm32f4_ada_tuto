@@ -12,7 +12,8 @@ package serial is
 
    procedure initialize_gpio
      (tx_pin   : stm32.gpio.gpio_point;
-      rx_pin   : stm32.gpio.gpio_point);
+      rx_pin   : stm32.gpio.gpio_point;
+      af       : stm32.gpio.gpio_alternate_function);
 
    procedure configure
      (device    : access stm32.usarts.usart;
