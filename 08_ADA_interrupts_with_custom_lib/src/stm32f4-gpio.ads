@@ -8,9 +8,9 @@ package stm32f4.gpio is
 
    subtype GPIO_pin_index is natural range 0 .. 15;
 
-   --
-   -- GPIO port mode register (GPIOx_MODER) 
-   --
+   -------------------------------------------
+   -- GPIO port mode register (GPIOx_MODER) --
+   -------------------------------------------
 
    type t_pin_mode is new uint2;
 
@@ -29,9 +29,9 @@ package stm32f4.gpio is
    MODE_ALT    : constant t_pin_mode := 2#10#; -- Alternate function
    MODE_ANALOG : constant t_pin_mode := 2#11#; -- Analog
 
-   --
-   -- GPIO port output type register (GPIOx_OTYPER) 
-   --
+   ---------------------------------------------------
+   -- GPIO port output type register (GPIOx_OTYPER) --
+   ---------------------------------------------------
 
    type t_pin_output_type is new bit;
 
@@ -47,9 +47,9 @@ package stm32f4.gpio is
    PUSH_PULL    : constant t_pin_output_type := 0; 
    OPEN_DRAIN   : constant t_pin_output_type := 1;
 
-   --
-   -- GPIO port output speed register (GPIOx_OSPEEDR)
-   --
+   -----------------------------------------------------
+   -- GPIO port output speed register (GPIOx_OSPEEDR) --
+   -----------------------------------------------------
 
    type t_pin_speed is new uint2;
 
@@ -66,9 +66,9 @@ package stm32f4.gpio is
    SPEED_HIGH        : constant t_pin_speed := 2#10#;
    SPEED_VERY_HIGH   : constant t_pin_speed := 2#11#;
 
-   --
-   -- GPIO port pull-up/pull-down register (GPIOx_PUPDR)
-   --
+   --------------------------------------------------------
+   -- GPIO port pull-up/pull-down register (GPIOx_PUPDR) --
+   --------------------------------------------------------
 
    type t_pin_pupd is new uint2;
 
@@ -84,9 +84,9 @@ package stm32f4.gpio is
    PULL_UP   : constant t_pin_pupd := 2#01#;
    PULL_DOWN : constant t_pin_pupd := 2#10#;
 
-   --
-   -- GPIO port input data register (GPIOx_IDR)
-   --
+   -----------------------------------------------
+   -- GPIO port input data register (GPIOx_IDR) --
+   -----------------------------------------------
 
    type t_pins_idr is array (GPIO_pin_index) of bit
       with pack, size => 16;
@@ -97,9 +97,9 @@ package stm32f4.gpio is
    end record
       with pack, size => 32, volatile_full_access;
 
-   --
-   -- GPIO port output data register (GPIOx_ODR)
-   --
+   ------------------------------------------------
+   -- GPIO port output data register (GPIOx_ODR) --
+   ------------------------------------------------
 
    type t_pins_odr is array (GPIO_pin_index) of bit
       with pack, size => 16;
@@ -110,9 +110,9 @@ package stm32f4.gpio is
    end record
       with pack, size => 32, volatile_full_access;
 
-   --
-   -- GPIO port bit set/reset register (GPIOx_BSRR)
-   --
+   ---------------------------------------------------
+   -- GPIO port bit set/reset register (GPIOx_BSRR) --
+   ---------------------------------------------------
 
    type t_pins is array (GPIO_pin_index) of bit
       with pack, size => 16;
@@ -123,19 +123,74 @@ package stm32f4.gpio is
    end record
       with pack, size => 32, volatile_full_access;
 
+   -----------------------------
+   -- GPIO alternate function --
+   -----------------------------
+
+   type t_AF is new uint4; -- Alternate functions (0 .. 15)
+
+   -- See RM0090, p. 274
+   GPIO_AF_USART1 : constant t_AF := 7;
+   GPIO_AF_USART2 : constant t_AF := 7;
+   GPIO_AF_USART3 : constant t_AF := 7;
+   GPIO_AF_USART4 : constant t_AF := 8;
+   GPIO_AF_USART5 : constant t_AF := 8;
+   GPIO_AF_USART6 : constant t_AF := 8;
+
    --
-   -- GPIO port definition
+   -- GPIOx_AFRL - pins 0 .. 7
+   --
+   type t_AF_0_7 is array (0 .. 7) of t_AF
+      with pack;
+
+   type t_GPIOx_AFRL is record
+      pin  : t_AF_0_7;
+   end record
+      with pack, size => 32, volatile_full_access;
+
+   --
+   -- GPIOx_AFRH - pins 8 .. 15
    --
 
+   type t_AF_8_15 is array (8 .. 15) of t_AF
+      with pack;
+
+   type t_GPIOx_AFRH is record
+      pin  : t_AF_8_15;
+   end record
+      with pack, size => 32, volatile_full_access;
+
+   
+
+   --------------------------
+   -- GPIO port definition --
+   --------------------------
+
    type t_GPIO_port is record
-      MODER    : t_GPIOx_MODER;
-      OTYPER   : t_GPIOx_OTYPER;
-      OSPEEDR  : t_GPIOx_OSPEEDR;
-      PUPDR    : t_GPIOx_PUPDR;
-      IDR      : t_GPIOx_IDR;
-      ODR      : t_GPIOx_ODR;
-      BSRR     : t_GPIOx_BSRR;
+      MODER       : t_GPIOx_MODER;
+      OTYPER      : t_GPIOx_OTYPER;
+      OSPEEDR     : t_GPIOx_OSPEEDR;
+      PUPDR       : t_GPIOx_PUPDR;
+      IDR         : t_GPIOx_IDR;
+      ODR         : t_GPIOx_ODR;
+      BSRR        : t_GPIOx_BSRR;
+      GPIOx_LCKR  : word;
+      AFRL        : t_GPIOx_AFRL;
+      AFRH        : t_GPIOx_AFRH;
    end record
       with volatile;
+
+   for t_GPIO_port use record
+      MODER       at 16#00# range 0 .. 31;
+      OTYPER      at 16#04# range 0 .. 31;
+      OSPEEDR     at 16#08# range 0 .. 31;
+      PUPDR       at 16#0C# range 0 .. 31;
+      IDR         at 16#10# range 0 .. 31;
+      ODR         at 16#14# range 0 .. 31;
+      BSRR        at 16#18# range 0 .. 31;
+      GPIOx_LCKR  at 16#1C# range 0 .. 31;
+      AFRL        at 16#20# range 0 .. 31;
+      AFRH        at 16#24# range 0 .. 31;
+   end record;
 
 end stm32f4.gpio;
