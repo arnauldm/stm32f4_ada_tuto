@@ -83,11 +83,17 @@ udelay (DELAY);
 GPIOD->ODR &= ~(1 << led);  /* led off */
 \end{lstlisting}
 
-\subsection{Charger le binaire sur le micro-contrôleur et deboguer avec \cmd{gdb}}
+\subsection{Charger le binaire sur le micro-contrôleur et deboguer avec gdb}
 
 \begin{lstlisting}
 \$ openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg -f ocd.cfg
 \end{lstlisting}
+
+Le programme \cmd{openocd} nécessite un accès au périphérique USB correspondant à la carte. Si la commande renvoie une erreur du type \texttt{Error: libusb\_open() failed}, il faut ajouter une règle à \cmd{udev} pour donner au développeur les droits d'accéder à la carte, en créant par exemple le fichier \texttt{/etc/udev/rules.d/99-STM32.rules} :
+
+  \begin{lstlisting}[language=sh]
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", GROUP="am", MODE="0660"
+  \end{lstlisting}
 
 Avec le fichier \texttt{ocd.cfg} qui contient :
 
