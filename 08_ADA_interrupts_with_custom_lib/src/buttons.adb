@@ -27,10 +27,6 @@ package body buttons is
       -- Default (idle) state is at 0V. Set GPIO pin to pull-down
       stm32f4.periphs.GPIOA.PUPDR.pin (button_pin) := stm32f4.gpio.PULL_DOWN;
       
-      -- Set GPIO Speed to high speed
-      stm32f4.periphs.GPIOA.OSPEEDR.pin (button_pin) :=
-         stm32f4.gpio.SPEED_HIGH;
-
 	   -----------------------
 	   -- Enable interrupts --
 	   -----------------------

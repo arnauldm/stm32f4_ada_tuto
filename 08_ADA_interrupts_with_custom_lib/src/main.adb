@@ -29,12 +29,16 @@ begin
    stm32f4.periphs.RCC.AHB1ENR.GPIODEN := 1;
 
    -- Set the pins to output mode
+   -- (see RM0090, p. 270)
    stm32f4.periphs.GPIOD.MODER.pin (green_led_pin) := stm32f4.gpio.MODE_OUT; 
    stm32f4.periphs.GPIOD.MODER.pin (red_led_pin)   := stm32f4.gpio.MODE_OUT; 
 
    stm32f4.periphs.GPIOD.OTYPER.pin (green_led_pin) := stm32f4.gpio.PUSH_PULL;
    stm32f4.periphs.GPIOD.OTYPER.pin (red_led_pin) := stm32f4.gpio.PUSH_PULL;
-   
+
+   stm32f4.periphs.GPIOD.OSPEEDR.pin (green_led_pin) := stm32f4.gpio.SPEED_HIGH;
+   stm32f4.periphs.GPIOD.OSPEEDR.pin (red_led_pin) := stm32f4.gpio.SPEED_HIGH;
+
    -- Led off
    stm32f4.periphs.GPIOD.ODR.pin (green_led_pin)  := 0;
    stm32f4.periphs.GPIOD.ODR.pin (red_led_pin)    := 0;
