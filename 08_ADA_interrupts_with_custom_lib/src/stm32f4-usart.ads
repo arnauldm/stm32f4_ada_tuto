@@ -1,6 +1,8 @@
 
 package stm32f4.usart is
 
+   enabled : boolean := false;
+
    --------------------------------
    -- Status register (USART_SR) --
    --------------------------------
@@ -28,12 +30,12 @@ package stm32f4.usart is
    type t_USART_DR is record
       -- Data value that contains the Received or Transmitted data character,
       -- depending on whether it is read from or written to.
-      DR : uint9; 
+      data : uint9; 
    end record
       with size => 32, volatile_full_access;
 
    for t_USART_DR use record
-      DR at 0 range 0 .. 8;
+      data at 0 range 0 .. 8;
    end record;
    
    ------------------------------------
@@ -108,7 +110,25 @@ package stm32f4.usart is
    ------------------------------------
    -- Control register 3 (USART_CR3) --
    ------------------------------------
-   -- TODO
+
+   type t_USART_CR3 is record
+      EIE            : bit;   -- Error interrupt enable
+      IREN           : bit;   -- IrDA mode enable
+      IRLP           : bit;   -- IrDA low-power
+      HDSEL          : bit;   -- Half-duplex selection
+      NACK           : bit;   -- Smartcard NACK enable
+      SCEN           : bit;   -- Smartcard mode enable
+      DMAR           : bit;   -- DMA enable receiver
+      DMAT           : bit;   -- DMA enable transmitter
+      RTSE           : bit;   -- RTS enable
+      CTSE           : bit;   -- CTS enable
+      CTSIE          : bit;   -- CTS interrupt enable
+      ONEBIT         : bit;   -- One sample bit method enable
+      reserved_12_15 : uint4;
+      reserved_16_31 : short;
+   end record
+      with pack, size => 32, volatile_full_access;
+   
 
    ----------------------------------------------------
    -- Guard time and prescaler register (USART_GTPR) -- 
@@ -119,25 +139,34 @@ package stm32f4.usart is
    -- USART Peripheral -- 
    ----------------------
 
-   type t_USART is record
+   type t_USART_periph is record
       SR    : t_USART_SR;
       DR    : t_USART_DR;
       BRR   : t_USART_BRR;
       CR1   : t_USART_CR1;
       CR2   : t_USART_CR2;
-      USART_CR3   : word;
+      CR3   : t_USART_CR3;
       USART_GTPR  : word;
    end record;
 
-   for t_USART use record
+   for t_USART_periph use record
       SR          at 16#00# range 0 .. 31;
       DR          at 16#04# range 0 .. 31;
       BRR         at 16#08# range 0 .. 31;
       CR1         at 16#0C# range 0 .. 31;
       CR2         at 16#10# range 0 .. 31;
-      USART_CR3   at 16#14# range 0 .. 31;
+      CR3         at 16#14# range 0 .. 31;
       USART_GTPR  at 16#18# range 0 .. 31;
    end record;
 
+   type t_USART_periph_access is access all t_USART_periph;
+
+   ---------------
+   -- Utilities --
+   ---------------
+
+   procedure initialize;
+   procedure put (c : character);
+   procedure put (s : string);
 
 end stm32f4.usart;

@@ -6,7 +6,7 @@
 
 package stm32f4.gpio is
 
-   subtype GPIO_pin_index is natural range 0 .. 15;
+   subtype t_GPIO_pin_index is natural range 0 .. 15;
 
    -------------------------------------------
    -- GPIO port mode register (GPIOx_MODER) --
@@ -14,7 +14,7 @@ package stm32f4.gpio is
 
    type t_pin_mode is new uint2;
 
-   type t_pins_mode is array (GPIO_pin_index) of t_pin_mode
+   type t_pins_mode is array (t_GPIO_pin_index) of t_pin_mode
       with pack, size => 32;
 
    type t_GPIOx_MODER is record
@@ -26,7 +26,7 @@ package stm32f4.gpio is
 
    MODE_IN     : constant t_pin_mode := 2#00#; -- Input (reset state)
    MODE_OUT    : constant t_pin_mode := 2#01#; -- Output
-   MODE_ALT    : constant t_pin_mode := 2#10#; -- Alternate function
+   MODE_AF     : constant t_pin_mode := 2#10#; -- Alternate function
    MODE_ANALOG : constant t_pin_mode := 2#11#; -- Analog
 
    ---------------------------------------------------
@@ -35,7 +35,7 @@ package stm32f4.gpio is
 
    type t_pin_output_type is new bit;
 
-   type t_pins_output_type is array (GPIO_pin_index) of t_pin_output_type
+   type t_pins_output_type is array (t_GPIO_pin_index) of t_pin_output_type
       with pack, size => 16;
 
    type t_GPIOx_OTYPER is record
@@ -53,7 +53,7 @@ package stm32f4.gpio is
 
    type t_pin_speed is new uint2;
 
-   type t_pins_speed is array (GPIO_pin_index) of t_pin_speed
+   type t_pins_speed is array (t_GPIO_pin_index) of t_pin_speed
       with pack, size => 32;
 
    type t_GPIOx_OSPEEDR is record
@@ -72,7 +72,7 @@ package stm32f4.gpio is
 
    type t_pin_pupd is new uint2;
 
-   type t_pins_pupd is array (GPIO_pin_index) of t_pin_pupd
+   type t_pins_pupd is array (t_GPIO_pin_index) of t_pin_pupd
       with pack, size => 32;
 
    type t_GPIOx_PUPDR is record
@@ -88,7 +88,7 @@ package stm32f4.gpio is
    -- GPIO port input data register (GPIOx_IDR) --
    -----------------------------------------------
 
-   type t_pins_idr is array (GPIO_pin_index) of bit
+   type t_pins_idr is array (t_GPIO_pin_index) of bit
       with pack, size => 16;
 
    type t_GPIOx_IDR is record
@@ -101,7 +101,7 @@ package stm32f4.gpio is
    -- GPIO port output data register (GPIOx_ODR) --
    ------------------------------------------------
 
-   type t_pins_odr is array (GPIO_pin_index) of bit
+   type t_pins_odr is array (t_GPIO_pin_index) of bit
       with pack, size => 16;
 
    type t_GPIOx_ODR is record
@@ -114,7 +114,7 @@ package stm32f4.gpio is
    -- GPIO port bit set/reset register (GPIOx_BSRR) --
    ---------------------------------------------------
 
-   type t_pins is array (GPIO_pin_index) of bit
+   type t_pins is array (t_GPIO_pin_index) of bit
       with pack, size => 16;
 
    type t_GPIOx_BSRR is record
@@ -160,8 +160,6 @@ package stm32f4.gpio is
    end record
       with pack, size => 32, volatile_full_access;
 
-   
-
    --------------------------
    -- GPIO port definition --
    --------------------------
@@ -192,5 +190,43 @@ package stm32f4.gpio is
       AFRL        at 16#20# range 0 .. 31;
       AFRH        at 16#24# range 0 .. 31;
    end record;
+
+   type t_GPIO_port_access is access all t_GPIO_port;
+
+   --------------
+   -- GPIO pin --
+   --------------
+
+   type t_GPIO_pin is record
+      gpio  : t_GPIO_port_access;
+      pin   : t_GPIO_pin_index;
+   end record;
+
+   ---------------
+   -- Utilities --
+   ---------------
+
+   procedure configure
+     (pin      : t_GPIO_pin;
+      mode     : t_pin_mode;
+      otype    : t_pin_output_type;
+      ospeed   : t_pin_speed;
+      pupd     : t_pin_pupd);
+
+   procedure configure
+     (pin      : t_GPIO_pin;
+      mode     : t_pin_mode;
+      pupd     : t_pin_pupd);
+
+   procedure set_alternate_function
+     (pin      : t_GPIO_pin;
+      af       : t_AF);
+
+   procedure set
+     (pin      : t_GPIO_pin;
+      value    : bit);
+
+   procedure turn_on (pin : t_GPIO_pin);
+   procedure turn_off (pin : t_GPIO_pin);
 
 end stm32f4.gpio;

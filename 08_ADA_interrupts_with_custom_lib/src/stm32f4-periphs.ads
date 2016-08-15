@@ -5,12 +5,13 @@ with stm32f4.syscfg;
 with stm32f4.exti;
 with stm32f4.gpio;
 with stm32f4.nvic;
+with stm32f4.usart;
 
 package stm32f4.periphs is
 
-   --
-   -- Base addresses
-   --
+   --------------------
+   -- Base addresses --
+   --------------------
 
    NVIC_Base      : constant address := 16#E000_E100#;
 
@@ -30,14 +31,20 @@ package stm32f4.periphs is
    USART2_Base    : constant address := 16#4000_4400#; -- APB1
    USART1_Base    : constant address := 16#4001_1000#; -- APB2
 
-   --
-   -- Peripherals
-   --
+   -----------------
+   -- Peripherals --
+   -----------------
 
    GPIOA : aliased stm32f4.gpio.t_GPIO_port
       with import, address => system'to_address (GPIOA_Base);
    -- Note: 'import' aspect means that the actual values are defined outside
    -- the application and should not be initialized
+
+   GPIOB : aliased stm32f4.gpio.t_GPIO_port
+      with import, address => system'to_address (GPIOB_Base);
+
+   GPIOC : aliased stm32f4.gpio.t_GPIO_port
+      with import, address => system'to_address (GPIOC_Base);
 
    GPIOD    : aliased stm32f4.gpio.t_GPIO_port
       with import, address => system'to_address (GPIOD_Base);
@@ -54,17 +61,47 @@ package stm32f4.periphs is
    NVIC     : aliased stm32f4.nvic.t_NVIC
       with import, address => system'to_address (NVIC_Base);
 
+   USART1   : aliased stm32f4.usart.t_USART_periph
+      with import, address => system'to_address (USART1_Base);
+
+   USART2   : aliased stm32f4.usart.t_USART_periph
+      with import, address => system'to_address (USART2_Base);
+
+   USART3   : aliased stm32f4.usart.t_USART_periph
+      with import, address => system'to_address (USART3_Base);
+
+   UART4    : aliased stm32f4.usart.t_USART_periph
+      with import, address => system'to_address (UART4_Base);
+
+   UART5    : aliased stm32f4.usart.t_USART_periph
+      with import, address => system'to_address (UART5_Base);
+
+   USART6   : aliased stm32f4.usart.t_USART_periph
+      with import, address => system'to_address (USART6_Base);
    
+   ---------------
+   -- GPIO pins --
+   ---------------
 
-   --
-   -- Led & buttons
-   --
+   PA0   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOA'access, 0);
 
-   green_led_pin  : constant stm32f4.gpio.GPIO_pin_index := 12; -- PD12
-   orange_led_pin : constant stm32f4.gpio.GPIO_pin_index := 13; -- PD13
-   red_led_pin    : constant stm32f4.gpio.GPIO_pin_index := 14; -- PD14
-   blue_led_pin   : constant stm32f4.gpio.GPIO_pin_index := 15; -- PD15
+   PC6   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 6);
+   PC7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 7);
 
-   blue_button    : constant stm32f4.gpio.GPIO_pin_index := 0;  -- PA0
+   PD12  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 12);
+   PD13  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 13);
+   PD14  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 14);
+   PD15  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 15);
+
+   -------------------
+   -- Led & buttons --
+   -------------------
+
+   LED_GREEN   : constant stm32f4.gpio.t_GPIO_pin  := PD12;
+   LED_ORANGE  : constant stm32f4.gpio.t_GPIO_pin  := PD13;
+   LED_RED     : constant stm32f4.gpio.t_GPIO_pin  := PD14;
+   LED_BLUE    : constant stm32f4.gpio.t_GPIO_pin  := PD15;
+
+   BLUE_BUTTON : constant stm32f4.gpio.t_GPIO_pin  := PA0;
 
 end stm32f4.periphs;

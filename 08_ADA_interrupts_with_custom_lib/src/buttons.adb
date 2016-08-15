@@ -8,8 +8,7 @@ with stm32f4.nvic;
 
 package body buttons is
 
-   button_pin : stm32f4.gpio.GPIO_pin_index 
-      renames stm32f4.periphs.blue_button;
+   BB : stm32f4.gpio.t_GPIO_pin renames stm32f4.periphs.BLUE_BUTTON;
 
    procedure initialize is
    begin
@@ -20,13 +19,13 @@ package body buttons is
    
       -- GPIOA Periph clock enable
       stm32f4.periphs.RCC.AHB1ENR.GPIOAEN := 1;
-   
+
       -- Set button's pin to input mode
-      stm32f4.periphs.GPIOA.MODER.pin (button_pin) := stm32f4.gpio.MODE_IN;
-   
+      stm32f4.periphs.GPIOA.MODER.pin (BB.pin) := stm32f4.gpio.MODE_IN;
+
       -- Default (idle) state is at 0V. Set GPIO pin to pull-down
-      stm32f4.periphs.GPIOA.PUPDR.pin (button_pin) := stm32f4.gpio.PULL_DOWN;
-      
+      stm32f4.periphs.GPIOA.PUPDR.pin (BB.pin) := stm32f4.gpio.PULL_DOWN;
+
 	   -----------------------
 	   -- Enable interrupts --
 	   -----------------------
@@ -38,13 +37,13 @@ package body buttons is
 	   stm32f4.periphs.SYSCFG.EXTICR1.EXTI0 := stm32f4.syscfg.GPIOA;
 	
 	   -- Set interrupt/event masks
-      stm32f4.periphs.EXTI.IMR.line (button_pin) := stm32f4.exti.NOT_MASKED;
-      stm32f4.periphs.EXTI.EMR.line (button_pin) := stm32f4.exti.MASKED;
+      stm32f4.periphs.EXTI.IMR.line (BB.pin) := stm32f4.exti.NOT_MASKED;
+      stm32f4.periphs.EXTI.EMR.line (BB.pin) := stm32f4.exti.MASKED;
 	
 	   -- Trigger the selected external interrupt on rising edge
-      stm32f4.periphs.EXTI.RTSR.line (button_pin) :=
+      stm32f4.periphs.EXTI.RTSR.line (BB.pin) :=
          stm32f4.exti.TRIGGER_ENABLED;
-      stm32f4.periphs.EXTI.FTSR.line (button_pin) :=
+      stm32f4.periphs.EXTI.FTSR.line (BB.pin) :=
          stm32f4.exti.TRIGGER_DISABLED;
 	
       -- Set the IRQ priority level (in the range 0-15). The lower the value,
@@ -87,7 +86,7 @@ package body buttons is
 
       procedure Interrupt_Handler is
       begin
-         stm32f4.periphs.EXTI.PR.line (button_pin) :=
+         stm32f4.periphs.EXTI.PR.line (BB.pin) :=
             stm32f4.exti.CLEAR_REQUEST;
          pressed  := true;
       end Interrupt_Handler;
