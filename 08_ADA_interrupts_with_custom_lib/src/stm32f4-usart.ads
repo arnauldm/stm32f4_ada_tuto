@@ -1,8 +1,6 @@
 
 package stm32f4.usart is
 
-   enabled : boolean := false;
-
    --------------------------------
    -- Status register (USART_SR) --
    --------------------------------
@@ -161,12 +159,5 @@ package stm32f4.usart is
 
    type t_USART_periph_access is access all t_USART_periph;
 
-   ---------------
-   -- Utilities --
-   ---------------
-
-   procedure initialize;
-   procedure put (c : character);
-   procedure put (s : string);
 
 end stm32f4.usart;
