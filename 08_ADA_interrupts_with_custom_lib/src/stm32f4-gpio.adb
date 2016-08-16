@@ -8,8 +8,8 @@ package body stm32f4.gpio is
       ospeed   : t_pin_speed;
       pupd     : t_pin_pupd)
    is
-      GPIOx       : constant t_GPIO_port_access := pin.gpio; 
-      pin_number  : constant t_GPIO_pin_index := pin.pin;
+      GPIOx       : t_GPIO_port renames pin.gpio;
+      pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       GPIOx.MODER.pin (pin_number)     := mode;
       GPIOx.OTYPER.pin (pin_number)    := otype;
@@ -23,8 +23,8 @@ package body stm32f4.gpio is
       mode     : t_pin_mode;
       pupd     : t_pin_pupd)
    is
-      GPIOx       : constant t_GPIO_port_access := pin.gpio; 
-      pin_number  : constant t_GPIO_pin_index := pin.pin;
+      GPIOx       : t_GPIO_port renames pin.gpio;
+      pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       GPIOx.MODER.pin (pin_number)     := mode;
       GPIOx.PUPDR.pin (pin_number)     := pupd;
@@ -35,8 +35,8 @@ package body stm32f4.gpio is
      (pin      : t_GPIO_pin;
       af       : t_AF)
    is
-      GPIOx       : constant t_GPIO_port_access := pin.gpio; 
-      pin_number  : constant t_GPIO_pin_index := pin.pin;
+      GPIOx       : t_GPIO_port renames pin.gpio;
+      pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       if pin_number in GPIOx.AFRL.pin'range then
          GPIOx.AFRL.pin (pin_number) := af;
@@ -50,8 +50,8 @@ package body stm32f4.gpio is
      (pin      : t_GPIO_pin;
       value    : bit)
    is
-      GPIOx       : constant t_GPIO_port_access := pin.gpio; 
-      pin_number  : constant t_GPIO_pin_index := pin.pin;
+      GPIOx       : t_GPIO_port renames pin.gpio;
+      pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       GPIOx.ODR.pin (pin_number) := value;
    end set;

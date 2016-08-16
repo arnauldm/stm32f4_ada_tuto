@@ -198,8 +198,8 @@ package stm32f4.gpio is
    --------------
 
    type t_GPIO_pin is record
-      gpio  : t_GPIO_port_access;
-      pin   : t_GPIO_pin_index;
+      gpio        : aliased t_GPIO_port;
+      pin_number  : t_GPIO_pin_index;
    end record;
 
    ---------------
