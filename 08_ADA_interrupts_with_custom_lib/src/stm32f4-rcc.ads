@@ -1,3 +1,4 @@
+with stm32f4.gpio;
 
 --
 -- Ref. : RM0090, p. 224-268
@@ -85,5 +86,9 @@ package stm32f4.rcc is
       AHB1ENR  at 16#30# range 0 .. 31;
       APB2ENR  at 16#44# range 0 .. 31;
    end record;
+
+
+   procedure enable_clock
+     (GPIOx : aliased in gpio.t_GPIO_port);
 
 end stm32f4.rcc;
