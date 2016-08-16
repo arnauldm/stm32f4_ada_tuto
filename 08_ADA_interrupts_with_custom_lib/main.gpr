@@ -11,7 +11,8 @@ project Main is
    package Compiler is
       for Default_Switches ("ada") use
         ("-O0", "-g",
-         "-gnatwa"); -- turn on all info/warnings marked below with +
+         "-gnatwa",   -- turn on all info/warnings marked below with +
+         "-gnatw.X"); -- turn off warnings for non-local exception
    end Compiler;
 
    package Builder is
