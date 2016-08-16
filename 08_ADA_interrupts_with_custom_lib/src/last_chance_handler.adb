@@ -4,7 +4,7 @@ with ada.unchecked_conversion;
 with stm32f4;           use stm32f4;
 with stm32f4.gpio;      use stm32f4.gpio;
 with stm32f4.periphs;   use stm32f4.periphs;
-with stm32f4.usart;
+with serial;
 
 package body last_chance_handler is
 
@@ -27,7 +27,7 @@ package body last_chance_handler is
    begin
       for j in msg_str'range loop
          exit when msg_str (j) = character'val (0);
-         usart.put (msg_str (j));
+         serial.put (msg_str (j));
       end loop;
    end put;
 
@@ -50,18 +50,18 @@ package body last_chance_handler is
       turn_off (LED_RED);
       turn_off (LED_BLUE);
 
-      if usart.ENABLED then
+      if serial.enabled then
          if line /= 0 then
-            usart.put (">>> exception at ");
+            serial.put (">>> exception at ");
             put (file);
-            usart.put (" line");
-            usart.put (line'img);
+            serial.put (" line");
+            serial.put (line'img);
          else
-            usart.put (">>> user-defined exception, message: ");
+            serial.put (">>> user-defined exception, message: ");
             put (file);
          end if;
    
-         usart.put (ASCII.CR);
+         serial.put (ASCII.CR);
       end if;
 
       loop

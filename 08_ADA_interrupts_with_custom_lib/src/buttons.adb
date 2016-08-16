@@ -5,6 +5,7 @@ with stm32f4.periphs;
 with stm32f4.syscfg;
 with stm32f4.exti;
 with stm32f4.nvic;
+with stm32f4.rcc;
 
 package body buttons is
 
@@ -18,13 +19,12 @@ package body buttons is
       ----------------------------
    
       -- GPIOA Periph clock enable
-      stm32f4.periphs.RCC.AHB1ENR.GPIOAEN := 1;
+      stm32f4.rcc.enable_clock (BB.gpio);
 
       -- Set button's pin to input mode
-      stm32f4.periphs.GPIOA.MODER.pin (BB.pin) := stm32f4.gpio.MODE_IN;
-
       -- Default (idle) state is at 0V. Set GPIO pin to pull-down
-      stm32f4.periphs.GPIOA.PUPDR.pin (BB.pin) := stm32f4.gpio.PULL_DOWN;
+      stm32f4.gpio.configure
+        (BB, stm32f4.gpio.MODE_IN, stm32f4.gpio.PULL_DOWN);
 
 	   -----------------------
 	   -- Enable interrupts --
@@ -37,13 +37,13 @@ package body buttons is
 	   stm32f4.periphs.SYSCFG.EXTICR1.EXTI0 := stm32f4.syscfg.GPIOA;
 	
 	   -- Set interrupt/event masks
-      stm32f4.periphs.EXTI.IMR.line (BB.pin) := stm32f4.exti.NOT_MASKED;
-      stm32f4.periphs.EXTI.EMR.line (BB.pin) := stm32f4.exti.MASKED;
+      stm32f4.periphs.EXTI.IMR.line (BB.pin_number) := stm32f4.exti.NOT_MASKED;
+      stm32f4.periphs.EXTI.EMR.line (BB.pin_number) := stm32f4.exti.MASKED;
 	
 	   -- Trigger the selected external interrupt on rising edge
-      stm32f4.periphs.EXTI.RTSR.line (BB.pin) :=
+      stm32f4.periphs.EXTI.RTSR.line (BB.pin_number) :=
          stm32f4.exti.TRIGGER_ENABLED;
-      stm32f4.periphs.EXTI.FTSR.line (BB.pin) :=
+      stm32f4.periphs.EXTI.FTSR.line (BB.pin_number) :=
          stm32f4.exti.TRIGGER_DISABLED;
 	
       -- Set the IRQ priority level (in the range 0-15). The lower the value,
@@ -68,7 +68,7 @@ package body buttons is
    protected button is
       procedure has_been_pressed (ret : out boolean);
    private
-      pressed        : boolean := false;
+      pressed : boolean := false;
       procedure Interrupt_Handler;
          pragma Attach_Handler
            (Interrupt_Handler,
@@ -86,7 +86,7 @@ package body buttons is
 
       procedure Interrupt_Handler is
       begin
-         stm32f4.periphs.EXTI.PR.line (BB.pin) :=
+         stm32f4.periphs.EXTI.PR.line (BB.pin_number) :=
             stm32f4.exti.CLEAR_REQUEST;
          pressed  := true;
       end Interrupt_Handler;

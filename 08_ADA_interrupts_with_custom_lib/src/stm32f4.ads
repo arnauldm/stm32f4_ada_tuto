@@ -1,9 +1,8 @@
-with interfaces; use interfaces;
+with system;      use system;
+with interfaces;  use interfaces;
+with ada.unchecked_conversion;
 
 package stm32f4 is
-
-   type address is mod 2**32
-      with size => 32;
 
    subtype byte  is unsigned_8;
    subtype short is unsigned_16;

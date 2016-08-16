@@ -5,8 +5,9 @@ with stm32f4; use stm32f4;
 
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 with stm32f4.periphs;
-with stm32f4.usart;
+with stm32f4.rcc;
 
+with serial;
 with buttons;
 
 procedure main is
@@ -20,9 +21,9 @@ begin
    -- Initialize USART (for logging purpose)
    --
 
-   usart.initialize;
-   usart.put ("Hello, world!");
-   usart.put (ASCII.CR);
+   serial.initialize;
+   serial.put ("Hello, world!");
+   serial.put (ASCII.CR);
 
    --
    -- Enable leds
@@ -72,7 +73,7 @@ begin
       gpio.turn_off (led);
       delay until ada.real_time.clock + period;
 
-      usart.put
+      serial.put
         ("Hello, world!  -- " & integer'image (counter) & ASCII.CR &
          ASCII.LF);
 
