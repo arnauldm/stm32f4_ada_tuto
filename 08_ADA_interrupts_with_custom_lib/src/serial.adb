@@ -6,6 +6,11 @@ with stm32f4.periphs;
 with stm32f4.usart;
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
 
+------------------------------------------------------------------
+-- USART1 is configured with PB6 (tx) and PB7 (rx) pins
+-- See STM32F407 User Manual, p. 20-23 for every possibilities
+------------------------------------------------------------------
+
 package body serial is
 
    USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
@@ -16,17 +21,11 @@ package body serial is
    is
    begin
 
-      ------------------------------------------------------------------
-      -- USART1 is configured with PB6 (tx) and PB7 (rx) pins
-      -- See STM32F407 User Manual, p. 20-23 for every possibilities
-      ------------------------------------------------------------------
-
       --
       -- Enable clocks
       --
-
-      periphs.RCC.AHB1ENR.GPIOBEN  := 1;
-      periphs.RCC.APB2ENR.USART1EN := 1;
+      periphs.RCC.AHB1ENR.GPIOBEN  := 1;   -- /!\ FIXME
+      periphs.RCC.APB2ENR.USART1EN := 1;   -- /!\ FIXME
       
       --
       -- Configure TX and RX pins
@@ -40,7 +39,7 @@ package body serial is
 
       gpio.set_alternate_function
         (TX_PIN,
-         gpio.GPIO_AF_USART1);   -- /!\
+         gpio.GPIO_AF_USART1);   -- /!\ FIXME
 
       gpio.configure
         (RX_PIN,
@@ -51,47 +50,19 @@ package body serial is
 
       gpio.set_alternate_function
         (RX_PIN,
-         gpio.GPIO_AF_USART1);   -- /!\
+         gpio.GPIO_AF_USART1);   -- /!\ FIXME
 
       --
       -- Configure USART
       --
-
-      -- Configuring the baud rate is a tricky part. See RM0090 p. 982-983
-      -- for further informations
       declare
-         APB2_clock  : unsigned_32;
-         baudrate    : constant := 115_200;
-         mantissa    : unsigned_32;
-         fraction    : unsigned_32;
+         use stm32f4.usart;
       begin
-
-         APB2_clock  := System.STM32.System_Clocks.PCLK2;
-         mantissa    := APB2_clock / (16 * baudrate);
-         fraction    := ((APB2_clock * 25) / (4 * baudrate)) - mantissa * 100;
-         fraction    := (fraction * 16) / 100;
-
-         USARTx.BRR.DIV_Mantissa   := uint12 (mantissa);
-         USARTx.BRR.DIV_Fraction   := uint4  (fraction);
-
+         usart.configure
+           (USARTx'access, 115_200, DATA_9BITS, PARITY_ODD, STOP_1);
       end;
 
-      USARTx.CR1.UE     := 1;  -- USART enable
-      USARTx.CR1.M      := 1;  -- 1 start bit, 9 data bits
-      USARTx.CR2.STOP   := usart.STOP_1;
-      USARTx.CR1.TE     := 1; -- Transmitter enable
-
-      -- Odd parity
-      USARTx.CR1.PCE    := 1; -- Parity control enable
-      USARTx.CR1.PS     := 1; -- Parity selection
-                                              -- O: even, 1: odd
-
-      -- No flow control
-      USARTx.CR3.RTSE := 0;
-      USARTx.CR3.CTSE := 0;
-
       ENABLED := true;
-
    end initialize;
 
 

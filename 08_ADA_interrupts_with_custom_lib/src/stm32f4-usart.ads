@@ -51,25 +51,33 @@ package stm32f4.usart is
    -- Control register 1 (USART_CR1) --
    ------------------------------------
 
+   type t_parity is (EVEN, ODD) with size => 1;
+   for t_parity use
+     (EVEN => 0,
+      ODD  => 1);
+
+   type t_data_len is (DATA_8BITS, DATA_9BITS) with size => 1;
+   for t_data_len use
+     (DATA_8BITS => 0,
+      DATA_9BITS => 1);
+
    type t_USART_CR1 is record
-      SBK         : bit;   -- Send break
-      RWU         : bit;   -- Receiver wakeup
-      RE          : bit;   -- Receiver enable
-      TE          : bit;   -- Transmitter enable
-      IDLEIE      : bit;   -- IDLE interrupt enable
-      RXNEIE      : bit;   -- RXNE interrupt enable
-      TCIE        : bit;   -- Transmission complete interrupt enable
-      TXEIE       : bit;   -- TXE interrupt enable
-      PEIE        : bit;   -- PE interrupt enable
-      PS          : bit;   -- Parity selection
-      PCE         : bit;   -- Parity control enable
-      WAKE        : bit;   -- Wakeup method
-      M           : bit;   -- Word length
-                           -- 0: 1 Start bit, 8 Data bits, n Stop bit
-                           -- 1: 1 Start bit, 9 Data bits, n Stop bit
-      UE          : bit;   -- USART enable
+      SBK         : bit;         -- Send break
+      RWU         : bit;         -- Receiver wakeup
+      RE          : bit;         -- Receiver enable
+      TE          : bit;         -- Transmitter enable
+      IDLEIE      : bit;         -- IDLE interrupt enable
+      RXNEIE      : bit;         -- RXNE interrupt enable
+      TCIE        : bit;         -- Transmission complete interrupt enable
+      TXEIE       : bit;         -- TXE interrupt enable
+      PEIE        : bit;         -- PE interrupt enable
+      PS          : t_parity;    -- Parity selection
+      PCE         : bit;         -- Parity control enable
+      WAKE        : bit;         -- Wakeup method
+      M           : t_data_len;  -- Word length
+      UE          : bit;         -- USART enable
       reserved_14 : bit; 
-      OVER8       : bit;   -- Oversampling mode
+      OVER8       : bit;         -- Oversampling mode
       reserved_16_31 : short;
    end record
       with pack, size => 32, volatile_full_access;
@@ -159,5 +167,20 @@ package stm32f4.usart is
 
    type t_USART_periph_access is access all t_USART_periph;
 
+   ---------------
+   -- Utilities --
+   ---------------
+   type t_parity_select is (PARITY_EVEN, PARITY_ODD, PARITY_NONE); 
+
+   procedure set_baud
+     (USARTx   : stm32f4.usart.t_USART_periph_access;
+      baudrate : unsigned_32);
+
+   procedure configure
+     (USARTx   : stm32f4.usart.t_USART_periph_access;
+      baudrate : unsigned_32;
+      data     : t_data_len;
+      parity   : t_parity_select;
+      stop     : t_stop_bits);
 
 end stm32f4.usart;
