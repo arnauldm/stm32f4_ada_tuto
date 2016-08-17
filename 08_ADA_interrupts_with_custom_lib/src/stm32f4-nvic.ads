@@ -6,7 +6,11 @@ with ada.interrupts;
 package stm32f4.nvic is
 
    -- Up to 81 interrupts (see Cortex-M4 prog. manual, p. 194)
-   subtype interrupt is ada.interrupts.interrupt_id range 0 .. 80;
+   type interrupt is new ada.interrupts.interrupt_id range 0 .. 80;
+
+   -- /!\ pragma Attach_Handler directive takes in parameter
+   --     Ada.Interrupts.Names.Interrupt_ID.
+
 
    ----------------
    -- Interrupts --
@@ -27,6 +31,8 @@ package stm32f4.nvic is
    DMA1_Stream_5  : constant interrupt := 16;
    DMA1_Stream_6  : constant interrupt := 17;
    DMA1_Stream_7  : constant interrupt := 47;
+
+   SDIO           : constant interrupt := 49;
 
    DMA2_Stream_0  : constant interrupt := 56;
    DMA2_Stream_1  : constant interrupt := 57;

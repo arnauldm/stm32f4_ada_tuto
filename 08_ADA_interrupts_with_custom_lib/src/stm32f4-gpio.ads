@@ -136,6 +136,7 @@ package stm32f4.gpio is
    GPIO_AF_USART4 : constant t_AF := 8;
    GPIO_AF_USART5 : constant t_AF := 8;
    GPIO_AF_USART6 : constant t_AF := 8;
+   GPIO_AF_SDIO   : constant t_AF := 12;
 
    --
    -- GPIOx_AFRL - pins 0 .. 7

@@ -53,10 +53,6 @@ package stm32f4.sdio is
       reserved_16_31 : short;
    end record
       with pack, size => 32, volatile_full_access;
-   -- While the SD/SDIO card or MultiMediaCard is in identification mode, the
-   -- SDIO_CK frequency must be less than 400 kHz.
-   -- The clock frequency can be changed to the maximum card bus frequency when
-   -- relative card addresses are assigned to all cards.
 
    ---------------------------------------
    -- SDIO argument register (SDIO_ARG) --
@@ -306,7 +302,7 @@ package stm32f4.sdio is
    -- SDIO Peripheral --
    ---------------------
 
-   type t_SDIO_Peripheral is record
+   type t_SDIO_periph is record
       POWER    : t_SDIO_POWER;
       CLKCR    : t_SDIO_CLKCR;
       ARG      : t_SDIO_ARG;
@@ -327,7 +323,7 @@ package stm32f4.sdio is
       FIFO     : t_SDIO_FIFO;
    end record;
 
-   for t_SDIO_Peripheral use record
+   for t_SDIO_periph use record
       POWER    at 16#00# range 0 .. 31;
       CLKCR    at 16#04# range 0 .. 31;
       ARG      at 16#08# range 0 .. 31;
@@ -348,5 +344,10 @@ package stm32f4.sdio is
       FIFO     at 16#80# range 0 .. 32*32 - 1;
    end record;
 
+   ---------------
+   -- Utilities --
+   ---------------
+
+   procedure initialize;
 
 end stm32f4.sdio;

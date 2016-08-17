@@ -7,6 +7,7 @@ with stm32f4.gpio;
 with stm32f4.nvic;
 with stm32f4.usart;
 with stm32f4.dma;
+with stm32f4.sdio;
 
 package stm32f4.periphs is
 
@@ -86,6 +87,9 @@ package stm32f4.periphs is
    DMA2     : aliased stm32f4.dma.t_DMA_controller
       with import, address => DMA2_Base;
 
+   SDIO_CARD: aliased stm32f4.sdio.t_SDIO_periph
+      with import, address => SDIO_Base;
+
    ---------------
    -- GPIO pins --
    ---------------
@@ -104,6 +108,8 @@ package stm32f4.periphs is
    PC10   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 10);
    PC11   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 11);
    PC12   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 12);
+
+   PD2   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 2);
 
    PD12  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 12);
    PD13  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 13);
@@ -134,5 +140,7 @@ package stm32f4.periphs is
    SDIO_D2  : constant stm32f4.gpio.t_GPIO_pin  := PC10;
    SDIO_D3  : constant stm32f4.gpio.t_GPIO_pin  := PC11;
    SDIO_CK  : constant stm32f4.gpio.t_GPIO_pin  := PC12;
+   SDIO_CMD : constant stm32f4.gpio.t_GPIO_pin  := PD2;
+
 
 end stm32f4.periphs;
