@@ -11,6 +11,9 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
 -- See STM32F407 User Manual, p. 20-23 for every possibilities
 ------------------------------------------------------------------
 
+-- /!\ Important: gnat zfp and ravenscar profiles already initialize the serial
+-- /!\ USART1 on pins PB6 (tx) and PB7 (rx)
+
 package body serial is
 
    USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
