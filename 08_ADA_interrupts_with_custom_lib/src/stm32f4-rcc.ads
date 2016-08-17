@@ -14,30 +14,30 @@ package stm32f4.rcc is
    -- Ref. : RM0090, p. 242
 
    type t_RCC_AHB1ENR is record
-      GPIOAEN        : bit;
-      GPIOBEN        : bit;
-      GPIOCEN        : bit;
-      GPIODEN        : bit;
-      GPIOEEN        : bit;
-      GPIOFEN        : bit;
-      GPIOGEN        : bit;
-      GPIOHEN        : bit;
-      GPIOIEN        : bit;
+      GPIOAEN        : bit;   -- IO port A clock enable
+      GPIOBEN        : bit;   -- IO port B clock enable
+      GPIOCEN        : bit;   -- IO port C clock enable
+      GPIODEN        : bit;   -- IO port D clock enable
+      GPIOEEN        : bit;   -- IO port E clock enable
+      GPIOFEN        : bit;   -- IO port F clock enable
+      GPIOGEN        : bit;   -- IO port G clock enable
+      GPIOHEN        : bit;   -- IO port H clock enable
+      GPIOIEN        : bit;   -- IO port I clock enable
       reserved_9_11  : uint3;
-      CRCEN          : bit;
+      CRCEN          : bit;   -- CRC clock enable
       reserved_13_17 : uint5;
-      BKPSRAMEN      : bit;
+      BKPSRAMEN      : bit;   -- Backup SRAM interface clock enable
       reserved_19    : bit;
-      CCMDATARAMEN   : bit;
-      DMA1EN         : bit;
-      DMA2EN         : bit;
+      CCMDATARAMEN   : bit;   -- CCM data RAM clock enable
+      DMA1EN         : bit;   -- DMA1 clock enable
+      DMA2EN         : bit;   -- DMA2 clock enable
       reserved_23_24 : bit;
-      ETHMACEN       : bit;
-      ETHMACTXEN     : bit;
-      ETHMACRXEN     : bit;
-      ETHMACPTPEN    : bit;
-      OTGHSEN        : bit;
-      OTGHSULPIEN    : bit;
+      ETHMACEN       : bit;   -- Ethernet MAC clock enable
+      ETHMACTXEN     : bit;   -- Ethernet Transmission clock enable
+      ETHMACRXEN     : bit;   -- Ethernet Reception clock enable
+      ETHMACPTPEN    : bit;   -- Ethernet PTP clock enable
+      OTGHSEN        : bit;   -- USB OTG HS clock enable
+      OTGHSULPIEN    : bit;   -- USB OTG HSULPI clock enable
       reserved_31    : bit;
    end record
       with pack, size => 32, volatile_full_access;
@@ -88,7 +88,7 @@ package stm32f4.rcc is
    end record;
 
 
-   procedure enable_clock
+   procedure enable_gpio_clock
      (GPIOx : aliased in gpio.t_GPIO_port);
 
 end stm32f4.rcc;

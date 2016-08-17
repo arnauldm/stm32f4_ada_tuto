@@ -20,7 +20,7 @@ package body buttons is
       ----------------------------
 
       -- GPIOA Periph clock enable
-      stm32f4.rcc.enable_clock (BB.gpio.all);
+      stm32f4.rcc.enable_gpio_clock (BB.gpio.all);
 
       -- Set button's pin to input mode
       -- Default (idle) state is at 0V. Set GPIO pin to pull-down

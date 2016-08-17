@@ -3,7 +3,7 @@ with stm32f4.periphs;
 
 package body stm32f4.rcc is
 
-   procedure enable_clock
+   procedure enable_gpio_clock
      (GPIOx : aliased in gpio.t_GPIO_port)
    is
    begin
@@ -18,6 +18,6 @@ package body stm32f4.rcc is
       else
          raise program_error;
       end if;
-   end enable_clock;
+   end enable_gpio_clock;
 
 end stm32f4.rcc;
