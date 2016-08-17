@@ -4,7 +4,6 @@ with interfaces; use interfaces;
 with stm32f4; use stm32f4;
 with stm32f4.periphs;
 with stm32f4.usart;
-with stm32f4.rcc;
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
 
 package body serial is
@@ -58,7 +57,7 @@ package body serial is
       -- for further informations
       declare
          APB2_clock  : unsigned_32;
-         baudrate    : constant := 9600;
+         baudrate    : constant := 115_200;
          mantissa    : unsigned_32;
          fraction    : unsigned_32;
       begin

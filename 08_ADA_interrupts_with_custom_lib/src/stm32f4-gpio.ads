@@ -198,7 +198,7 @@ package stm32f4.gpio is
    --------------
 
    type t_GPIO_pin is record
-      gpio        : aliased t_GPIO_port;
+      gpio        : t_GPIO_port_access;
       pin_number  : t_GPIO_pin_index;
    end record;
 
@@ -222,7 +222,7 @@ package stm32f4.gpio is
      (pin      : t_GPIO_pin;
       af       : t_AF);
 
-   procedure set
+   procedure output
      (pin      : t_GPIO_pin;
       value    : bit);
 

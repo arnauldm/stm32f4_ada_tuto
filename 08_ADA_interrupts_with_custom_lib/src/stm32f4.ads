@@ -8,9 +8,12 @@ package stm32f4 is
    subtype short is unsigned_16;
    subtype word  is unsigned_32;
 
-   type byte_array  is array (natural range <>) of byte;
-   type short_array is array (natural range <>) of short;
-   type word_array  is array (natural range <>) of word;
+   type byte_array  is array (natural range <>) of byte
+      with pack;
+   type short_array is array (natural range <>) of short
+      with pack;
+   type word_array  is array (natural range <>) of word
+      with pack;
 
    type bit    is mod 2**1 with size => 1;
    type uint2  is mod 2**2 with size => 2;

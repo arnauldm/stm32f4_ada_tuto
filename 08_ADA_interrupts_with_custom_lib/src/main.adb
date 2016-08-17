@@ -5,7 +5,6 @@ with stm32f4; use stm32f4;
 
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 with stm32f4.periphs;
-with stm32f4.rcc;
 
 with serial;
 with buttons;
@@ -74,7 +73,7 @@ begin
       delay until ada.real_time.clock + period;
 
       serial.put
-        ("Hello, world!  -- " & integer'image (counter) & ASCII.CR &
+        ("counter: " & integer'image (counter) & ASCII.CR &
          ASCII.LF);
 
       counter := counter + 1;

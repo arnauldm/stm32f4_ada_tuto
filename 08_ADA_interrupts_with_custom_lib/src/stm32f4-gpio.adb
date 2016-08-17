@@ -8,7 +8,7 @@ package body stm32f4.gpio is
       ospeed   : t_pin_speed;
       pupd     : t_pin_pupd)
    is
-      GPIOx       : t_GPIO_port renames pin.gpio;
+      GPIOx       : t_GPIO_port_access renames pin.gpio;
       pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       GPIOx.MODER.pin (pin_number)     := mode;
@@ -23,7 +23,7 @@ package body stm32f4.gpio is
       mode     : t_pin_mode;
       pupd     : t_pin_pupd)
    is
-      GPIOx       : t_GPIO_port renames pin.gpio;
+      GPIOx       : t_GPIO_port_access renames pin.gpio;
       pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       GPIOx.MODER.pin (pin_number)     := mode;
@@ -35,7 +35,7 @@ package body stm32f4.gpio is
      (pin      : t_GPIO_pin;
       af       : t_AF)
    is
-      GPIOx       : t_GPIO_port renames pin.gpio;
+      GPIOx       : t_GPIO_port_access renames pin.gpio;
       pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       if pin_number in GPIOx.AFRL.pin'range then
@@ -46,28 +46,28 @@ package body stm32f4.gpio is
    end set_alternate_function;
 
 
-   procedure set
+   procedure output
      (pin      : t_GPIO_pin;
       value    : bit)
    is
-      GPIOx       : t_GPIO_port renames pin.gpio;
+      GPIOx       : t_GPIO_port_access renames pin.gpio;
       pin_number  : t_GPIO_pin_index renames pin.pin_number;
    begin
       GPIOx.ODR.pin (pin_number) := value;
-   end set;
+   end output;
 
 
    procedure turn_on (pin : t_GPIO_pin)
    is
    begin
-      set (pin, 1);
+      output (pin, 1);
    end turn_on;
 
 
    procedure turn_off (pin : t_GPIO_pin)
    is
    begin
-      set (pin, 0);
+      output (pin, 0);
    end turn_off;
 
 
