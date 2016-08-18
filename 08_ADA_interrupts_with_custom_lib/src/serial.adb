@@ -112,5 +112,11 @@ package body serial is
    end put;
 
 
+   procedure new_line
+   is
+   begin
+      put (ASCII.CR & ASCII.LF);
+   end new_line;
+
 end serial;
 
