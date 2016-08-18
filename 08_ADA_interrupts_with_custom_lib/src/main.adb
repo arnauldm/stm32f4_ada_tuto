@@ -7,6 +7,7 @@ with stm32f4.periphs;
 
 with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
+with tests;
 
 procedure main is
    counter  : integer         := 0;
@@ -17,8 +18,11 @@ begin
    -- Initialize USART 
    serial.initialize;
 
+   tests.test_dma;
+
    loop
-      serial.put ("counter: " & integer'image (counter) & ASCII.CR & ASCII.LF);
+      serial.put ("counter: " & integer'image (counter));
+      serial.new_line;
       counter := counter + 1;
       delay until ada.real_time.clock + period;
    end loop;

@@ -7,8 +7,34 @@ package stm32f4.nvic is
    -- Up to 81 interrupts (see Cortex-M4 prog. manual, p. 194)
    subtype interrupt is natural range 0 .. 80;
 
+   ----------------
+   -- Interrupts --
+   ----------------
    -- (see RM0090, p. 374)
-   EXTI_Line_0 : constant interrupt := 6;
+
+   EXTI_Line_0    : constant interrupt := 6;
+   EXTI_Line_1    : constant interrupt := 7;
+   EXTI_Line_2    : constant interrupt := 8;
+   EXTI_Line_3    : constant interrupt := 9;
+   EXTI_Line_4    : constant interrupt := 10;
+
+   DMA1_Stream_0  : constant interrupt := 11;
+   DMA1_Stream_1  : constant interrupt := 12;
+   DMA1_Stream_2  : constant interrupt := 13;
+   DMA1_Stream_3  : constant interrupt := 14;
+   DMA1_Stream_4  : constant interrupt := 15;
+   DMA1_Stream_5  : constant interrupt := 16;
+   DMA1_Stream_6  : constant interrupt := 17;
+   DMA1_Stream_7  : constant interrupt := 47;
+
+   DMA2_Stream_0  : constant interrupt := 56;
+   DMA2_Stream_1  : constant interrupt := 57;
+   DMA2_Stream_2  : constant interrupt := 58;
+   DMA2_Stream_3  : constant interrupt := 59;
+   DMA2_Stream_4  : constant interrupt := 60;
+   DMA2_Stream_5  : constant interrupt := 68;
+   DMA2_Stream_6  : constant interrupt := 69;
+   DMA2_Stream_7  : constant interrupt := 70;
 
    -------------------------------------------------
    -- Interrupt set-enable registers (NVIC_ISERx) --
