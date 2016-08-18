@@ -1,3 +1,4 @@
+with ada.interrupts;
 
 -- Nested vectored interrupt controller (NVIC)
 -- (see STM32F4xxx Cortex-M4 Programming Manual, p. 194-205)
@@ -5,7 +6,7 @@
 package stm32f4.nvic is
 
    -- Up to 81 interrupts (see Cortex-M4 prog. manual, p. 194)
-   subtype interrupt is natural range 0 .. 80;
+   subtype interrupt is ada.interrupts.interrupt_id range 0 .. 80;
 
    ----------------
    -- Interrupts --

@@ -3,11 +3,11 @@ with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
 with stm32f4; use stm32f4;
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
-with stm32f4.periphs;
 
 with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
 with tests;
+with stm32f4.dma; pragma unreferenced (stm32f4.dma);
 
 procedure main is
    counter  : integer         := 0;

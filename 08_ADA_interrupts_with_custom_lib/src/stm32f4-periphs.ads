@@ -1,4 +1,4 @@
-with system;
+with system; use system;
 
 with stm32f4.rcc;
 with stm32f4.syscfg;

@@ -1,9 +1,10 @@
 with system;
-with Ada.Interrupts.Names;
 with ada.unchecked_conversion;
+with ada.interrupts.names;
 
 with stm32f4; use stm32f4;
 with stm32f4.dma;
+with stm32f4.dma.interrupts;
 with stm32f4.periphs;
 with stm32f4.nvic;
 with serial;
@@ -13,76 +14,14 @@ package body tests is
    src : stm32f4.byte_array (1 .. 1024) := (others => 65); -- 'A'
    dst : stm32f4.byte_array (1 .. 1024) := (others => 0);
 
-   DMA_controller : stm32f4.dma.t_DMA_controller
-                        renames stm32f4.periphs.DMA2;
-   stream : constant stm32f4.dma.t_stream_index := 3;
+   DMA_controller : stm32f4.dma.t_DMA_controller renames stm32f4.periphs.DMA2;
+   stream         : constant stm32f4.dma.t_DMA_stream_index := 3;
 
-   --
-   -- Interrupt handler 
-   --
-
-   protected handler is
-      procedure has_been_interrupted (ret : out boolean);
-   private
-      interrupted : boolean := false;
-      procedure interrupt_handler;
-         pragma attach_handler
-           (interrupt_handler,
-            Ada.Interrupts.Names.DMA2_Stream3_Interrupt);
-   end handler;
-
-   protected body handler is
-
-      procedure has_been_interrupted (ret : out boolean) is begin
-         ret := interrupted;
-      end has_been_interrupted;
-
-      procedure interrupt_handler is begin
-         serial.put ("DEBUG> DMA2 interrupt");
-         serial.new_line;
-
-         if DMA_controller.LISR.stream_3.FEIF = 1 then
-            serial.put ("DEBUG> Stream FIFO error");
-            serial.new_line;
-            DMA_controller.LIFCR.stream_3.CFEIF := 1; 
-         end if;
-
-         if DMA_controller.LISR.stream_3.DMEIF = 1 then
-            serial.put ("DEBUG> Stream direct mode error");
-            serial.new_line;
-            DMA_controller.LIFCR.stream_3.CDMEIF := 1; 
-         end if;
-
-         if DMA_controller.LISR.stream_3.TEIF = 1 then
-            serial.put ("DEBUG> Stream transfer error");
-            serial.new_line;
-            DMA_controller.LIFCR.stream_3.CTEIF := 1; 
-         end if;
-
-         if DMA_controller.LISR.stream_3.HTIF = 1 then
-            serial.put ("DEBUG> Stream half transfer interrupt");
-            serial.new_line;
-            DMA_controller.LIFCR.stream_3.CHTIF := 1; 
-         end if;
-
-         if DMA_controller.LISR.stream_3.TCIF = 1 then
-            serial.put ("DEBUG> Stream transfer complete interrupt");
-            serial.new_line;
-            DMA_controller.LIFCR.stream_3.CTCIF := 1; 
-         end if;
-
-         interrupted := true;
-
-      end interrupt_handler;
-
-   end handler;
-
-   function has_been_interrupted return boolean is
-      ret : boolean;
-   begin
-      handler.has_been_interrupted (ret);
-      return ret;
-   end has_been_interrupted;
+   irq_handler : 
+      stm32f4.dma.interrupts.handler
+        (DMA_controller'access,
+         stream,
+         Ada.Interrupts.Names.DMA2_Stream3_Interrupt);
 
    --
    -- Test
@@ -111,11 +50,7 @@ package body tests is
       end if;
 
       -- Clear interrupts flags
-      DMA_controller.LIFCR.stream_3.CFEIF  := 1; -- FIFO error
-      DMA_controller.LIFCR.stream_3.CDMEIF := 1; -- Direct mode error
-      DMA_controller.LIFCR.stream_3.CTEIF  := 1; -- Transfer error
-      DMA_controller.LIFCR.stream_3.CHTIF  := 1; -- Half transfer 
-      DMA_controller.LIFCR.stream_3.CTCIF  := 1; -- Transfer complete
+      stm32f4.dma.clear_stream_interrupts (DMA_controller, stream);
 
       -- Peripheral address
       DMA_controller.streams(stream).PAR  := to_word (src'address);
@@ -173,7 +108,41 @@ package body tests is
       DMA_controller.streams(stream).CR.EN := 1;
       
       loop
-         exit when has_been_interrupted;
+         declare 
+            interrupted : boolean;
+            flags       : stm32f4.dma.interrupts.t_interrupt_flags;
+         begin
+
+            irq_handler.has_been_interrupted (interrupted);
+
+            if interrupted then
+               flags := irq_handler.get_flags;
+
+               if flags.FIFO_ERROR then
+                  serial.put ("FIFO error"); serial.new_line;
+               end if;
+
+               if flags.DIRECT_MODE_ERROR then
+                  serial.put ("Direct mode error"); serial.new_line;
+               end if;
+
+               if flags.TRANSFER_ERROR then
+                  serial.put ("Transfer error"); serial.new_line;
+               end if;
+
+               if flags.HALF_TRANSFER_COMPLETE then
+                  serial.put ("Half transfer"); 
+                  serial.new_line;
+               end if;
+
+               if flags.TRANSFER_COMPLETE then
+                  serial.put ("Transfer complete"); serial.new_line;
+                  exit;
+               end if;
+
+            end if;
+
+         end;
       end loop;
 
       for i in dst'range loop

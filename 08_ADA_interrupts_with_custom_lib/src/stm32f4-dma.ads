@@ -5,17 +5,11 @@
 
 package stm32f4.dma is
 
-   -- Notes:
-   --    Each DMA controller has 2 ports (1 peripheral port + 1 memory port)
-   --    Each DMA controller manage 8 streams (each with up to 8 selectable
-   --       channels/requests)
-   --    Channel <-> stream mapping specified at RM0090 p. 309-310
-
    --------------------------------------------------
    -- DMA low interrupt status register (DMA_LISR) --
    --------------------------------------------------
 
-   type t_DMA_stream_status is record
+   type t_DMA_stream_interrupt_status is record
       FEIF        : bit;   -- Stream FIFO error interrupt flag
       reserved_1  : bit;
       DMEIF       : bit;   -- Stream direct mode error interrupt flag
@@ -26,11 +20,11 @@ package stm32f4.dma is
       with pack, size => 6;
 
    type t_DMA_LISR is record
-      stream_0       : t_DMA_stream_status;
-      stream_1       : t_DMA_stream_status;
+      stream_0       : t_DMA_stream_interrupt_status;
+      stream_1       : t_DMA_stream_interrupt_status;
       reserved_12_15 : uint4;
-      stream_2       : t_DMA_stream_status;
-      stream_3       : t_DMA_stream_status;
+      stream_2       : t_DMA_stream_interrupt_status;
+      stream_3       : t_DMA_stream_interrupt_status;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -40,11 +34,11 @@ package stm32f4.dma is
    ---------------------------------------------------
 
    type t_DMA_HISR is record
-      stream_4       : t_DMA_stream_status;
-      stream_5       : t_DMA_stream_status;
+      stream_4       : t_DMA_stream_interrupt_status;
+      stream_5       : t_DMA_stream_interrupt_status;
       reserved_12_15 : uint4;
-      stream_6       : t_DMA_stream_status;
-      stream_7       : t_DMA_stream_status;
+      stream_6       : t_DMA_stream_interrupt_status;
+      stream_7       : t_DMA_stream_interrupt_status;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -53,7 +47,7 @@ package stm32f4.dma is
    -- DMA low interrupt flag clear register (DMA_LIFCR) --
    -------------------------------------------------------
 
-   type t_DMA_stream_clear is record
+   type t_DMA_stream_clear_interrupts is record
       CFEIF       : bit; -- Stream clear FIFO error interrupt flag
       reserved_1  : bit;
       CDMEIF      : bit; -- Stream clear direct mode error interrupt flag
@@ -64,11 +58,11 @@ package stm32f4.dma is
       with pack, size => 6;
 
    type t_DMA_LIFCR is record
-      stream_0       : t_DMA_stream_clear;
-      stream_1       : t_DMA_stream_clear;
+      stream_0       : t_DMA_stream_clear_interrupts;
+      stream_1       : t_DMA_stream_clear_interrupts;
       reserved_12_15 : uint4;
-      stream_2       : t_DMA_stream_clear;
-      stream_3       : t_DMA_stream_clear;
+      stream_2       : t_DMA_stream_clear_interrupts;
+      stream_3       : t_DMA_stream_clear_interrupts;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -78,11 +72,11 @@ package stm32f4.dma is
    --------------------------------------------------------
 
    type t_DMA_HIFCR is record
-      stream_4       : t_DMA_stream_clear;
-      stream_5       : t_DMA_stream_clear;
+      stream_4       : t_DMA_stream_clear_interrupts;
+      stream_5       : t_DMA_stream_clear_interrupts;
       reserved_12_15 : uint4;
-      stream_6       : t_DMA_stream_clear;
-      stream_7       : t_DMA_stream_clear;
+      stream_6       : t_DMA_stream_clear_interrupts;
+      stream_7       : t_DMA_stream_clear_interrupts;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -234,7 +228,7 @@ package stm32f4.dma is
    -- DMA Controller --
    --------------------
 
-   subtype t_stream_index is natural range 0 .. 7;
+   subtype t_DMA_stream_index is natural range 0 .. 7;
 
    type t_stream_registers is record
       CR    : t_DMA_SxCR;     -- Control register
@@ -246,7 +240,7 @@ package stm32f4.dma is
    end record
       with pack;
 
-   type t_streams_registers is array (t_stream_index) of t_stream_registers
+   type t_streams_registers is array (t_DMA_stream_index) of t_stream_registers
       with pack;
 
    type t_DMA_controller is record
@@ -258,10 +252,34 @@ package stm32f4.dma is
    end record
       with pack;
 
+   type t_DMA_controller_access is access all t_DMA_controller;
+
    ---------------
    -- Utilities --
    ---------------
 
+   type DMA_interrupts is
+     (FIFO_ERROR, DIRECT_MODE_ERROR, TRANSFER_ERROR,
+      HALF_TRANSFER_COMPLETE, TRANSFER_COMPLETE);
 
+   function get_ISR
+     (DMA_controller : t_DMA_controller;
+      stream         : t_DMA_stream_index)
+      return t_DMA_stream_interrupt_status;
+
+   function stream_interrupt_is_set
+     (controller  : t_DMA_controller;
+      stream      : t_DMA_stream_index;
+      interrupt   : DMA_interrupts)
+      return boolean;
+
+   procedure clear_stream_interrupt
+     (controller  : in out t_DMA_controller;
+      stream      : t_DMA_stream_index;
+      interrupt   : DMA_interrupts);
+
+   procedure clear_stream_interrupts
+     (controller  : in out t_DMA_controller;
+      stream      : t_DMA_stream_index);
 
 end stm32f4.dma;

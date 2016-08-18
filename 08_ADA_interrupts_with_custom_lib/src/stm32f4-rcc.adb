@@ -1,3 +1,4 @@
+with system; use system;
 with stm32f4.periphs;
 
 package body stm32f4.rcc is
