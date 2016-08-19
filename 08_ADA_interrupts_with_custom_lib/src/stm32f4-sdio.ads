@@ -1,3 +1,5 @@
+with stm32f4.dma;
+
 --
 -- Ref. : RM0090, p. 1022-1078
 --
@@ -65,6 +67,8 @@ package stm32f4.sdio is
    -- SDIO command register (SDIO_CMD) --
    --------------------------------------
 
+   subtype t_cmd_index is uint6;
+
    type t_waitresp is
      (NO_RESPONSE, SHORT_RESPONSE, NO_RESPONSE2, LONG_RESPONSE)
       with size => 2;
@@ -75,10 +79,14 @@ package stm32f4.sdio is
       LONG_RESPONSE  => 2#11#);
 
    type t_SDIO_CMD is record
-      CMDINDEX    : uint6;       -- Command index
+      CMDINDEX    : t_cmd_index; -- Command index
       WAITRESP    : t_waitresp;  -- Wait for response bits
-      WAITINT     : bit;         -- CPSM(*) waits for interrupt request
-      WAITPEND    : bit;         -- CPSM Waits for ends of data transfer
+      WAITINT     : bit;
+         -- If this bit is set, the CPSM disables command timeout and waits for
+         -- an interrupt request.
+      WAITPEND    : bit;
+         -- If this bit is set, the CPSM waits for the end of data transfer
+         -- before it starts sending a command.
       CPSMEN      : bit;         -- Command path state machine (CPSM) Enable bit
       SDIOSUSPEND : bit;         -- SD I/O suspend command
       ENCMDCOMPL  : bit;         -- Enable CMD completion
@@ -95,12 +103,12 @@ package stm32f4.sdio is
    ---------------------------------------------------
 
    type t_SDIO_RESPCMD is record
-      RESPCMD  : uint6; -- Response command index
+      CMD  : t_cmd_index; -- Response command index
    end record
       with size => 32, volatile_full_access;
 
    for t_SDIO_RESPCMD use record
-      RESPCMD at 0 range 0 .. 5;
+      CMD at 0 range 0 .. 5;
    end record;
 
    ----------------------------------------------
@@ -215,6 +223,7 @@ package stm32f4.sdio is
    ----------------------------------------------
    -- SDIO interrupt clear register (SDIO_ICR) --
    ----------------------------------------------
+   -- As its name doesn't say: it clear the *status* flags!
 
    type t_clear_bit is (NOT_CLEARED, CLEARED) with size => 1;
    for t_clear_bit use
@@ -222,22 +231,22 @@ package stm32f4.sdio is
       CLEARED     => 1);
 
    type t_SDIO_ICR is record
-      CCRCFAILC   : t_clear_bit;
-      DCRCFAILC   : t_clear_bit;
-      CTIMEOUTC   : t_clear_bit;
-      DTIMEOUTC   : t_clear_bit;
-      TXUNDERRC   : t_clear_bit;
-      RXOVERRC    : t_clear_bit;
-      CMDRENDC    : t_clear_bit;
-      CMDSENTC    : t_clear_bit;
-      DATAENDC    : t_clear_bit;
-      STBITERRC   : t_clear_bit;
-      DBCKENDC    : t_clear_bit;
-      reserved_11_15 : uint5;
-      reserved_16_21 : uint6;
-      SDIOITC     : t_clear_bit;
-      CEATAENDC   : t_clear_bit;
-      reserved_24_31 : byte;
+      CCRCFAILC   : t_clear_bit := CLEARED;
+      DCRCFAILC   : t_clear_bit := CLEARED;
+      CTIMEOUTC   : t_clear_bit := CLEARED;
+      DTIMEOUTC   : t_clear_bit := CLEARED;
+      TXUNDERRC   : t_clear_bit := CLEARED;
+      RXOVERRC    : t_clear_bit := CLEARED;
+      CMDRENDC    : t_clear_bit := CLEARED;
+      CMDSENTC    : t_clear_bit := CLEARED;
+      DATAENDC    : t_clear_bit := CLEARED;
+      STBITERRC   : t_clear_bit := CLEARED;
+      DBCKENDC    : t_clear_bit := CLEARED;
+      reserved_11_15 : uint5    := 0;
+      reserved_16_21 : uint6    := 0;
+      SDIOITC     : t_clear_bit := CLEARED;
+      CEATAENDC   : t_clear_bit := CLEARED;
+      reserved_24_31 : byte     := 0;
    end record
       with pack, size => 32, volatile_full_access;
 
@@ -344,10 +353,178 @@ package stm32f4.sdio is
       FIFO     at 16#80# range 0 .. 32*32 - 1;
    end record;
 
+   ---------------------------------------
+   -- Command path state machine (CPSM) --
+   ---------------------------------------
+
+   type t_CPSM is
+     (CPSM_IDLE,
+      CPSM_PEND,
+      CPSM_SEND,
+      CPSM_WAIT,
+      CPSM_RECEIVE,
+      CPSM_WAIT_CPL);
+
+   CPSM : t_CPSM;
+
+   ------------------------------------
+   -- Data path state machine (DPSM) --
+   ------------------------------------
+
+   type t_DPSM is
+     (DPSM_IDLE,
+      DPSM_BUSY,
+      DPSM_SEND,
+      DPSM_WAIT_S,
+      DPSM_WAIT_R,
+      DPSM_RECEIVE,
+      DPSM_READ_WAIT);
+
+   DPSM : t_DPSM;
+
+   ------------------
+   -- SDIO command --
+   ------------------
+
+   type t_SDIO_command is record
+      end_bit        : bit    := 1;
+      CRC7           : uint7;
+      argument       : word;
+      index          : t_cmd_index;
+      transmission   : bit    := 1;
+      start_bit      : bit    := 0;
+   end record
+      with size => 48;
+
+   for t_SDIO_command use record
+      end_bit        at 0 range 0 .. 0;
+      CRC7           at 0 range 1 .. 7;
+      argument       at 0 range 8 .. 39;
+      index          at 0 range 40 .. 45;
+      transmission   at 0 range 46 .. 46;
+      start_bit      at 0 range 47 .. 47;
+   end record;
+
+   -------------------------
+   -- SDIO short response --
+   -------------------------
+   subtype t_short_status is t_SDIO_RESPx;
+   
+--   type t_SDIO_short_response is record
+--      end_bit        : bit    := 1;
+--      CRC7           : uint7;       -- CRC or 2#111_1111#
+--      argument       : word;
+--      index          : t_cmd_index;
+--      transmission   : bit    := 0;
+--      start_bit      : bit    := 0;
+--   end record
+--      with size => 48;
+--
+--   for t_SDIO_short_response use record
+--      end_bit        at 0 range 0 .. 0;
+--      CRC7           at 0 range 1 .. 7;
+--      argument       at 0 range 8 .. 39;
+--      index          at 0 range 40 .. 45;
+--      transmission   at 0 range 46 .. 46;
+--      start_bit      at 0 range 47 .. 47;
+--   end record;
+
+   ------------------------
+   -- SDIO long response --
+   ------------------------
+
+   type t_long_status is record
+      RESP4 : t_SDIO_RESPx;
+      RESP3 : t_SDIO_RESPx;
+      RESP2 : t_SDIO_RESPx;
+      RESP1 : t_SDIO_RESPx;
+   end record
+      with pack;
+
+--   type t_CID is array (1 .. 127) of bit with pack;
+--
+--   type t_SDIO_long_response 
+--     (as_resp : boolean := false)
+--   is record
+--      case as_resp is
+--         when false =>
+--            end_bit     : bit := 1;
+--            CID         : t_CID; 
+--            reserved_128_133  : uint6  := 2#11_1111#;
+--            transmission      : bit    := 0;
+--            start_bit         : bit    := 0;
+--         when true =>
+--            RESP4       : t_SDIO_RESPx;
+--            RESP3       : t_SDIO_RESPx;
+--            RESP2       : t_SDIO_RESPx;
+--            RESP1       : t_SDIO_RESPx;
+--            reserved_128_133  : uint6  := 2#11_1111#;
+--            transmission      : bit    := 0;
+--            start_bit         : bit    := 0;
+--      end case;
+--   end record
+--      with size => 136;
+--   
+--   for t_SDIO_long_response use record
+--      end_bit           at 0 range 0 .. 0;
+--      CID               at 0 range 1 .. 127;
+--      reserved_128_133  at 0 range 128 .. 133;
+--      transmission      at 0 range 134 .. 134;
+--      start_bit         at 0 range 135 .. 135;
+--   end record;
+
+   -------------------
+   -- SDIO commands --
+   -------------------
+
+   -- Ref.: 
+   --  . SD Specifications, Part 1 Physical Layer Simplified Specification,
+   --    version 4.10, 2013
+   --  . Simplified SDIO card spec, version 3.0, 2011
+
+   CMD0     : constant t_cmd_index := 0;
+   CMD1     : constant t_cmd_index := 1;
+   CMD2     : constant t_cmd_index := 2;
+   CMD3     : constant t_cmd_index := 3;
+   CMD5     : constant t_cmd_index := 5;
+   CMD8     : constant t_cmd_index := 8;
+   CMD15    : constant t_cmd_index := 15;
+   ACMD41   : constant t_cmd_index := 41;
+   CMD52    : constant t_cmd_index := 52;
+   CMD55    : constant t_cmd_index := 55;
+
+   CMD_GO_IDLE_STATE       : t_cmd_index renames CMD0;
+   CMD_ALL_SEND_CID        : t_cmd_index renames CMD2;
+   CMD_SEND_RELATIVE_ADDR  : t_cmd_index renames CMD3;
+   CMD_IO_SEND_OP_COND     : t_cmd_index renames CMD5;
+   CMD_GO_INACTIVE_STATE   : t_cmd_index renames CMD15;
+   CMD_SD_APP_OP_COND      : t_cmd_index renames ACMD41;
+   CMD_IO_RW_DIRECT        : t_cmd_index renames CMD52;
+   CMD_APP_CMD             : t_cmd_index renames CMD55;
+
    ---------------
    -- Utilities --
    ---------------
-
+   
    procedure initialize;
+
+   procedure low_level_init;
+   procedure set_dma;
+
+   procedure send_command
+     (cmd_index      : in  t_cmd_index;
+      argument       : in  t_SDIO_ARG;
+      response_type  : in  t_waitresp;
+      status         : out t_SDIO_STA;
+      success        : out boolean);
+
+   procedure get_short_response (response : out t_short_status);
+   procedure get_long_response  (response : out t_long_status);
+
+   procedure set_dma_transfer
+     (DMA_controller : in out dma.t_DMA_controller;
+      stream         : dma.t_DMA_stream_index;
+      direction      : dma.t_data_transfer_dir;
+      memory         : byte_array_access);
 
 end stm32f4.sdio;

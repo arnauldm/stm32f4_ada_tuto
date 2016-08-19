@@ -1,4 +1,5 @@
 with ada.unchecked_conversion;
+with serial;
 
 package body stm32f4.sdio.interrupts is
 
@@ -13,8 +14,6 @@ package body stm32f4.sdio.interrupts is
 
       procedure interrupt_handler is 
       begin
-         status      := sdio_card.STATUS;
-         interrupted := true;
 
          declare
             function to_mask is new ada.unchecked_conversion
@@ -22,6 +21,10 @@ package body stm32f4.sdio.interrupts is
          begin
             periphs.SDIO_CARD.MASK := to_mask (0);
          end;
+
+         status      := sdio_card.STATUS;
+         serial.put ("<SDIO>");
+         interrupted := true;
 
       end interrupt_handler;
 

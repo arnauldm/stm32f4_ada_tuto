@@ -6,10 +6,10 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 
 with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
-with tests;
 
 -- DEBUG (TO REMOVE)
 with stm32f4.sdio; pragma unreferenced (stm32f4.sdio);
+-- with tests.dma;
 
 procedure main is
    counter  : integer         := 0;
@@ -20,8 +20,12 @@ begin
    -- Initialize USART 
    serial.initialize;
 
-   tests.test_dma_mem_to_mem;
+   -- -- Testing the DMA
+   -- tests.dma.transfer_memory_to_memory;
 
+   stm32f4.sdio.initialize;
+
+   -- Endless loop
    loop
       serial.put ("counter: " & integer'image (counter));
       serial.new_line;
