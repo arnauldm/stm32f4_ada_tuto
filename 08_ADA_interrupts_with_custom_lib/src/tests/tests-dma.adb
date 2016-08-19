@@ -1,5 +1,6 @@
 with system;
 with ada.real_time; use ada.real_time;
+with interfaces; use interfaces;
 with ada.unchecked_conversion;
 with ada.interrupts.names;
 
@@ -10,19 +11,19 @@ with stm32f4.periphs;
 with stm32f4.nvic;
 with serial;
 
-package body tests is
+package body tests.dma is
 
    src : stm32f4.byte_array (1 .. 1024) := (others => 65); -- 'A'
    dst : stm32f4.byte_array (1 .. 1024) := (others => 0);
 
    DMA_controller : stm32f4.dma.t_DMA_controller renames stm32f4.periphs.DMA2;
-   stream         : constant stm32f4.dma.t_DMA_stream_index := 3;
+   stream         : constant stm32f4.dma.t_DMA_stream_index := 1;
 
    irq_handler : 
       stm32f4.dma.interrupts.handler
         (DMA_controller'access,
          stream,
-         Ada.Interrupts.Names.DMA2_Stream3_Interrupt);
+         Ada.Interrupts.Names.DMA2_Stream1_Interrupt);
 
    start_time  : ada.real_time.time;
    end_time    : ada.real_time.time;
@@ -31,13 +32,10 @@ package body tests is
    -- Test
    --
 
-   procedure test_dma_mem_to_mem is
+   procedure transfer_memory_to_memory is
 
-      function to_word is new ada.unchecked_conversion
-        (ada.real_time.time_span, stm32f4.word);
-
-      function to_word is new ada.unchecked_conversion
-        (system.address, stm32f4.word);
+      function to_unsigned_64 is new ada.unchecked_conversion
+        (ada.real_time.time_span, unsigned_64);
 
       function to_character is new ada.unchecked_conversion
          (byte, character);
@@ -61,6 +59,7 @@ package body tests is
 
       -- Transfer direction
       DMA_controller.streams(stream).CR.DIR  := stm32f4.dma.MEMORY_TO_MEMORY;
+
       -- Peripheral address
       DMA_controller.streams(stream).PAR  := to_word (src'address);
 
@@ -161,14 +160,14 @@ package body tests is
       end loop;
 
       serial.put ("Elapsed time: " &
-         word'image (to_word (end_time - start_time)));
+         unsigned_64'image (to_unsigned_64 (end_time - start_time)));
       serial.new_line;
 
       for i in dst'range loop
          serial.put (to_character (dst(i)));
       end loop;
 
-   end test_dma_mem_to_mem;
+   end transfer_memory_to_memory;
 
 
-end tests;
+end tests.dma;
