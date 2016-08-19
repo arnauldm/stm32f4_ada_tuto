@@ -9,19 +9,19 @@ with stm32f4.gpio;
 with stm32f4.rcc;
 with stm32f4.nvic;
 with stm32f4.dma.interrupts;
+with stm32f4.sd;
 with serial;
 
 package body stm32f4.sdio is
 
-   outbuf : byte_array (1 .. 256) := (others => 0);
-   inbuf  : byte_array (1 .. 256) := (others => 0);
+   DEBUG    : constant boolean := true;
+
+   outbuf   : byte_array (1 .. 256) := (others => 0);
+   inbuf    : byte_array (1 .. 256) := (others => 0);
 
    DMA_controller : dma.t_DMA_controller renames stm32f4.periphs.DMA2;
    stream_mem_to_sdio : constant dma.t_DMA_stream_index := 3;
    stream_sdio_to_mem : constant dma.t_DMA_stream_index := 6;
-
-   period   : constant ada.real_time.time_span := 
-      ada.real_time.milliseconds (1);
 
    DMA_mem_to_sdio_handler : 
       dma.interrupts.handler
@@ -35,43 +35,85 @@ package body stm32f4.sdio is
          stream_sdio_to_mem,
          Ada.Interrupts.Names.DMA2_Stream6_Interrupt);
 
-   procedure small_delay;
-   pragma inline (small_delay);
-
    ----------------
    -- Initialize --
    ----------------
 
    procedure initialize is
-      success  : boolean;
-      status   : t_SDIO_STA;
+      success     : boolean;
+      sdio_status : t_SDIO_STA;
+      card_status : t_card_status;
+      short_resp  : t_short_response;
    begin
       low_level_init;
       set_dma;
 
-      serial.put ("CMD0");
-      serial.new_line;
-      send_command (CMD0, 0, NO_RESPONSE, status, success);
+      serial.put_line ("CMD0");
+      send_command (CMD0, 0, NO_RESPONSE, sdio_status, success);
       if not success then
-         serial.put ("error");
-         serial.new_line;
+         serial.put_line ("error");
       end if;
 
-      serial.put ("CMD8");
-      serial.new_line;
-      send_command (CMD8, 16#1AA#, SHORT_RESPONSE, status, success);
+      -- CMD8 (Send Interface Condition Command) is defined to initialize SD
+      -- Memory Cards compliant to the Physical Layer Specification Version
+      -- 2.00 or later
+      --  Argument:
+      --  - [31:12]: reserved, shall be set to '0'
+      --  - [11:8]:  Supply voltage (VHS) 0x1 (range: 2.7-3.6V)
+      --  - [7:0]:   Check Pattern (recommended 0xAA)
+      serial.put_line ("CMD8"); 
+      send_command (CMD8, 16#1AA#, SHORT_RESPONSE, sdio_status, success);
       if not success then
-         serial.put ("error");
-         serial.new_line;
+         serial.put_line ("error"); 
       end if;
 
-      serial.put ("ACMD55");
-      serial.new_line;
-      send_command (CMD55, 0, SHORT_RESPONSE, status, success);
+      -- ACMD41 is application specific command; therefore APP_CMD (CMD55)
+      -- shall always precede ACMD41
+      serial.put_line ("CMD55");
+      send_command (CMD55, 0, SHORT_RESPONSE, sdio_status, success);
+
       if not success then
-         serial.put ("error");
-         serial.new_line;
+         serial.put_line ("error");
+      else
+         card_status := to_card_status (get_short_response);
+         if not card_status.APP_CMD or
+            not card_status.READY_FOR_DATA 
+         then
+            serial.put_line ("unexpected error");
+         end if;
       end if;
+
+      -- Initialization Command (ACMD41)
+      serial.put_line ("ACMD41");
+
+      declare
+
+         function to_sdio_arg is new ada.unchecked_conversion
+           (sd.t_OCR, t_SDIO_ARG);
+
+         function to_ocr is new ada.unchecked_conversion
+           (t_short_response, sd.t_OCR);
+
+         arg : sd.t_OCR := (vdd_3_dot_3 => true, CCS => 1, others => <>);
+      begin
+
+         send_command
+           --(ACMD41, to_sdio_arg (arg), SHORT_RESPONSE, sdio_status, success);
+           (ACMD41, 16#8010_0000#, SHORT_RESPONSE, sdio_status, success);
+
+         if not success then
+            serial.put_line ("error"); 
+         end if;
+
+         arg := to_ocr (get_short_response);
+
+         if arg.power_up = 1 then
+            serial.put_line ("valid voltage");
+         end if;
+
+      end;
+
+
 
    end initialize;
 
@@ -132,7 +174,7 @@ package body stm32f4.sdio is
       --
 
       periphs.SDIO_CARD.POWER.PWRCTRL  := POWER_OFF;
-      delay until ada.real_time.clock + period;
+      delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       -- /!\ RM0090, p. 1025, 1064-1065
       -- . SDIO adapter clock (SDIOCLK = 48 MHz)
@@ -159,11 +201,11 @@ package body stm32f4.sdio is
 
       -- Power up the SDIO card
       periphs.SDIO_CARD.POWER.PWRCTRL  := POWER_ON;
-      delay until ada.real_time.clock + period;
+      delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       -- SDIO_CK is enabled
       periphs.SDIO_CARD.CLKCR.CLKEN    := 1;
-      delay until ada.real_time.clock + period;
+      delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       --
       -- Setup IRQs 
@@ -214,6 +256,10 @@ package body stm32f4.sdio is
    is
       function to_mask is new ada.unchecked_conversion
         (word, t_SDIO_MASK);
+      function to_word is new ada.unchecked_conversion
+        (t_SDIO_RESPx, word);
+      function to_word is new ada.unchecked_conversion
+        (t_SDIO_RESPCMD, word);
    begin
 
       -- SDIO card host doesn't send a command yet
@@ -251,8 +297,18 @@ package body stm32f4.sdio is
 
       status := periphs.SDIO_CARD.STATUS;
 
+      if DEBUG then
+         serial.put_line
+           ("RESPCMD: " & word'image (to_word (periphs.SDIO_CARD.RESPCMD)) &
+            ", RESP1: " & word'image (to_word (periphs.SDIO_CARD.RESP1))   &
+            ", RESP2: " & word'image (to_word (periphs.SDIO_CARD.RESP2))   &
+            ", RESP3: " & word'image (to_word (periphs.SDIO_CARD.RESP3))   &
+            ", RESP4: " & word'image (to_word (periphs.SDIO_CARD.RESP4)));
+      end if;
+
       -- Timeout error
       if periphs.SDIO_CARD.STATUS.CTIMEOUT = 1 then
+         serial.put_line ("timeout");
          success := false;
          return;
       end if;
@@ -262,6 +318,7 @@ package body stm32f4.sdio is
          if cmd_index = CMD1 or cmd_index = CMD5 then
             null;
          else
+            serial.put_line ("CRC fail");
             success := false;
             return;
          end if;
@@ -272,18 +329,22 @@ package body stm32f4.sdio is
    end send_command;
 
 
-   procedure get_short_response (response : out t_short_status) is
+   function get_short_response return t_short_response
+   is
    begin
-      response := periphs.SDIO_CARD.RESP1;
+      return periphs.SDIO_CARD.RESP1;
    end get_short_response;
 
 
-   procedure get_long_response (response  : out t_long_status) is
+   function get_long_response return t_long_response
+   is
+      response : t_long_response;
    begin
       response.RESP1 := periphs.SDIO_CARD.RESP1;
       response.RESP2 := periphs.SDIO_CARD.RESP2;
       response.RESP3 := periphs.SDIO_CARD.RESP3;
       response.RESP4 := periphs.SDIO_CARD.RESP4;
+      return response;
    end get_long_response;
 
    --------------
@@ -395,13 +456,5 @@ package body stm32f4.sdio is
 --
 --      set_dma_transfer (DMA_controller, stream_sdio_to_mem,
 --         dma.PERIPHERAL_TO_MEMORY, inbuf'access);
-
-   procedure small_delay is
-   begin
-      for i in 1 .. 30 
-      loop
-         null;
-      end loop;
-   end small_delay;
 
 end stm32f4.sdio;

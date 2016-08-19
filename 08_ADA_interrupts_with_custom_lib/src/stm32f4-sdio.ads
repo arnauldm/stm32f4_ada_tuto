@@ -353,74 +353,50 @@ package stm32f4.sdio is
       FIFO     at 16#80# range 0 .. 32*32 - 1;
    end record;
 
-   ---------------------------------------
-   -- Command path state machine (CPSM) --
-   ---------------------------------------
-
-   type t_CPSM is
-     (CPSM_IDLE,
-      CPSM_PEND,
-      CPSM_SEND,
-      CPSM_WAIT,
-      CPSM_RECEIVE,
-      CPSM_WAIT_CPL);
-
-   CPSM : t_CPSM;
-
-   ------------------------------------
-   -- Data path state machine (DPSM) --
-   ------------------------------------
-
-   type t_DPSM is
-     (DPSM_IDLE,
-      DPSM_BUSY,
-      DPSM_SEND,
-      DPSM_WAIT_S,
-      DPSM_WAIT_R,
-      DPSM_RECEIVE,
-      DPSM_READ_WAIT);
-
-   DPSM : t_DPSM;
-
-   ------------------
-   -- SDIO command --
-   ------------------
-
-   type t_SDIO_command is record
-      end_bit        : bit    := 1;
-      CRC7           : uint7;
-      argument       : word;
-      index          : t_cmd_index;
-      transmission   : bit    := 1;
-      start_bit      : bit    := 0;
-   end record
-      with size => 48;
-
-   for t_SDIO_command use record
-      end_bit        at 0 range 0 .. 0;
-      CRC7           at 0 range 1 .. 7;
-      argument       at 0 range 8 .. 39;
-      index          at 0 range 40 .. 45;
-      transmission   at 0 range 46 .. 46;
-      start_bit      at 0 range 47 .. 47;
-   end record;
-
-   -------------------------
-   -- SDIO short response --
-   -------------------------
-   subtype t_short_status is t_SDIO_RESPx;
-   
---   type t_SDIO_short_response is record
+--   ---------------------------------------
+--   -- Command path state machine (CPSM) --
+--   ---------------------------------------
+--
+--   type t_CPSM is
+--     (CPSM_IDLE,
+--      CPSM_PEND,
+--      CPSM_SEND,
+--      CPSM_WAIT,
+--      CPSM_RECEIVE,
+--      CPSM_WAIT_CPL);
+--
+--   CPSM : t_CPSM;
+--
+--   ------------------------------------
+--   -- Data path state machine (DPSM) --
+--   ------------------------------------
+--
+--   type t_DPSM is
+--     (DPSM_IDLE,
+--      DPSM_BUSY,
+--      DPSM_SEND,
+--      DPSM_WAIT_S,
+--      DPSM_WAIT_R,
+--      DPSM_RECEIVE,
+--      DPSM_READ_WAIT);
+--
+--   DPSM : t_DPSM;
+--
+--   ------------------
+--   -- SDIO command --
+--   ------------------
+--
+--   type t_SDIO_command is record
 --      end_bit        : bit    := 1;
---      CRC7           : uint7;       -- CRC or 2#111_1111#
+--      CRC7           : uint7;
 --      argument       : word;
 --      index          : t_cmd_index;
---      transmission   : bit    := 0;
+--      transmission   : bit    := 1;
 --      start_bit      : bit    := 0;
 --   end record
 --      with size => 48;
 --
---   for t_SDIO_short_response use record
+--   for t_SDIO_command use record
 --      end_bit        at 0 range 0 .. 0;
 --      CRC7           at 0 range 1 .. 7;
 --      argument       at 0 range 8 .. 39;
@@ -429,11 +405,13 @@ package stm32f4.sdio is
 --      start_bit      at 0 range 47 .. 47;
 --   end record;
 
-   ------------------------
-   -- SDIO long response --
-   ------------------------
+   --------------------
+   -- SDIO responses --
+   --------------------
 
-   type t_long_status is record
+   subtype t_short_response is t_SDIO_RESPx;
+   
+   type t_long_response is record
       RESP4 : t_SDIO_RESPx;
       RESP3 : t_SDIO_RESPx;
       RESP2 : t_SDIO_RESPx;
@@ -441,37 +419,53 @@ package stm32f4.sdio is
    end record
       with pack;
 
---   type t_CID is array (1 .. 127) of bit with pack;
---
---   type t_SDIO_long_response 
---     (as_resp : boolean := false)
---   is record
---      case as_resp is
---         when false =>
---            end_bit     : bit := 1;
---            CID         : t_CID; 
---            reserved_128_133  : uint6  := 2#11_1111#;
---            transmission      : bit    := 0;
---            start_bit         : bit    := 0;
---         when true =>
---            RESP4       : t_SDIO_RESPx;
---            RESP3       : t_SDIO_RESPx;
---            RESP2       : t_SDIO_RESPx;
---            RESP1       : t_SDIO_RESPx;
---            reserved_128_133  : uint6  := 2#11_1111#;
---            transmission      : bit    := 0;
---            start_bit         : bit    := 0;
---      end case;
---   end record
---      with size => 136;
---   
---   for t_SDIO_long_response use record
---      end_bit           at 0 range 0 .. 0;
---      CID               at 0 range 1 .. 127;
---      reserved_128_133  at 0 range 128 .. 133;
---      transmission      at 0 range 134 .. 134;
---      start_bit         at 0 range 135 .. 135;
---   end record;
+   type t_card_state is
+     (CARD_STATE_IDLE, CARD_STATE_READY, CARD_STATE_IDENT, CARD_STATE_STBY,
+      CARD_STATE_TRAN, CARD_STATE_DATA, CARD_STATE_RCV, CARD_STATE_PRG,
+      CARD_STATE_DIS)
+      with size => 4;
+   for t_card_state use
+     (CARD_STATE_IDLE   => 0,
+      CARD_STATE_READY  => 1,
+      CARD_STATE_IDENT  => 2,
+      CARD_STATE_STBY   => 3,
+      CARD_STATE_TRAN   => 4,
+      CARD_STATE_DATA   => 5,
+      CARD_STATE_RCV    => 6,
+      CARD_STATE_PRG    => 7,
+      CARD_STATE_DIS    => 8);
+
+   type t_card_status is record
+      reserved_0_2      : uint3;
+      AKE_SEQ_ERROR     : bit; -- Sequence of the authentication process error
+      reserved_4        : bit;
+      APP_CMD           : boolean; -- The card will expect ACMD
+      reserved_6_7      : uint2;
+      READY_FOR_DATA    : boolean;
+      CURRENT_STATE     : t_card_state;
+      ERASE_RESET       : bit;
+      CARD_ECC_DISABLED : bit;
+      WP_ERASE_SKIP     : bit;
+      CSD_OVERWRITE     : bit;
+      reserved_17_18    : uint2;
+      ERROR             : bit;
+      CC_ERROR          : bit;
+      CARD_ECC_FAILED   : bit;
+      ILLEGAL_COMMAND   : bit;
+      COM_CRC_ERROR     : bit;
+      LOCK_UNLOCK_FAILED   : bit;
+      CARD_IS_LOCKED    : bit;
+      WP_VIOLATION      : bit;
+      ERASE_PARAM       : bit;
+      ERASE_SEQ_ERROR   : bit;
+      BLOCK_LEN_ERROR   : bit;
+      ADDRESS_ERROR     : bit;
+      OUT_OF_RANGE      : bit;
+   end record
+      with pack, size => 32;
+
+   function to_card_status is new ada.unchecked_conversion
+     (t_SDIO_RESPx, t_card_status);
 
    -------------------
    -- SDIO commands --
@@ -518,8 +512,8 @@ package stm32f4.sdio is
       status         : out t_SDIO_STA;
       success        : out boolean);
 
-   procedure get_short_response (response : out t_short_status);
-   procedure get_long_response  (response : out t_long_status);
+   function get_short_response return t_short_response;
+   function get_long_response return t_long_response;
 
    procedure set_dma_transfer
      (DMA_controller : in out dma.t_DMA_controller;
