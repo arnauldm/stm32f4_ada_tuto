@@ -6,6 +6,43 @@ with stm32f4.gpio;
 
 package stm32f4.rcc is
 
+   type t_RCC_CR is record
+      HSION          : bit;
+      HSIRDY         : bit;
+      Reserved_2_2   : bit;
+      HSITRIM        : uint5;
+      HSICAL         : byte;
+      HSEON          : bit;
+      HSERDY         : bit;
+      HSEBYP         : bit;
+      CSSON          : bit;
+      Reserved_20_23 : uint4;
+      PLLON          : bit;
+      PLLRDY         : bit;
+      PLLI2SON       : bit;
+      PLLI2SRDY      : bit;
+      Reserved_28_31 : uint4;
+   end record
+     with volatile_full_access, size => 32;
+
+   for t_RCC_CR use record
+      HSION          at 0 range 0 .. 0;
+      HSIRDY         at 0 range 1 .. 1;
+      Reserved_2_2   at 0 range 2 .. 2;
+      HSITRIM        at 0 range 3 .. 7;
+      HSICAL         at 0 range 8 .. 15;
+      HSEON          at 0 range 16 .. 16;
+      HSERDY         at 0 range 17 .. 17;
+      HSEBYP         at 0 range 18 .. 18;
+      CSSON          at 0 range 19 .. 19;
+      Reserved_20_23 at 0 range 20 .. 23;
+      PLLON          at 0 range 24 .. 24;
+      PLLRDY         at 0 range 25 .. 25;
+      PLLI2SON       at 0 range 26 .. 26;
+      PLLI2SRDY      at 0 range 27 .. 27;
+      Reserved_28_31 at 0 range 28 .. 31;
+   end record;
+
    -----------------
    -- RCC_AHB1ENR --
    -----------------
@@ -78,11 +115,13 @@ package stm32f4.rcc is
    --------------------
 
    type t_RCC_periph is record
+      CR       : t_RCC_CR;
       AHB1ENR  : t_RCC_AHB1ENR;
       APB2ENR  : t_RCC_APB2ENR;
    end record;
 
    for t_RCC_periph use record
+      CR       at 16#00# range 0 .. 31;
       AHB1ENR  at 16#30# range 0 .. 31;
       APB2ENR  at 16#44# range 0 .. 31;
    end record;
