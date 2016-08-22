@@ -7,7 +7,10 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
 with tests;
+
+-- DEBUG (TO REMOVE)
 with stm32f4.dma; pragma unreferenced (stm32f4.dma);
+with stm32f4.sdio; pragma unreferenced (stm32f4.sdio);
 
 procedure main is
    counter  : integer         := 0;
