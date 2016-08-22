@@ -93,5 +93,13 @@ package body serial is
       put (ASCII.CR & ASCII.LF);
    end new_line;
 
+
+   procedure put_line (s : string)
+   is
+   begin
+      put (s);
+      new_line;
+   end put_line;
+
 end serial;
 

@@ -6,5 +6,6 @@ package serial is
    procedure put (c : character);
    procedure put (s : string);
    procedure new_line;
+   procedure put_line (s : string);
 
 end serial;
