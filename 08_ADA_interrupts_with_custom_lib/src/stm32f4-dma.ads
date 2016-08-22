@@ -237,8 +237,16 @@ package stm32f4.dma is
       M0AR  : t_DMA_SxM0AR;   -- memory 0 address register
       M1AR  : t_DMA_SxM1AR;   -- memory 1 address register
       FCR   : t_DMA_SxFCR;    -- FIFO control register
-   end record
-      with pack;
+   end record;
+
+   for t_stream_registers use record
+      CR    at 16#00# range 0 .. 31;
+      NDTR  at 16#04# range 0 .. 31;
+      PAR   at 16#08# range 0 .. 31;
+      M0AR  at 16#0C# range 0 .. 31;
+      M1AR  at 16#10# range 0 .. 31;
+      FCR   at 16#14# range 0 .. 31;
+   end record;
 
    type t_streams_registers is array (t_DMA_stream_index) of t_stream_registers
       with pack;
@@ -249,8 +257,15 @@ package stm32f4.dma is
       LIFCR    : t_DMA_LIFCR; -- Interrupt clear register (0 .. 3)
       HIFCR    : t_DMA_HIFCR; -- Interrupt clear register (4 .. 7)
       streams  : t_streams_registers;
-   end record
-      with pack;
+   end record;
+
+   for t_DMA_controller use record
+      LISR     at 16#00# range 0 .. 31;
+      HISR     at 16#04# range 0 .. 31;
+      LIFCR    at 16#08# range 0 .. 31;
+      HIFCR    at 16#0C# range 0 .. 31;
+      streams  at 16#10# range 0 .. (32 * 6 * 8) - 1;
+   end record;
 
    type t_DMA_controller_access is access all t_DMA_controller;
 
