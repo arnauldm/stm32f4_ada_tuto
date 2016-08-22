@@ -1,4 +1,5 @@
 with system;
+with ada.real_time; use ada.real_time;
 with ada.unchecked_conversion;
 with ada.interrupts.names;
 
@@ -23,11 +24,17 @@ package body tests is
          stream,
          Ada.Interrupts.Names.DMA2_Stream3_Interrupt);
 
+   start_time  : ada.real_time.time;
+   end_time    : ada.real_time.time;
+
    --
    -- Test
    --
 
    procedure test_dma_mem_to_mem is
+
+      function to_word is new ada.unchecked_conversion
+        (ada.real_time.time_span, stm32f4.word);
 
       function to_word is new ada.unchecked_conversion
         (system.address, stm32f4.word);
@@ -52,6 +59,8 @@ package body tests is
       -- Clear interrupts flags
       stm32f4.dma.clear_stream_interrupts (DMA_controller, stream);
 
+      -- Transfer direction
+      DMA_controller.streams(stream).CR.DIR  := stm32f4.dma.MEMORY_TO_MEMORY;
       -- Peripheral address
       DMA_controller.streams(stream).PAR  := to_word (src'address);
 
@@ -60,6 +69,13 @@ package body tests is
 
       -- Total number of items to be tranferred
       DMA_controller.streams(stream).NDTR.NDT := short (src'size / 8);
+
+      -- Items size
+      DMA_controller.streams(stream).CR.PSIZE   := stm32f4.dma.TRANSFER_BYTE;
+      DMA_controller.streams(stream).CR.MSIZE   := stm32f4.dma.TRANSFER_BYTE;
+      DMA_controller.streams(stream).CR.PINC    := 1;
+      DMA_controller.streams(stream).CR.MINC    := 1;
+      DMA_controller.streams(stream).CR.PINCOS  := stm32f4.dma.INCREMENT_PSIZE;
       
       -- Select the DMA channel 
       DMA_controller.streams(stream).CR.CHSEL := 1; -- Channel 1
@@ -71,15 +87,9 @@ package body tests is
       -- Priority
       DMA_controller.streams(stream).CR.PL   := stm32f4.dma.HIGH;
 
-      -- DMA configuration
-      DMA_controller.streams(stream).CR.DIR  := stm32f4.dma.MEMORY_TO_MEMORY;
-      DMA_controller.streams(stream).CR.PSIZE   := stm32f4.dma.TRANSFER_BYTE;
-      DMA_controller.streams(stream).CR.MSIZE   := stm32f4.dma.TRANSFER_BYTE;
-      DMA_controller.streams(stream).CR.PINC    := 1;
-      DMA_controller.streams(stream).CR.MINC    := 1;
-      DMA_controller.streams(stream).CR.PINCOS  := stm32f4.dma.INCREMENT_PSIZE;
-      DMA_controller.streams(stream).CR.PBURST  := stm32f4.dma.INCR_4_BEATS;
-      DMA_controller.streams(stream).CR.MBURST  := stm32f4.dma.INCR_4_BEATS;
+      -- DMA bursts
+      DMA_controller.streams(stream).CR.PBURST  := stm32f4.dma.INCR_16_BEATS;
+      DMA_controller.streams(stream).CR.MBURST  := stm32f4.dma.INCR_16_BEATS;
 
       -- Direct mode disable, RM0090 p. 336: "This bit is set by hardware
       -- if the memory-to-memory mode is selected [...] because the direct
@@ -104,7 +114,11 @@ package body tests is
       stm32f4.periphs.NVIC.ISER1.irq(stm32f4.nvic.DMA2_Stream_3)
          := stm32f4.nvic.IRQ_ENABLED;
 
+      --
       -- Launch transfer!
+      --
+
+      start_time := ada.real_time.clock;
       DMA_controller.streams(stream).CR.EN := 1;
       
       loop
@@ -116,7 +130,8 @@ package body tests is
             irq_handler.has_been_interrupted (interrupted);
 
             if interrupted then
-               flags := irq_handler.get_flags;
+               end_time := ada.real_time.clock;
+               flags    := irq_handler.get_flags;
 
                if flags.FIFO_ERROR then
                   serial.put ("FIFO error"); serial.new_line;
@@ -144,6 +159,10 @@ package body tests is
 
          end;
       end loop;
+
+      serial.put ("Elapsed time: " &
+         word'image (to_word (end_time - start_time)));
+      serial.new_line;
 
       for i in dst'range loop
          serial.put (to_character (dst(i)));
