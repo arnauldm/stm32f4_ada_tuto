@@ -1,3 +1,4 @@
+with ada.real_time; use ada.real_time;
 with Ada.Interrupts.Names;
 
 with stm32f4.gpio; 
@@ -17,7 +18,7 @@ package body buttons is
       ----------------------------
       -- Enable the blue button --
       ----------------------------
-   
+
       -- GPIOA Periph clock enable
       stm32f4.rcc.enable_clock (BB.gpio.all);
 
@@ -26,37 +27,37 @@ package body buttons is
       stm32f4.gpio.configure
         (BB, stm32f4.gpio.MODE_IN, stm32f4.gpio.PULL_DOWN);
 
-	   -----------------------
-	   -- Enable interrupts --
-	   -----------------------
-	
-	   -- PAx, PBx, PCx (...) are multiplexed on EXTIx (ie. PA0
-	   -- interrupts are managed by the EXTI0 line). Note that they are up
-	   -- to 23 external interrupts lines.
-	   -- The user button, which is on PA0, is managed by EXTI0. 
-	   stm32f4.periphs.SYSCFG.EXTICR1.EXTI0 := stm32f4.syscfg.GPIOA;
-	
-	   -- Set interrupt/event masks
+      -----------------------
+      -- Enable interrupts --
+      -----------------------
+
+      -- PAx, PBx, PCx (...) are multiplexed on EXTIx (ie. PA0
+      -- interrupts are managed by the EXTI0 line). Note that they are up
+      -- to 23 external interrupts lines.
+      -- The user button, which is on PA0, is managed by EXTI0. 
+      stm32f4.periphs.SYSCFG.EXTICR1.EXTI0 := stm32f4.syscfg.GPIOA;
+
+      -- Set interrupt/event masks
       stm32f4.periphs.EXTI.IMR.line (BB.pin_number) := stm32f4.exti.NOT_MASKED;
       stm32f4.periphs.EXTI.EMR.line (BB.pin_number) := stm32f4.exti.MASKED;
-	
-	   -- Trigger the selected external interrupt on rising edge
+
+      -- Trigger the selected external interrupt on rising edge
       stm32f4.periphs.EXTI.RTSR.line (BB.pin_number) :=
          stm32f4.exti.TRIGGER_ENABLED;
       stm32f4.periphs.EXTI.FTSR.line (BB.pin_number) :=
          stm32f4.exti.TRIGGER_DISABLED;
-	
+
       -- Set the IRQ priority level (in the range 0-15). The lower the value,
-	   -- the greater the priority is. The Reset, Hard fault, and NMI
-	   -- exceptions, with fixed negative priority values, always have higher
-	   -- priority than any other exception. When the processor is executing
-	   -- an exception handler, the exception handler is preempted if a higher
-	   -- priority exception occurs. 
-	   stm32f4.periphs.NVIC.IPR(stm32f4.nvic.EXTI_line_0).priority := 0;
-	
-	   -- Enable the Selected IRQ Channels
-	   stm32f4.periphs.NVIC.ISER0.irq(stm32f4.nvic.EXTI_line_0)
-	      := stm32f4.nvic.IRQ_ENABLED;
+      -- the greater the priority is. The Reset, Hard fault, and NMI
+      -- exceptions, with fixed negative priority values, always have higher
+      -- priority than any other exception. When the processor is executing
+      -- an exception handler, the exception handler is preempted if a higher
+      -- priority exception occurs. 
+      stm32f4.periphs.NVIC.IPR(stm32f4.nvic.EXTI_line_0).priority := 0;
+
+      -- Enable the Selected IRQ Channels
+      stm32f4.periphs.NVIC.ISER0.irq(stm32f4.nvic.EXTI_line_0)
+         := stm32f4.nvic.IRQ_ENABLED;
 
    end initialize;
 
@@ -68,7 +69,11 @@ package body buttons is
    protected button is
       procedure has_been_pressed (ret : out boolean);
    private
-      pressed : boolean := false;
+      pressed        : boolean            := false;
+      last_event     : ada.real_time.time := ada.real_time.clock;
+      debounce_time  : ada.real_time.time_span
+         := ada.real_time.milliseconds (10);
+
       procedure Interrupt_Handler;
          pragma Attach_Handler
            (Interrupt_Handler,
@@ -86,9 +91,17 @@ package body buttons is
 
       procedure Interrupt_Handler is
       begin
+
          stm32f4.periphs.EXTI.PR.line (BB.pin_number) :=
             stm32f4.exti.CLEAR_REQUEST;
-         pressed  := true;
+
+         if ada.real_time.clock - last_event > debounce_time then
+            pressed     := true;
+            last_event  := ada.real_time.clock;
+         else
+            pressed  := false;
+         end if;
+
       end Interrupt_Handler;
 
    end button;
