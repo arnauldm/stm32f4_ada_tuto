@@ -27,7 +27,7 @@ package body tests is
    -- Test
    --
 
-   procedure test_dma is
+   procedure test_dma_mem_to_mem is
 
       function to_word is new ada.unchecked_conversion
         (system.address, stm32f4.word);
@@ -149,7 +149,7 @@ package body tests is
          serial.put (to_character (dst(i)));
       end loop;
 
-   end test_dma;
+   end test_dma_mem_to_mem;
 
 
 end tests;

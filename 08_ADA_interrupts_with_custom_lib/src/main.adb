@@ -18,7 +18,7 @@ begin
    -- Initialize USART 
    serial.initialize;
 
-   tests.test_dma;
+   tests.test_dma_mem_to_mem;
 
    loop
       serial.put ("counter: " & integer'image (counter));
