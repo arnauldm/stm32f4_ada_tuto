@@ -221,12 +221,25 @@ package stm32f4.gpio is
    procedure set_alternate_function
      (pin      : t_GPIO_pin;
       af       : t_AF);
+   pragma inline (set_alternate_function);
 
    procedure output
      (pin      : t_GPIO_pin;
       value    : bit);
+   pragma inline (output);
+
+   function input
+     (pin      : t_GPIO_pin)
+      return bit;
+   pragma inline (input);
 
    procedure turn_on (pin : t_GPIO_pin);
+   pragma inline (turn_on);
+
    procedure turn_off (pin : t_GPIO_pin);
+   pragma inline (turn_off);
+
+   procedure toggle (pin : t_GPIO_pin);
+   pragma inline (toggle);
 
 end stm32f4.gpio;

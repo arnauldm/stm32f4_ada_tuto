@@ -57,6 +57,17 @@ package body stm32f4.gpio is
    end output;
 
 
+   function input
+     (pin      : t_GPIO_pin)
+      return bit
+   is
+      GPIOx       : t_GPIO_port_access renames pin.gpio;
+      pin_number  : t_GPIO_pin_index renames pin.pin_number;
+   begin
+      return GPIOx.IDR.pin (pin_number);
+   end input;
+
+
    procedure turn_on (pin : t_GPIO_pin)
    is
    begin
@@ -69,6 +80,15 @@ package body stm32f4.gpio is
    begin
       output (pin, 0);
    end turn_off;
+
+
+   procedure toggle (pin : t_GPIO_pin)
+   is
+      GPIOx       : t_GPIO_port_access renames pin.gpio;
+      pin_number  : t_GPIO_pin_index renames pin.pin_number;
+   begin
+      GPIOx.ODR.pin (pin_number) := not GPIOx.ODR.pin (pin_number);
+   end toggle;
 
 
 end stm32f4.gpio;

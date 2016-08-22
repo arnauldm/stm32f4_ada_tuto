@@ -46,14 +46,13 @@ package body leds is
       init;
       loop
          if buttons.has_been_pressed then
+            gpio.turn_off (led);
             led :=  (if led = periphs.LED_GREEN then
                         periphs.LED_RED
                      else
                         periphs.LED_GREEN);
          end if;
-         gpio.turn_on (led);
-         delay until ada.real_time.clock + period;
-         gpio.turn_off (led);
+         gpio.toggle (led);
          delay until ada.real_time.clock + period;
       end loop;
    end blinking_leds;
