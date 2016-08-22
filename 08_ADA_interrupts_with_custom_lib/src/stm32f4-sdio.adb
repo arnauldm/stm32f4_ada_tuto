@@ -35,85 +35,120 @@ package body stm32f4.sdio is
          stream_sdio_to_mem,
          Ada.Interrupts.Names.DMA2_Stream6_Interrupt);
 
+   type t_sd_card is record
+      ocr   : sd.t_OCR; -- Operating Condition Register
+      cid   : sd.t_CID; -- Card IDentification register 
+      rca   : sd.t_RCA; -- Relative Card Address
+   end record;
+
+   sd_card : t_sd_card;
+
    ----------------
    -- Initialize --
    ----------------
 
    procedure initialize is
+
+      function to_sdio_arg is new ada.unchecked_conversion
+        (sd.t_OCR, t_SDIO_ARG);
+
       success     : boolean;
       sdio_status : t_SDIO_STA;
-      card_status : t_card_status;
-      short_resp  : t_short_response;
+
    begin
+
+      ------------------------
+      -- Low level settings --
+      ------------------------
+
+      -- Set up GPIO pins, SDIO clock and also set up interrupt handler
       low_level_init;
+
+      -- Enable DMA
       set_dma;
 
+      ---------------------------------
+      -- Card identification process --
+      ---------------------------------
+
+      -- Go idle state (CMD0)
       serial.put_line ("CMD0");
       send_command (CMD0, 0, NO_RESPONSE, sdio_status, success);
+
       if not success then
-         serial.put_line ("error");
+         goto bad_return;
       end if;
 
-      -- CMD8 (Send Interface Condition Command) is defined to initialize SD
-      -- Memory Cards compliant to the Physical Layer Specification Version
-      -- 2.00 or later
+      -- Initialize SD Memory Cards compliant to the Physical Layer
+      -- Specification Version 2.00 or later (CMD8)
       --  Argument:
       --  - [31:12]: reserved, shall be set to '0'
       --  - [11:8]:  Supply voltage (VHS) 0x1 (range: 2.7-3.6V)
       --  - [7:0]:   Check Pattern (recommended 0xAA)
       serial.put_line ("CMD8"); 
       send_command (CMD8, 16#1AA#, SHORT_RESPONSE, sdio_status, success);
-      if not success then
-         serial.put_line ("error"); 
-      end if;
 
-      -- ACMD41 is application specific command; therefore APP_CMD (CMD55)
-      -- shall always precede ACMD41
-      serial.put_line ("CMD55");
-      send_command (CMD55, 0, SHORT_RESPONSE, sdio_status, success);
-
-      if not success then
-         serial.put_line ("error");
-      else
-         card_status := to_card_status (get_short_response);
-         if not card_status.APP_CMD or
-            not card_status.READY_FOR_DATA 
-         then
-            serial.put_line ("unexpected error");
-         end if;
+      if not success or
+         get_short_response /= 16#1AA# 
+      then
+         goto bad_return;
       end if;
 
       -- Initialization Command (ACMD41)
       serial.put_line ("ACMD41");
 
-      declare
+      for i in 1 .. 100 loop
+         sd_card.ocr :=
+           (VDD_3_DOT_3 => true, CCS => 1, power_up => 0,
+            others => <>);
 
-         function to_sdio_arg is new ada.unchecked_conversion
-           (sd.t_OCR, t_SDIO_ARG);
+         -- ACMD41 expect an R3 response : CRC and RESPCMD must be ignored
+         send_app_command
+           (ACMD41, to_sdio_arg (sd_card.ocr), SHORT_RESPONSE, sdio_status,
+            success);
 
-         function to_ocr is new ada.unchecked_conversion
-           (t_short_response, sd.t_OCR);
+         sd_card.ocr := sd.to_ocr (get_short_response);
+         exit when sd_card.ocr.power_up = 1;
+      end loop;
 
-         arg : sd.t_OCR := (vdd_3_dot_3 => true, CCS => 1, others => <>);
-      begin
+      if sd_card.ocr.power_up /= 1 then
+         goto bad_return;
+      end if;
 
-         send_command
-           --(ACMD41, to_sdio_arg (arg), SHORT_RESPONSE, sdio_status, success);
-           (ACMD41, 16#8010_0000#, SHORT_RESPONSE, sdio_status, success);
+      if sd_card.ocr.CCS = 1 then
+         serial.put_line ("CCS = 1");
+      end if;
 
-         if not success then
-            serial.put_line ("error"); 
-         end if;
+      -- Asks any card to send the CID numbers on the CMD line (CMD2)
+      serial.put_line ("CMD2"); 
+      send_command (CMD2, 0, LONG_RESPONSE, sdio_status, success);
 
-         arg := to_ocr (get_short_response);
+      if not success then
+         goto bad_return;
+      end if;
+         
+      sd_card.cid := sd.to_cid (get_long_response);
 
-         if arg.power_up = 1 then
-            serial.put_line ("valid voltage");
-         end if;
+      -- Ask the card to publish a new relative RCA address (CMD3)
+      serial.put_line ("CMD3"); 
+      send_command (CMD3, 0, SHORT_RESPONSE, sdio_status, success);
 
-      end;
+      sd_card.rca := sd.to_rca (get_short_response);
 
+      if not success then
+         goto bad_return;
+      end if;
 
+      serial.put_line ("SD card initialized");
+      return;
+
+      -- Now use the card to nominal speed
+      delay until ada.real_time.clock + ada.real_time.microseconds (1);
+      periphs.SDIO_CARD.CLKCR.CLKDIV   := 0;
+
+   <<bad_return>>
+      serial.put_line ("SD card initialization failed!");
+      return;
 
    end initialize;
 
@@ -177,16 +212,16 @@ package body stm32f4.sdio is
       delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       -- /!\ RM0090, p. 1025, 1064-1065
-      -- . SDIO adapter clock (SDIOCLK = 48 MHz)
+      -- . SDIO adapter clock (SDIOCLK) = 48 MHz
       -- . CLKDIV defines the divide factor between the input clock
-      --   (SDIOCLK) and the output clock (SDIO_CK): 
+      --   (SDIOCLK) and the output clock (SDIO_CK) : 
       --      SDIO_CK frequency = SDIOCLK / [CLKDIV + 2]
       -- . While the SD/SDIO card or MultiMediaCard is in identification
       --   mode, the SDIO_CK frequency must be less than 400 kHz.
       periphs.SDIO_CARD.CLKCR.CLKDIV   := 118;
 
       -- Default bus mode: SDIO_D0 used
-      periphs.SDIO_CARD.CLKCR.WIDBUS   := WIDBUS_1WIDE_MODE;
+      periphs.SDIO_CARD.CLKCR.WIDBUS   := WIDBUS_4WIDE_MODE;
 
       -- The HW flow control functionality is used to avoid FIFO underrun
       -- and overrun errors 
@@ -260,10 +295,10 @@ package body stm32f4.sdio is
         (t_SDIO_RESPx, word);
       function to_word is new ada.unchecked_conversion
         (t_SDIO_RESPCMD, word);
+      cmd : t_SDIO_CMD;
    begin
 
-      -- SDIO card host doesn't send a command yet
-      periphs.SDIO_CARD.CMD.CPSMEN     := 0;
+      cmd := periphs.SDIO_CARD.CMD;
 
       -- Clear status flags (cf. default value)
       periphs.SDIO_CARD.ICR  := (others => <>);
@@ -272,12 +307,13 @@ package body stm32f4.sdio is
       periphs.SDIO_CARD.MASK := to_mask (0);
 
       -- Set the command parameters
-      periphs.SDIO_CARD.CMD.CMDINDEX   := cmd_index;
-      periphs.SDIO_CARD.CMD.WAITRESP   := response_type;
-      periphs.SDIO_CARD.ARG            := argument;
+      periphs.SDIO_CARD.ARG   := argument;
+      cmd.CMDINDEX            := cmd_index;
+      cmd.WAITRESP            := response_type;
+      cmd.CPSMEN              := 1;
 
       -- SDIO card host enabled to send a command
-      periphs.SDIO_CARD.CMD.CPSMEN     := 1;
+      periphs.SDIO_CARD.CMD   := cmd;
 
       -- Block till we get a response
       if response_type = NO_RESPONSE or
@@ -327,6 +363,36 @@ package body stm32f4.sdio is
       success := true;
       
    end send_command;
+
+
+   procedure send_app_command
+     (cmd_index      : in  t_cmd_index;
+      argument       : in  t_SDIO_ARG;
+      response_type  : in  t_waitresp;
+      status         : out t_SDIO_STA;
+      success        : out boolean)
+   is
+      card_status : sd.t_card_status;
+   begin
+
+      send_command (CMD55, 0, SHORT_RESPONSE, status, success);
+
+      if not success then
+         serial.put_line ("error: CMD55");
+         return;
+      end if;
+
+      card_status := sd.to_card_status (get_short_response);
+      if not card_status.APP_CMD or
+         not card_status.READY_FOR_DATA 
+      then
+         serial.put_line ("unexpected error: CMD55");
+         return;
+      end if;
+
+      send_command (cmd_index, argument, response_type, status, success);
+
+   end send_app_command;
 
 
    function get_short_response return t_short_response

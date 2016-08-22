@@ -353,58 +353,6 @@ package stm32f4.sdio is
       FIFO     at 16#80# range 0 .. 32*32 - 1;
    end record;
 
---   ---------------------------------------
---   -- Command path state machine (CPSM) --
---   ---------------------------------------
---
---   type t_CPSM is
---     (CPSM_IDLE,
---      CPSM_PEND,
---      CPSM_SEND,
---      CPSM_WAIT,
---      CPSM_RECEIVE,
---      CPSM_WAIT_CPL);
---
---   CPSM : t_CPSM;
---
---   ------------------------------------
---   -- Data path state machine (DPSM) --
---   ------------------------------------
---
---   type t_DPSM is
---     (DPSM_IDLE,
---      DPSM_BUSY,
---      DPSM_SEND,
---      DPSM_WAIT_S,
---      DPSM_WAIT_R,
---      DPSM_RECEIVE,
---      DPSM_READ_WAIT);
---
---   DPSM : t_DPSM;
---
---   ------------------
---   -- SDIO command --
---   ------------------
---
---   type t_SDIO_command is record
---      end_bit        : bit    := 1;
---      CRC7           : uint7;
---      argument       : word;
---      index          : t_cmd_index;
---      transmission   : bit    := 1;
---      start_bit      : bit    := 0;
---   end record
---      with size => 48;
---
---   for t_SDIO_command use record
---      end_bit        at 0 range 0 .. 0;
---      CRC7           at 0 range 1 .. 7;
---      argument       at 0 range 8 .. 39;
---      index          at 0 range 40 .. 45;
---      transmission   at 0 range 46 .. 46;
---      start_bit      at 0 range 47 .. 47;
---   end record;
-
    --------------------
    -- SDIO responses --
    --------------------
@@ -418,54 +366,6 @@ package stm32f4.sdio is
       RESP1 : t_SDIO_RESPx;
    end record
       with pack;
-
-   type t_card_state is
-     (CARD_STATE_IDLE, CARD_STATE_READY, CARD_STATE_IDENT, CARD_STATE_STBY,
-      CARD_STATE_TRAN, CARD_STATE_DATA, CARD_STATE_RCV, CARD_STATE_PRG,
-      CARD_STATE_DIS)
-      with size => 4;
-   for t_card_state use
-     (CARD_STATE_IDLE   => 0,
-      CARD_STATE_READY  => 1,
-      CARD_STATE_IDENT  => 2,
-      CARD_STATE_STBY   => 3,
-      CARD_STATE_TRAN   => 4,
-      CARD_STATE_DATA   => 5,
-      CARD_STATE_RCV    => 6,
-      CARD_STATE_PRG    => 7,
-      CARD_STATE_DIS    => 8);
-
-   type t_card_status is record
-      reserved_0_2      : uint3;
-      AKE_SEQ_ERROR     : bit; -- Sequence of the authentication process error
-      reserved_4        : bit;
-      APP_CMD           : boolean; -- The card will expect ACMD
-      reserved_6_7      : uint2;
-      READY_FOR_DATA    : boolean;
-      CURRENT_STATE     : t_card_state;
-      ERASE_RESET       : bit;
-      CARD_ECC_DISABLED : bit;
-      WP_ERASE_SKIP     : bit;
-      CSD_OVERWRITE     : bit;
-      reserved_17_18    : uint2;
-      ERROR             : bit;
-      CC_ERROR          : bit;
-      CARD_ECC_FAILED   : bit;
-      ILLEGAL_COMMAND   : bit;
-      COM_CRC_ERROR     : bit;
-      LOCK_UNLOCK_FAILED   : bit;
-      CARD_IS_LOCKED    : bit;
-      WP_VIOLATION      : bit;
-      ERASE_PARAM       : bit;
-      ERASE_SEQ_ERROR   : bit;
-      BLOCK_LEN_ERROR   : bit;
-      ADDRESS_ERROR     : bit;
-      OUT_OF_RANGE      : bit;
-   end record
-      with pack, size => 32;
-
-   function to_card_status is new ada.unchecked_conversion
-     (t_SDIO_RESPx, t_card_status);
 
    -------------------
    -- SDIO commands --
@@ -481,6 +381,7 @@ package stm32f4.sdio is
    CMD2     : constant t_cmd_index := 2;
    CMD3     : constant t_cmd_index := 3;
    CMD5     : constant t_cmd_index := 5;
+   CMD7     : constant t_cmd_index := 7;
    CMD8     : constant t_cmd_index := 8;
    CMD15    : constant t_cmd_index := 15;
    ACMD41   : constant t_cmd_index := 41;
@@ -506,6 +407,13 @@ package stm32f4.sdio is
    procedure set_dma;
 
    procedure send_command
+     (cmd_index      : in  t_cmd_index;
+      argument       : in  t_SDIO_ARG;
+      response_type  : in  t_waitresp;
+      status         : out t_SDIO_STA;
+      success        : out boolean);
+
+   procedure send_app_command
      (cmd_index      : in  t_cmd_index;
       argument       : in  t_SDIO_ARG;
       response_type  : in  t_waitresp;

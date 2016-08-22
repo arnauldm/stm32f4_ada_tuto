@@ -27,8 +27,7 @@ begin
 
    -- Endless loop
    loop
-      serial.put ("counter: " & integer'image (counter));
-      serial.new_line;
+      serial.put ('.');
       counter := counter + 1;
       delay until ada.real_time.clock + period;
    end loop;
