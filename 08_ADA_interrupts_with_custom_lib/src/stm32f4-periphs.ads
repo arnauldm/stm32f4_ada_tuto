@@ -15,20 +15,16 @@ package stm32f4.periphs is
    --------------------
 
    NVIC_Base   : constant address := system'to_address (16#E000_E100#);
-
    DMA2_Base   : constant address := system'to_address (16#4002_6400#); -- AHB1
    DMA1_Base   : constant address := system'to_address (16#4002_6000#); -- AHB1
-
    RCC_Base    : constant address := system'to_address (16#4002_3800#); -- AHB1
-
    GPIOD_Base  : constant address := system'to_address (16#4002_0C00#); -- AHB1
    GPIOC_Base  : constant address := system'to_address (16#4002_0800#); -- AHB1
    GPIOB_Base  : constant address := system'to_address (16#4002_0400#); -- AHB1
    GPIOA_Base  : constant address := system'to_address (16#4002_0000#); -- AHB1
-
    EXTI_Base   : constant address := system'to_address (16#4001_3C00#); -- APB2
    SYSCFG_Base : constant address := system'to_address (16#4001_3800#); -- APB2
-
+   SDIO_Base   : constant address := system'to_address (16#4001_2C00#); -- APB2
    USART6_Base : constant address := system'to_address (16#4001_1400#); -- APB2
    USART1_Base : constant address := system'to_address (16#4001_1000#); -- APB2
    UART5_Base  : constant address := system'to_address (16#4000_5000#); -- APB1
@@ -96,8 +92,18 @@ package stm32f4.periphs is
 
    PA0   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOA'access, 0);
 
+   PB6   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 6);
+   PB7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 7);
+   PB8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 8);
+   PB9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 9);
+
    PC6   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 6);
    PC7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 7);
+   PC8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 8);
+   PC9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 9);
+   PC10   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 10);
+   PC11   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 11);
+   PC12   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 12);
 
    PD12  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 12);
    PD13  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 13);
@@ -114,5 +120,19 @@ package stm32f4.periphs is
    LED_BLUE    : constant stm32f4.gpio.t_GPIO_pin  := PD15;
 
    BLUE_BUTTON : constant stm32f4.gpio.t_GPIO_pin  := PA0;
+
+   ----------
+   -- SDIO --
+   ----------
+
+   SDIO_D4  : constant stm32f4.gpio.t_GPIO_pin  := PB8;
+   SDIO_D5  : constant stm32f4.gpio.t_GPIO_pin  := PB9;
+   SDIO_D6  : constant stm32f4.gpio.t_GPIO_pin  := PC6;
+   SDIO_D7  : constant stm32f4.gpio.t_GPIO_pin  := PC7;
+   SDIO_D0  : constant stm32f4.gpio.t_GPIO_pin  := PC8;
+   SDIO_D1  : constant stm32f4.gpio.t_GPIO_pin  := PC9;
+   SDIO_D2  : constant stm32f4.gpio.t_GPIO_pin  := PC10;
+   SDIO_D3  : constant stm32f4.gpio.t_GPIO_pin  := PC11;
+   SDIO_CK  : constant stm32f4.gpio.t_GPIO_pin  := PC12;
 
 end stm32f4.periphs;

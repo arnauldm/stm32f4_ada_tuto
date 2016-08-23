@@ -8,12 +8,16 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
 
 package body serial is
 
+   USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
+   TX_PIN   : stm32f4.gpio.t_GPIO_pin renames periphs.PB6;
+   RX_PIN   : stm32f4.gpio.t_GPIO_pin renames periphs.PB7;
+
    procedure initialize
    is
    begin
 
       ------------------------------------------------------------------
-      -- USART6 is configured with PC6 (tx) and PC7 (rx) pins
+      -- USART1 is configured with PB6 (tx) and PB7 (rx) pins
       -- See STM32F407 User Manual, p. 20-23 for every possibilities
       ------------------------------------------------------------------
 
@@ -21,33 +25,33 @@ package body serial is
       -- Enable clocks
       --
 
-      periphs.RCC.AHB1ENR.GPIOCEN  := 1;
-      periphs.RCC.APB2ENR.USART6EN := 1;
+      periphs.RCC.AHB1ENR.GPIOBEN  := 1;
+      periphs.RCC.APB2ENR.USART1EN := 1;
       
       --
       -- Configure TX and RX pins
       --
       gpio.configure
-        (periphs.PC6,
+        (TX_PIN,
          gpio.MODE_AF,
          gpio.PUSH_PULL,
          gpio.SPEED_HIGH,
          gpio.PULL_UP);
 
       gpio.set_alternate_function
-        (periphs.PC6,
-         gpio.GPIO_AF_USART6);
+        (TX_PIN,
+         gpio.GPIO_AF_USART1);   -- /!\
 
       gpio.configure
-        (periphs.PC7,
+        (RX_PIN,
          gpio.MODE_AF,
          gpio.PUSH_PULL,
          gpio.SPEED_HIGH,
          gpio.PULL_UP);
 
       gpio.set_alternate_function
-        (periphs.PC7,
-         gpio.GPIO_AF_USART6);
+        (RX_PIN,
+         gpio.GPIO_AF_USART1);   -- /!\
 
       --
       -- Configure USART
@@ -63,30 +67,28 @@ package body serial is
       begin
 
          APB2_clock  := System.STM32.System_Clocks.PCLK2;
-
          mantissa    := APB2_clock / (16 * baudrate);
-
          fraction    := ((APB2_clock * 25) / (4 * baudrate)) - mantissa * 100;
          fraction    := (fraction * 16) / 100;
 
-         periphs.USART6.BRR.DIV_Mantissa   := uint12 (mantissa);
-         periphs.USART6.BRR.DIV_Fraction   := uint4  (fraction);
+         USARTx.BRR.DIV_Mantissa   := uint12 (mantissa);
+         USARTx.BRR.DIV_Fraction   := uint4  (fraction);
 
       end;
 
-      periphs.USART6.CR1.UE     := 1;  -- USART enable
-      periphs.USART6.CR1.M      := 1;  -- 1 start bit, 9 data bits
-      periphs.USART6.CR2.STOP   := usart.STOP_1;
-      periphs.USART6.CR1.TE     := 1; -- Transmitter enable
+      USARTx.CR1.UE     := 1;  -- USART enable
+      USARTx.CR1.M      := 1;  -- 1 start bit, 9 data bits
+      USARTx.CR2.STOP   := usart.STOP_1;
+      USARTx.CR1.TE     := 1; -- Transmitter enable
 
       -- Odd parity
-      periphs.USART6.CR1.PCE    := 1; -- Parity control enable
-      periphs.USART6.CR1.PS     := 1; -- Parity selection
+      USARTx.CR1.PCE    := 1; -- Parity control enable
+      USARTx.CR1.PS     := 1; -- Parity selection
                                               -- O: even, 1: odd
 
       -- No flow control
-      periphs.USART6.CR3.RTSE := 0;
-      periphs.USART6.CR3.CTSE := 0;
+      USARTx.CR3.RTSE := 0;
+      USARTx.CR3.CTSE := 0;
 
       ENABLED := true;
 
@@ -97,9 +99,9 @@ package body serial is
    is
    begin
       loop
-         exit when periphs.USART6.SR.TC = 1;
+         exit when USARTx.SR.TC = 1;
       end loop;
-      periphs.USART6.DR.data := character'pos (c);
+      USARTx.DR.data := character'pos (c);
    end put;
 
 
