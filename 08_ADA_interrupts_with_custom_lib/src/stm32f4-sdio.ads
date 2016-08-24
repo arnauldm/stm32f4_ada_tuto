@@ -152,6 +152,30 @@ package stm32f4.sdio is
      (MODE_BLOCK  => 0,
       MODE_STREAM => 1);
 
+   type t_blocksize is
+     (BLOCK_1BYTE, BLOCK_2BYTES, BLOCK_4BYTES, BLOCK_8BYTES, BLOCK_16BYTES,
+      BLOCK_32BYTES, BLOCK_64BYTES, BLOCK_128BYTES, BLOCK_256BYTES,
+      BLOCK_512BYTES, BLOCK_1KBYTE, BLOCK_2KBYTES, BLOCK_4KBYTES,
+      BLOCK_8KBYTES, BLOCK_16KBYTES)
+      with size => 4;
+
+   for t_blocksize use
+     (BLOCK_1BYTE    => 0,
+      BLOCK_2BYTES   => 1,
+      BLOCK_4BYTES   => 2,
+      BLOCK_8BYTES   => 3,
+      BLOCK_16BYTES  => 4,
+      BLOCK_32BYTES  => 5,
+      BLOCK_64BYTES  => 6,
+      BLOCK_128BYTES => 7,
+      BLOCK_256BYTES => 8,
+      BLOCK_512BYTES => 9,
+      BLOCK_1KBYTE   => 10,
+      BLOCK_2KBYTES  => 11,
+      BLOCK_4KBYTES  => 12,
+      BLOCK_8KBYTES  => 13,
+      BLOCK_16KBYTES => 14);
+
    type t_rwmode is
      (RWMOD_SDIO_D2, RWMOD_SDIO_CK) with size => 1;
    for t_rwmode use
@@ -163,7 +187,7 @@ package stm32f4.sdio is
       DTDIR       : t_dtdir;  -- Data transfer direction selection
       DTMODE      : t_dtmode; -- Data transfer mode selection
       DMAEN       : bit;      -- DMA enable bit
-      DBLOCKSIZE  : uint4;    -- Data block size (2^n)
+      DBLOCKSIZE  : t_blocksize; -- Data block size (2^n)
       RWSTART     : bit;      -- Read wait start
       RWSTOP      : bit;      -- Read wait stop
       RWMOD       : t_rwmode; -- Read wait mode
@@ -191,31 +215,31 @@ package stm32f4.sdio is
    -------------------------------------
 
    type t_SDIO_STA is record
-      CCRCFAIL : bit;   -- Command response received (CRC check failed)
-      DCRCFAIL : bit;   -- Data block sent/received (CRC check failed)
-      CTIMEOUT : bit;   -- Command response timeout
-      DTIMEOUT : bit;   -- Data timeout
-      TXUNDERR : bit;   -- Transmit FIFO underrun error
-      RXOVERR  : bit;   -- Received FIFO overrun error
-      CMDREND  : bit;   -- Command response received (CRC check passed)
-      CMDSENT  : bit;   -- Command sent (no response required)
-      DATAEND  : bit;   -- Data end (data counter, SDIDCOUNT, is zero)
-      STBITERR : bit;   -- Start bit not detected on all data signals in
-                        -- wide bus mode
-      DBCKEND  : bit;   -- Data block sent/received (CRC check passed)
-      CMDACT   : bit;   -- Command transfer in progress
-      TXACT    : bit;   -- Data transmit in progress
-      RXACT    : bit;   -- Data receive in progress
-      TXFIFOHE : bit;   -- Transmit FIFO half empty
-      RXFIFOHF : bit;   -- Receive FIFO half full
-      TXFIFOF  : bit;   -- Transmit FIFO full
-      RXFIFOF  : bit;   -- Receive FIFO full
-      TXFIFOE  : bit;   -- Transmit FIFO empty
-      RXFIFOE  : bit;   -- Receive FIFO empty
-      TXDAVL   : bit;   -- Data available in transmit FIFO
-      RXDAVL   : bit;   -- Data available in receive FIFO
-      SDIOIT   : bit;   -- SDIO interrupt received
-      CEATAEND : bit;   -- CE-ATA command completion signal received for CMD61
+      CCRCFAIL : boolean;  -- Command response received (CRC check failed)
+      DCRCFAIL : boolean;  -- Data block sent/received (CRC check failed)
+      CTIMEOUT : boolean;  -- Command response timeout
+      DTIMEOUT : boolean;  -- Data timeout
+      TXUNDERR : boolean;  -- Transmit FIFO underrun error
+      RXOVERR  : boolean;  -- Received FIFO overrun error
+      CMDREND  : boolean;  -- Command response received (CRC check passed)
+      CMDSENT  : boolean;  -- Command sent (no response required)
+      DATAEND  : boolean;  -- Data end (data counter, SDIDCOUNT, is zero)
+      STBITERR : boolean;  -- Start bit not detected on all data signals in
+                           -- wide bus mode
+      DBCKEND  : boolean;  -- Data block sent/received (CRC check passed)
+      CMDACT   : boolean;  -- Command transfer in progress
+      TXACT    : boolean;  -- Data transmit in progress
+      RXACT    : boolean;  -- Data receive in progress
+      TXFIFOHE : boolean;  -- Transmit FIFO half empty
+      RXFIFOHF : boolean;  -- Receive FIFO half full
+      TXFIFOF  : boolean;  -- Transmit FIFO full
+      RXFIFOF  : boolean;  -- Receive FIFO full
+      TXFIFOE  : boolean;  -- Transmit FIFO empty
+      RXFIFOE  : boolean;  -- Receive FIFO empty
+      TXDAVL   : boolean;  -- Data available in transmit FIFO
+      RXDAVL   : boolean;  -- Data available in receive FIFO
+      SDIOIT   : boolean;  -- SDIO interrupt received
+      CEATAEND : boolean;  -- CE-ATA command completion signal received for CMD61
       reserved_24_31 : byte;
    end record
       with pack, size => 32, volatile_full_access;
@@ -353,20 +377,6 @@ package stm32f4.sdio is
       FIFO     at 16#80# range 0 .. 32*32 - 1;
    end record;
 
-   --------------------
-   -- SDIO responses --
-   --------------------
-
-   subtype t_short_response is t_SDIO_RESPx;
-   
-   type t_long_response is record
-      RESP4 : t_SDIO_RESPx;
-      RESP3 : t_SDIO_RESPx;
-      RESP2 : t_SDIO_RESPx;
-      RESP1 : t_SDIO_RESPx;
-   end record
-      with pack;
-
    -------------------
    -- SDIO commands --
    -------------------
@@ -381,10 +391,13 @@ package stm32f4.sdio is
    CMD2     : constant t_cmd_index := 2;
    CMD3     : constant t_cmd_index := 3;
    CMD5     : constant t_cmd_index := 5;
+   ACMD6    : constant t_cmd_index := 6;
    CMD7     : constant t_cmd_index := 7;
    CMD8     : constant t_cmd_index := 8;
+   CMD13    : constant t_cmd_index := 13;
    CMD15    : constant t_cmd_index := 15;
    ACMD41   : constant t_cmd_index := 41;
+   ACMD51   : constant t_cmd_index := 51;
    CMD52    : constant t_cmd_index := 52;
    CMD55    : constant t_cmd_index := 55;
 
@@ -392,10 +405,27 @@ package stm32f4.sdio is
    CMD_ALL_SEND_CID        : t_cmd_index renames CMD2;
    CMD_SEND_RELATIVE_ADDR  : t_cmd_index renames CMD3;
    CMD_IO_SEND_OP_COND     : t_cmd_index renames CMD5;
+   CMD_SET_BUS_WIDTH       : t_cmd_index renames ACMD6;
+   CMD_SEND_STATUS         : t_cmd_index renames CMD13;
    CMD_GO_INACTIVE_STATE   : t_cmd_index renames CMD15;
    CMD_SD_APP_OP_COND      : t_cmd_index renames ACMD41;
    CMD_IO_RW_DIRECT        : t_cmd_index renames CMD52;
+   CMD_SEND_SCR            : t_cmd_index renames ACMD51;
    CMD_APP_CMD             : t_cmd_index renames CMD55;
+
+   --------------------
+   -- SDIO responses --
+   --------------------
+
+   subtype t_short_response is t_SDIO_RESPx;
+   
+   type t_long_response is record
+      RESP4 : t_SDIO_RESPx;
+      RESP3 : t_SDIO_RESPx;
+      RESP2 : t_SDIO_RESPx;
+      RESP1 : t_SDIO_RESPx;
+   end record
+      with pack;
 
    ---------------
    -- Utilities --
@@ -403,7 +433,10 @@ package stm32f4.sdio is
    
    procedure initialize;
 
+   -- Set up GPIO pins, SDIO clock and also set up interrupt handler
    procedure low_level_init;
+
+   -- Enable DMA
    procedure set_dma;
 
    procedure send_command
@@ -414,7 +447,8 @@ package stm32f4.sdio is
       success        : out boolean);
 
    procedure send_app_command
-     (cmd_index      : in  t_cmd_index;
+     (cmd55_arg      : in  t_SDIO_ARG;
+      cmd_index      : in  t_cmd_index;
       argument       : in  t_SDIO_ARG;
       response_type  : in  t_waitresp;
       status         : out t_SDIO_STA;

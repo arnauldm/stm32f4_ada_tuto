@@ -74,6 +74,12 @@ package stm32f4.sd is
    -- Operation conditions register (OCR) --
    -----------------------------------------
 
+   -- Card Capacity Status
+   type t_CCS is (SDSC, SDHC_or_SDXC) with size => 1;
+   for t_CCS use
+     (SDSC           => 0,
+      SDHC_or_SDXC   => 1);
+
    type t_OCR is record
       reserved_0_7   : byte      := 0;
       reserved_8_14  : uint7     := 0;
@@ -88,10 +94,9 @@ package stm32f4.sd is
       VDD_3_DOT_6    : boolean   := false;
       VDD_1_DOT_8    : boolean   := false;
       reserved_25_28 : uint4     := 0;
-      UHS_II_status  : bit := 0;
-      CCS            : bit := 0; -- 0: SDSC, 1: SDHC or SDXC
-      power_up       : bit := 0; -- set if the card power up procedure has been
-                                 -- finished
+      UHS_II_status  : bit       := 0;
+      CCS            : t_CCS     := SDSC;
+      power_up       : bit       := 0;
    end record
       with size => 32;
 
@@ -159,7 +164,7 @@ package stm32f4.sd is
    -- Relative Card Address (RCA) --
    ---------------------------------
 
-   type t_RCA is record
+   type t_RCA_response is record
       reserved_0_2      : uint3;
       AKE_SEQ_ERROR     : bit; -- Sequence of the authentication process error
       reserved_4        : bit;
@@ -170,11 +175,42 @@ package stm32f4.sd is
       ERROR             : bit; -- General/unknown error
       ILLEGAL_COMMAND   : bit; -- Illegal command
       COM_CRC_ERROR     : bit; -- CRC check of the previous command failed
-      ID                : short; -- RCA
+      RCA               : short;
    end record
       with pack, size => 32;
 
-   function to_rca is new ada.unchecked_conversion
-     (sdio.t_short_response, t_RCA);
+   type t_RCA is record
+      stuff : short := 0;
+      RCA   : short := 0;
+   end record
+      with pack, size => 32;
+
+   function to_rca_response is new ada.unchecked_conversion
+     (sdio.t_short_response, t_RCA_response);
+
+   function to_sdio_arg is new ada.unchecked_conversion
+     (t_RCA, sdio.t_SDIO_ARG);
+
+   -- RCA special value reserved to set all cards
+   ALL_CARDS   : constant t_RCA := (others => 0);
+
+   ------------------------------------------
+   -- SD CARD Configuration Register (SCR) --
+   ------------------------------------------
+
+   type t_SCR is record
+      reserved_0_31  : word;
+      CMD_SUPPORT    : uint4;
+      reserved_36_41 : uint6;
+      SD_SPEC4       : bit;   -- Spec. Version 4.00 or higher
+      EX_SECURITY    : uint4; -- Extended security support
+      SD_SPEC3       : bit;   -- Spec. Version 3.00 or higher
+      SD_BUS_WIDTHS  : uint4; -- DAT Bus widths supported
+      SD_SECURITY    : uint3; -- CPRM Security Support
+      DATA_STAT_AFTER_ERASE   : bit;
+      SD_SPEC        : uint4; -- Spec. Version 1.0 to 2.00 or higher
+      SCR_STRUCTURE  : uint4;
+   end record
+      with pack, size => 64;
 
 end stm32f4.sd;

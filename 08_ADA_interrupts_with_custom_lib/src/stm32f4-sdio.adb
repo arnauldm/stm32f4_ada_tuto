@@ -10,6 +10,7 @@ with stm32f4.rcc;
 with stm32f4.nvic;
 with stm32f4.dma.interrupts;
 with stm32f4.sd;
+   use type stm32f4.sd.t_CCS;
 with serial;
 
 package body stm32f4.sdio is
@@ -36,9 +37,10 @@ package body stm32f4.sdio is
          Ada.Interrupts.Names.DMA2_Stream6_Interrupt);
 
    type t_sd_card is record
-      ocr   : sd.t_OCR; -- Operating Condition Register
-      cid   : sd.t_CID; -- Card IDentification register 
-      rca   : sd.t_RCA; -- Relative Card Address
+      ccs         : sd.t_CCS; -- Card Capacity Status
+      ocr         : sd.t_OCR; -- Operating Condition Register
+      cid         : sd.t_CID; -- Card IDentification register 
+      rca         : sd.t_RCA; -- Relative Card Address
    end record;
 
    sd_card : t_sd_card;
@@ -57,9 +59,9 @@ package body stm32f4.sdio is
 
    begin
 
-      ------------------------
-      -- Low level settings --
-      ------------------------
+      --
+      -- Low level settings 
+      --
 
       -- Set up GPIO pins, SDIO clock and also set up interrupt handler
       low_level_init;
@@ -67,9 +69,9 @@ package body stm32f4.sdio is
       -- Enable DMA
       set_dma;
 
-      ---------------------------------
-      -- Card identification process --
-      ---------------------------------
+      --
+      -- Card identification process 
+      --
 
       -- Go idle state (CMD0)
       serial.put_line ("CMD0");
@@ -88,9 +90,14 @@ package body stm32f4.sdio is
       serial.put_line ("CMD8"); 
       send_command (CMD8, 16#1AA#, SHORT_RESPONSE, sdio_status, success);
 
-      if not success or
-         get_short_response /= 16#1AA# 
-      then
+      if not success then
+         serial.put_line
+           ("No SD memory card OR v1.x SD memory card OR voltage mismatch");
+         goto bad_return;
+      end if;
+
+      if get_short_response /= 16#1AA# then
+         serial.put_line ("Unusable card");
          goto bad_return;
       end if;
 
@@ -99,24 +106,33 @@ package body stm32f4.sdio is
 
       for i in 1 .. 100 loop
          sd_card.ocr :=
-           (VDD_3_DOT_3 => true, CCS => 1, power_up => 0,
+           (VDD_3_DOT_3 => true, CCS => sd.SDHC_or_SDXC, power_up => 0,
             others => <>);
 
-         -- ACMD41 expect an R3 response : CRC and RESPCMD must be ignored
+         -- ACMD41 expect an R3 response : failed CRC and wrong RESPCMD must be
+         -- ignored!
          send_app_command
-           (ACMD41, to_sdio_arg (sd_card.ocr), SHORT_RESPONSE, sdio_status,
-            success);
+           (sd.to_sdio_arg (sd.ALL_CARDS),
+            ACMD41, to_sdio_arg (sd_card.ocr), SHORT_RESPONSE,
+            sdio_status, success);
 
          sd_card.ocr := sd.to_ocr (get_short_response);
          exit when sd_card.ocr.power_up = 1;
       end loop;
 
       if sd_card.ocr.power_up /= 1 then
+         serial.put_line ("Unusable card");
          goto bad_return;
       end if;
 
-      if sd_card.ocr.CCS = 1 then
-         serial.put_line ("CCS = 1");
+      sd_card.ccs := sd_card.ocr.CCS;
+
+      if sd_card.ccs = sd.SDHC_or_SDXC then
+         serial.put_line
+           ("Ver2.00 or later High Capacity (SDHC) or Extended Capacity SD Memory Card (SDXC)");
+      else
+         serial.put_line
+           ("Ver2.00 or later Standard Capacity SD Memory Card (SDSC)");
       end if;
 
       -- Asks any card to send the CID numbers on the CMD line (CMD2)
@@ -133,18 +149,46 @@ package body stm32f4.sdio is
       serial.put_line ("CMD3"); 
       send_command (CMD3, 0, SHORT_RESPONSE, sdio_status, success);
 
-      sd_card.rca := sd.to_rca (get_short_response);
+      declare
+         rca_resp : constant sd.t_RCA_response :=
+            sd.to_rca_response (get_short_response);
+      begin
+         sd_card.rca := (0, rca_resp.RCA);
+      end;
 
       if not success then
          goto bad_return;
       end if;
 
-      serial.put_line ("SD card initialized");
-      return;
+      -- Select the SD card
+      serial.put_line ("CMD7"); 
+      send_command
+        (CMD7, sd.to_sdio_arg (sd_card.rca), SHORT_RESPONSE, sdio_status,
+         success);
+
+      if not success then
+         goto bad_return;
+      end if;
+
+      -- Defines the data bus width ('00'=1bit or '10'=4 bits bus) to be used
+      -- for data transfer.
+      serial.put_line ("ACMD6"); 
+      send_app_command
+        (sd.to_sdio_arg (sd_card.rca), ACMD6, 2#10#, SHORT_RESPONSE,
+         sdio_status, success);
+      
+      if not success then
+         goto bad_return;
+      end if;
 
       -- Now use the card to nominal speed
+      serial.put_line ("Change clock speed");
       delay until ada.real_time.clock + ada.real_time.microseconds (1);
       periphs.SDIO_CARD.CLKCR.CLKDIV   := 0;
+
+   <<ok_return>>
+      serial.put_line ("SD card initialized");
+      return;
 
    <<bad_return>>
       serial.put_line ("SD card initialization failed!");
@@ -220,8 +264,8 @@ package body stm32f4.sdio is
       --   mode, the SDIO_CK frequency must be less than 400 kHz.
       periphs.SDIO_CARD.CLKCR.CLKDIV   := 118;
 
-      -- Default bus mode: SDIO_D0 used
-      periphs.SDIO_CARD.CLKCR.WIDBUS   := WIDBUS_4WIDE_MODE;
+      -- Default bus mode: SDIO_D0 used (1 bit bus width)
+      periphs.SDIO_CARD.CLKCR.WIDBUS   := WIDBUS_1WIDE_MODE;
 
       -- The HW flow control functionality is used to avoid FIFO underrun
       -- and overrun errors 
@@ -278,9 +322,9 @@ package body stm32f4.sdio is
    end set_dma;
 
 
-   ------------------------
-   -- Command / Response --
-   ------------------------
+   ---------------------------------
+   -- Send command / Get response --
+   ---------------------------------
 
    procedure send_command
      (cmd_index      : in  t_cmd_index;
@@ -320,14 +364,14 @@ package body stm32f4.sdio is
          response_type = NO_RESPONSE2 
       then
          loop
-            exit when periphs.SDIO_CARD.STATUS.CMDSENT  = 1 or
-                      periphs.SDIO_CARD.STATUS.CTIMEOUT = 1;
+            exit when periphs.SDIO_CARD.STATUS.CMDSENT  or
+                      periphs.SDIO_CARD.STATUS.CTIMEOUT;
          end loop;
       else
          loop
-            exit when periphs.SDIO_CARD.STATUS.CMDREND  = 1 or
-                      periphs.SDIO_CARD.STATUS.CCRCFAIL = 1 or
-                      periphs.SDIO_CARD.STATUS.CTIMEOUT = 1;
+            exit when periphs.SDIO_CARD.STATUS.CMDREND  or
+                      periphs.SDIO_CARD.STATUS.CCRCFAIL or
+                      periphs.SDIO_CARD.STATUS.CTIMEOUT;
          end loop;
       end if;
 
@@ -343,14 +387,14 @@ package body stm32f4.sdio is
       end if;
 
       -- Timeout error
-      if periphs.SDIO_CARD.STATUS.CTIMEOUT = 1 then
+      if periphs.SDIO_CARD.STATUS.CTIMEOUT then
          serial.put_line ("timeout");
          success := false;
          return;
       end if;
 
       -- CRC fail
-      if periphs.SDIO_CARD.STATUS.CCRCFAIL = 1 then
+      if periphs.SDIO_CARD.STATUS.CCRCFAIL then
          if cmd_index = CMD1 or cmd_index = CMD5 then
             null;
          else
@@ -366,7 +410,8 @@ package body stm32f4.sdio is
 
 
    procedure send_app_command
-     (cmd_index      : in  t_cmd_index;
+     (cmd55_arg      : in  t_SDIO_ARG;
+      cmd_index      : in  t_cmd_index;
       argument       : in  t_SDIO_ARG;
       response_type  : in  t_waitresp;
       status         : out t_SDIO_STA;
@@ -375,7 +420,8 @@ package body stm32f4.sdio is
       card_status : sd.t_card_status;
    begin
 
-      send_command (CMD55, 0, SHORT_RESPONSE, status, success);
+      send_command
+        (CMD55, cmd55_arg, SHORT_RESPONSE, status, success);
 
       if not success then
          serial.put_line ("error: CMD55");
@@ -412,6 +458,7 @@ package body stm32f4.sdio is
       response.RESP4 := periphs.SDIO_CARD.RESP4;
       return response;
    end get_long_response;
+
 
    --------------
    -- Transfer --
@@ -517,10 +564,19 @@ package body stm32f4.sdio is
       end;
 
    end set_dma_transfer;
+
+
 --      set_dma_transfer (DMA_controller, stream_mem_to_sdio,
 --         dma.MEMORY_TO_PERIPHERAL, outbuf'access);
 --
 --      set_dma_transfer (DMA_controller, stream_sdio_to_mem,
 --         dma.PERIPHERAL_TO_MEMORY, inbuf'access);
+
+--      -- Get card status
+--      serial.put_line ("CMD13"); 
+--      send_command (CMD13, sd.to_sdio_arg (sd_card.rca), SHORT_RESPONSE,
+--         sdio_status, success);
+--      sd_card.card_status := sd.to_card_status (get_short_response);
+
 
 end stm32f4.sdio;
