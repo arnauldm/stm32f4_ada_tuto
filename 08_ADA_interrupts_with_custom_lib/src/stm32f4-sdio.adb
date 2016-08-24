@@ -37,10 +37,12 @@ package body stm32f4.sdio is
          Ada.Interrupts.Names.DMA2_Stream6_Interrupt);
 
    type t_sd_card is record
-      ccs         : sd.t_CCS; -- Card Capacity Status
-      ocr         : sd.t_OCR; -- Operating Condition Register
-      cid         : sd.t_CID; -- Card IDentification register 
-      rca         : sd.t_RCA; -- Relative Card Address
+      ccs   : sd.t_CCS;    -- Card Capacity Status
+      ocr   : sd.t_OCR;    -- Operating Condition Register
+      cid   : sd.t_CID;    -- Card IDentification register 
+      -- Relative Card Address (RCA) formatted to fit in the SDIO_ARG
+      -- register 
+      id    : t_SDIO_ARG;
    end record;
 
    sd_card : t_sd_card;
@@ -74,7 +76,7 @@ package body stm32f4.sdio is
       --
 
       -- Go idle state (CMD0)
-      serial.put_line ("CMD0");
+      serial.put_line ("GO_IDLE_STATE (CMD0)");
       send_command (CMD0, 0, NO_RESPONSE, sdio_status, success);
 
       if not success then
@@ -87,7 +89,7 @@ package body stm32f4.sdio is
       --  - [31:12]: reserved, shall be set to '0'
       --  - [11:8]:  Supply voltage (VHS) 0x1 (range: 2.7-3.6V)
       --  - [7:0]:   Check Pattern (recommended 0xAA)
-      serial.put_line ("CMD8"); 
+      serial.put_line ("SEND_IF_COND (CMD8)"); 
       send_command (CMD8, 16#1AA#, SHORT_RESPONSE, sdio_status, success);
 
       if not success then
@@ -102,7 +104,7 @@ package body stm32f4.sdio is
       end if;
 
       -- Initialization Command (ACMD41)
-      serial.put_line ("ACMD41");
+      serial.put_line ("SD_APP_OP_COND (ACMD41)");
 
       for i in 1 .. 100 loop
          sd_card.ocr :=
@@ -112,8 +114,7 @@ package body stm32f4.sdio is
          -- ACMD41 expect an R3 response : failed CRC and wrong RESPCMD must be
          -- ignored!
          send_app_command
-           (sd.to_sdio_arg (sd.ALL_CARDS),
-            ACMD41, to_sdio_arg (sd_card.ocr), SHORT_RESPONSE,
+           (0, ACMD41, to_sdio_arg (sd_card.ocr), SHORT_RESPONSE,
             sdio_status, success);
 
          sd_card.ocr := sd.to_ocr (get_short_response);
@@ -136,7 +137,7 @@ package body stm32f4.sdio is
       end if;
 
       -- Asks any card to send the CID numbers on the CMD line (CMD2)
-      serial.put_line ("CMD2"); 
+      serial.put_line ("ALL_SEND_CID (CMD2)"); 
       send_command (CMD2, 0, LONG_RESPONSE, sdio_status, success);
 
       if not success then
@@ -146,14 +147,15 @@ package body stm32f4.sdio is
       sd_card.cid := sd.to_cid (get_long_response);
 
       -- Ask the card to publish a new relative RCA address (CMD3)
-      serial.put_line ("CMD3"); 
+      serial.put_line ("SEND_RELATIVE_ADDR (CMD3)"); 
       send_command (CMD3, 0, SHORT_RESPONSE, sdio_status, success);
 
       declare
-         rca_resp : constant sd.t_RCA_response :=
-            sd.to_rca_response (get_short_response);
+         function to_sdio_arg is new ada.unchecked_conversion
+            (sd.t_RCA, t_SDIO_ARG);
+         rca : constant sd.t_RCA := sd.to_rca (get_short_response);
       begin
-         sd_card.rca := (0, rca_resp.RCA);
+         sd_card.id := to_sdio_arg (rca) and 16#FFFF_0000#;
       end;
 
       if not success then
@@ -161,10 +163,8 @@ package body stm32f4.sdio is
       end if;
 
       -- Select the SD card
-      serial.put_line ("CMD7"); 
-      send_command
-        (CMD7, sd.to_sdio_arg (sd_card.rca), SHORT_RESPONSE, sdio_status,
-         success);
+      serial.put_line ("SELECT_CARD (CMD7)"); 
+      send_command (CMD7, sd_card.id, SHORT_RESPONSE, sdio_status, success);
 
       if not success then
          goto bad_return;
@@ -172,10 +172,9 @@ package body stm32f4.sdio is
 
       -- Defines the data bus width ('00'=1bit or '10'=4 bits bus) to be used
       -- for data transfer.
-      serial.put_line ("ACMD6"); 
+      serial.put_line ("SET_BUS_WIDTH (ACMD6)"); 
       send_app_command
-        (sd.to_sdio_arg (sd_card.rca), ACMD6, 2#10#, SHORT_RESPONSE,
-         sdio_status, success);
+        (sd_card.id, ACMD6, 2#10#, SHORT_RESPONSE, sdio_status, success);
       
       if not success then
          goto bad_return;
@@ -412,7 +411,7 @@ package body stm32f4.sdio is
    procedure send_app_command
      (cmd55_arg      : in  t_SDIO_ARG;
       cmd_index      : in  t_cmd_index;
-      argument       : in  t_SDIO_ARG;
+      cmd_arg        : in  t_SDIO_ARG;
       response_type  : in  t_waitresp;
       status         : out t_SDIO_STA;
       success        : out boolean)
@@ -436,7 +435,7 @@ package body stm32f4.sdio is
          return;
       end if;
 
-      send_command (cmd_index, argument, response_type, status, success);
+      send_command (cmd_index, cmd_arg, response_type, status, success);
 
    end send_app_command;
 

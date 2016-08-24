@@ -405,6 +405,8 @@ package stm32f4.sdio is
    CMD_ALL_SEND_CID        : t_cmd_index renames CMD2;
    CMD_SEND_RELATIVE_ADDR  : t_cmd_index renames CMD3;
    CMD_IO_SEND_OP_COND     : t_cmd_index renames CMD5;
+   CMD_SELECT_CARD         : t_cmd_index renames CMD7;
+   CMD_SEND_IF_COND        : t_cmd_index renames CMD8;
    CMD_SET_BUS_WIDTH       : t_cmd_index renames ACMD6;
    CMD_SEND_STATUS         : t_cmd_index renames CMD13;
    CMD_GO_INACTIVE_STATE   : t_cmd_index renames CMD15;
@@ -449,13 +451,15 @@ package stm32f4.sdio is
    procedure send_app_command
      (cmd55_arg      : in  t_SDIO_ARG;
       cmd_index      : in  t_cmd_index;
-      argument       : in  t_SDIO_ARG;
+      cmd_arg        : in  t_SDIO_ARG;
       response_type  : in  t_waitresp;
       status         : out t_SDIO_STA;
       success        : out boolean);
 
    function get_short_response return t_short_response;
    function get_long_response return t_long_response;
+
+   procedure read_single_block;
 
    procedure set_dma_transfer
      (DMA_controller : in out dma.t_DMA_controller;

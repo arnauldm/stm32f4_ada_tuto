@@ -164,7 +164,7 @@ package stm32f4.sd is
    -- Relative Card Address (RCA) --
    ---------------------------------
 
-   type t_RCA_response is record
+   type t_RCA is record
       reserved_0_2      : uint3;
       AKE_SEQ_ERROR     : bit; -- Sequence of the authentication process error
       reserved_4        : bit;
@@ -179,20 +179,8 @@ package stm32f4.sd is
    end record
       with pack, size => 32;
 
-   type t_RCA is record
-      stuff : short := 0;
-      RCA   : short := 0;
-   end record
-      with pack, size => 32;
-
-   function to_rca_response is new ada.unchecked_conversion
-     (sdio.t_short_response, t_RCA_response);
-
-   function to_sdio_arg is new ada.unchecked_conversion
-     (t_RCA, sdio.t_SDIO_ARG);
-
-   -- RCA special value reserved to set all cards
-   ALL_CARDS   : constant t_RCA := (others => 0);
+   function to_rca is new ada.unchecked_conversion
+     (sdio.t_short_response, t_RCA);
 
    ------------------------------------------
    -- SD CARD Configuration Register (SCR) --
