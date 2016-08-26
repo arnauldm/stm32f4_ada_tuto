@@ -141,10 +141,10 @@ package stm32f4.sdio is
    ---------------------------------------------
 
    type t_dtdir is
-     (TO_CARD, TO_CONTROLLER) with size => 1;
+     (TO_CARD, TO_HOST) with size => 1;
    for t_dtdir use
-     (TO_CARD        => 0,
-      TO_CONTROLLER  => 1);
+     (TO_CARD  => 0,
+      TO_HOST  => 1);
 
    type t_dtmode is
      (MODE_BLOCK, MODE_STREAM) with size => 1;
@@ -152,14 +152,14 @@ package stm32f4.sdio is
      (MODE_BLOCK  => 0,
       MODE_STREAM => 1);
 
-   type t_blocksize is
+   type t_blsize is
      (BLOCK_1BYTE, BLOCK_2BYTES, BLOCK_4BYTES, BLOCK_8BYTES, BLOCK_16BYTES,
       BLOCK_32BYTES, BLOCK_64BYTES, BLOCK_128BYTES, BLOCK_256BYTES,
       BLOCK_512BYTES, BLOCK_1KBYTE, BLOCK_2KBYTES, BLOCK_4KBYTES,
       BLOCK_8KBYTES, BLOCK_16KBYTES)
       with size => 4;
 
-   for t_blocksize use
+   for t_blsize use
      (BLOCK_1BYTE    => 0,
       BLOCK_2BYTES   => 1,
       BLOCK_4BYTES   => 2,
@@ -183,17 +183,17 @@ package stm32f4.sdio is
       RWMOD_SDIO_CK  => 1);
 
    type t_SDIO_DCTRL is record
-      DTEN        : bit;      -- Data transfer enabled bit
-      DTDIR       : t_dtdir;  -- Data transfer direction selection
-      DTMODE      : t_dtmode; -- Data transfer mode selection
-      DMAEN       : bit;      -- DMA enable bit
-      DBLOCKSIZE  : t_blocksize; -- Data block size (2^n)
-      RWSTART     : bit;      -- Read wait start
-      RWSTOP      : bit;      -- Read wait stop
-      RWMOD       : t_rwmode; -- Read wait mode
-      SDIOEN      : bit;      -- SD I/O enable functions
-      reserved_12_15 : uint4;
-      reserved_16_31 : short;
+      DTEN        : bit       := 0;          -- Data transfer enabled bit
+      DTDIR       : t_dtdir   := TO_CARD;    -- Data transfer direction 
+      DTMODE      : t_dtmode  := MODE_BLOCK; -- Data transfer mode 
+      DMAEN       : bit       := 0;          -- DMA enable bit
+      DBLOCKSIZE  : t_blsize  := BLOCK_1BYTE;-- Data block size (2^n)
+      RWSTART     : bit       := 0;          -- Read wait start
+      RWSTOP      : bit       := 0;          -- Read wait stop
+      RWMOD       : t_rwmode  := RWMOD_SDIO_D2; -- Read wait mode
+      SDIOEN      : bit       := 0;          -- SD I/O enable functions
+      reserved_12_15 : uint4  := 0;
+      reserved_16_31 : short  := 0;
    end record
       with pack, size => 32, volatile_full_access;
 

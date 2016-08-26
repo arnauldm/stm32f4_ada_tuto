@@ -25,24 +25,30 @@ package stm32f4.sdio.sd_card is
    CMD8     : constant sdio.t_cmd_index := 8;
    CMD13    : constant sdio.t_cmd_index := 13;
    CMD15    : constant sdio.t_cmd_index := 15;
+   CMD16    : constant sdio.t_cmd_index := 16;
+   CMD17    : constant sdio.t_cmd_index := 17;
+   CMD18    : constant sdio.t_cmd_index := 18;
    ACMD41   : constant sdio.t_cmd_index := 41;
    ACMD51   : constant sdio.t_cmd_index := 51;
    CMD52    : constant sdio.t_cmd_index := 52;
    CMD55    : constant sdio.t_cmd_index := 55;
 
-   CMD_GO_IDLE_STATE       : sdio.t_cmd_index renames CMD0;
-   CMD_ALL_SEND_CID        : sdio.t_cmd_index renames CMD2;
-   CMD_SEND_RELATIVE_ADDR  : sdio.t_cmd_index renames CMD3;
-   CMD_IO_SEND_OP_COND     : sdio.t_cmd_index renames CMD5;
-   CMD_SELECT_CARD         : sdio.t_cmd_index renames CMD7;
-   CMD_SEND_IF_COND        : sdio.t_cmd_index renames CMD8;
-   CMD_SET_BUS_WIDTH       : sdio.t_cmd_index renames ACMD6;
-   CMD_SEND_STATUS         : sdio.t_cmd_index renames CMD13;
-   CMD_GO_INACTIVE_STATE   : sdio.t_cmd_index renames CMD15;
-   CMD_SD_APP_OP_COND      : sdio.t_cmd_index renames ACMD41;
-   CMD_IO_RW_DIRECT        : sdio.t_cmd_index renames CMD52;
-   CMD_SEND_SCR            : sdio.t_cmd_index renames ACMD51;
-   CMD_APP_CMD             : sdio.t_cmd_index renames CMD55;
+   CMD0_GO_IDLE_STATE         : sdio.t_cmd_index renames CMD0;
+   CMD2_ALL_SEND_CID          : sdio.t_cmd_index renames CMD2;
+   CMD3_SEND_RELATIVE_ADDR    : sdio.t_cmd_index renames CMD3;
+   CMD5_IO_SEND_OP_COND       : sdio.t_cmd_index renames CMD5;
+   CMD7_SELECT_CARD           : sdio.t_cmd_index renames CMD7;
+   CMD8_SEND_IF_COND          : sdio.t_cmd_index renames CMD8;
+   ACMD6_SET_BUS_WIDTH        : sdio.t_cmd_index renames ACMD6;
+   CMD13_SEND_STATUS          : sdio.t_cmd_index renames CMD13;
+   CMD15_GO_INACTIVE_STATE    : sdio.t_cmd_index renames CMD15;
+   CMD16_SET_BLOCKLEN         : sdio.t_cmd_index renames CMD16;
+   CMD17_READ_SINGLE_BLOCK    : sdio.t_cmd_index renames CMD17;
+   CMD18_READ_MULTIPLE_BLOCK  : sdio.t_cmd_index renames CMD18;
+   ACMD41_SD_APP_OP_COND      : sdio.t_cmd_index renames ACMD41;
+   ACMD51_SEND_SCR            : sdio.t_cmd_index renames ACMD51;
+   CMD52_IO_RW_DIRECT         : sdio.t_cmd_index renames CMD52;
+   CMD55_APP_CMD              : sdio.t_cmd_index renames CMD55;
 
    ------------------
    -- SD responses --
@@ -280,6 +286,9 @@ package stm32f4.sdio.sd_card is
    function get_short_response return t_short_response;
    function get_long_response return t_long_response;
 
-   --procedure read_single_block;
+   procedure read_blocks
+     (bl_num   : word;           -- block number
+      output   : out byte_array; -- output
+      success  : out boolean);
 
 end stm32f4.sdio.sd_card;

@@ -33,9 +33,9 @@ package body stm32f4.sdio.sd_card is
 
    begin
 
-      --
-      -- Low level settings 
-      --
+      ------------------------
+      -- Low level settings --
+      ------------------------
 
       -- Set up GPIO pins, SDIO clock and also set up interrupt handler
       sdio.initialize;
@@ -43,26 +43,27 @@ package body stm32f4.sdio.sd_card is
       -- DMA2 clock enable
       periphs.RCC.AHB1ENR.DMA2EN := 1;
 
-      --
-      -- Card identification process 
-      --
+      ---------------------------------
+      -- Card identification process --
+      ---------------------------------
 
-      -- Go idle state (CMD0)
-      serial.put_line ("GO_IDLE_STATE (CMD0)");
-      send_command (CMD0, 0, sdio.NO_RESPONSE, sdio_status, success);
+      send_command (CMD0_GO_IDLE_STATE, 0, sdio.NO_RESPONSE, sdio_status,
+         success);
 
       if not success then
          goto bad_return;
       end if;
 
-      -- Initialize SD Memory Cards compliant to the Physical Layer
-      -- Specification Version 2.00 or later (CMD8)
-      --  Argument:
-      --  - [31:12]: reserved, shall be set to '0'
-      --  - [11:8]:  Supply voltage (VHS) 0x1 (range: 2.7-3.6V)
-      --  - [7:0]:   Check Pattern (recommended 0xAA)
-      serial.put_line ("SEND_IF_COND (CMD8)"); 
-      send_command (CMD8, 16#1AA#, sdio.SHORT_RESPONSE, sdio_status, success);
+      --
+      -- Is it an SD memory card version 2.00 or later ?
+      --
+
+      --  Argument [31:12]: reserved, shall be set to '0'
+      --           [11:8]:  Supply voltage (VHS) 0x1 (range: 2.7-3.6V)
+      --           [7:0]:   Check Pattern 
+
+      send_command (CMD8_SEND_IF_COND, 16#1AA#, sdio.SHORT_RESPONSE,
+         sdio_status, success);
 
       if not success then
          serial.put_line
@@ -75,8 +76,9 @@ package body stm32f4.sdio.sd_card is
          goto bad_return;
       end if;
 
-      -- Initialization Command (ACMD41)
-      serial.put_line ("SD_APP_OP_COND (ACMD41)");
+      --
+      -- Set voltage and detect SD type
+      --
 
       for i in 1 .. 100 loop
          sd_card.ocr :=
@@ -86,8 +88,8 @@ package body stm32f4.sdio.sd_card is
          -- ACMD41 expect an R3 response : failed CRC and wrong RESPCMD must be
          -- ignored!
          send_app_command
-           (0, ACMD41, to_sdio_arg (sd_card.ocr), sdio.SHORT_RESPONSE,
-            sdio_status, success);
+           (0, ACMD41_SD_APP_OP_COND, to_sdio_arg (sd_card.ocr),
+            sdio.SHORT_RESPONSE, sdio_status, success);
 
          sd_card.ocr := to_ocr (get_short_response);
          exit when sd_card.ocr.power_up = 1;
@@ -108,8 +110,10 @@ package body stm32f4.sdio.sd_card is
            ("Ver2.00 or later Standard Capacity SD Memory Card (SDSC)");
       end if;
 
-      -- Asks any card to send the CID numbers on the CMD line (CMD2)
-      serial.put_line ("ALL_SEND_CID (CMD2)"); 
+      --
+      -- Asks any card to send their Card ID numbers (CID) on the CMD line 
+      --
+
       send_command (CMD2, 0, sdio.LONG_RESPONSE, sdio_status, success);
 
       if not success then
@@ -118,8 +122,10 @@ package body stm32f4.sdio.sd_card is
          
       sd_card.cid := to_cid (get_long_response);
 
-      -- Ask the card to publish a new relative RCA address (CMD3)
-      serial.put_line ("SEND_RELATIVE_ADDR (CMD3)"); 
+      --
+      -- Ask the card to publish a new relative RCA address 
+      --
+
       send_command (CMD3, 0, sdio.SHORT_RESPONSE, sdio_status, success);
 
       declare
@@ -134,7 +140,10 @@ package body stm32f4.sdio.sd_card is
          goto bad_return;
       end if;
 
-      -- Select the SD card
+      --
+      -- Select the detected SD card
+      --
+
       serial.put_line ("SELECT_CARD (CMD7)"); 
       send_command (CMD7, sd_card.id, sdio.SHORT_RESPONSE, sdio_status, success);
 
@@ -142,9 +151,12 @@ package body stm32f4.sdio.sd_card is
          goto bad_return;
       end if;
 
-      -- Defines the data bus width (2#00# = 1 bit or 2#10# = 4 bits bus) to be
-      -- used for data transfer.
-      serial.put_line ("SET_BUS_WIDTH (ACMD6)"); 
+      --
+      -- Set 4-bit bus transfer
+      --
+
+      -- Note: defines the data bus width (2#00# = 1 bit or 2#10# = 4 bits bus)
+      -- to be used for data transfer.
       send_app_command
         (sd_card.id, ACMD6, 2#10#, sdio.SHORT_RESPONSE, sdio_status, success);
       
@@ -152,12 +164,14 @@ package body stm32f4.sdio.sd_card is
          goto bad_return;
       end if;
 
+      --
       -- Now use the card to nominal speed
-      serial.put_line ("Change clock speed");
+      --
+
       delay until ada.real_time.clock + ada.real_time.microseconds (1);
       periphs.SDIO_CARD.CLKCR.CLKDIV   := 0;
 
-   <<ok_return>>
+      -- Successful return
       serial.put_line ("SD card initialized");
       return;
 
@@ -310,6 +324,111 @@ package body stm32f4.sdio.sd_card is
    -- Transfer --
    --------------
 
-   --procedure read_single_block;
+   --
+   -- Read 512 bytes blocks
+   --
+
+   procedure read_blocks
+     (bl_num   : word;        -- block number
+      output   : out byte_array;  -- output
+      success  : out boolean)
+   is
+      sdio_status    : sdio.t_SDIO_STA;
+      n_blocks       : positive;
+      bl_addr        : word;
+      idx            : natural;
+   begin
+
+      -- Important notes :
+      -- 1) SDSC Card (CCS=0) uses byte unit address and SDHC and SDXC Cards
+      --    (CCS=1) use block unit address (512 Bytes unit).
+      -- 2) In the case of SDHC and SDXC Cards, block length set by CMD16
+      --    command does not affect memory read and write commands. Always 512
+      --    bytes fixed block length is used. 
+
+      if sd_card.ccs = SDHC_or_SDXC then
+         bl_addr  := bl_num;
+      else
+         -- SDSC
+         bl_addr  := bl_num * 512;
+
+         send_command
+           (CMD16_SET_BLOCKLEN, 512, sdio.SHORT_RESPONSE, sdio_status,
+            success);
+
+         if not success then
+            serial.put ("error: read_blocks: SET_BLOCKLEN failure");
+            return;
+         end if;
+      end if;
+
+      -- Reading how many blocks ?
+      n_blocks := output'length / 512;
+
+
+      periphs.SDIO_CARD.DLEN.DATALENGTH := output'length;
+
+      periphs.SDIO_CARD.DCTRL :=
+        (DTEN        => 1,
+         DTDIR       => TO_HOST,
+         DTMODE      => MODE_BLOCK,
+         DMAEN       => 0,
+         DBLOCKSIZE  => BLOCK_512BYTES,
+         others      => <>);
+
+      --
+      -- Sending data read command
+      --
+
+      if n_blocks > 1 then
+
+         send_command (CMD18_READ_MULTIPLE_BLOCK, bl_addr,
+            sdio.SHORT_RESPONSE, sdio_status, success);
+
+         if not success then
+            serial.put ("error: read_blocks: READ_MULTIPLE_BLOCK failure");
+            return;
+         end if;
+
+      else
+
+         send_command (CMD17_READ_SINGLE_BLOCK, bl_addr,
+            sdio.SHORT_RESPONSE, sdio_status, success);
+
+         if not success then
+            serial.put ("error: read_blocks: READ_SINGLE_BLOCK failure");
+            return;
+         end if;
+
+      end if;
+
+      --
+      -- Polling flags and reading datas
+      --
+
+      idx   := output'first;
+
+      while
+         not periphs.SDIO_CARD.STATUS.DCRCFAIL and -- data CRC failed
+         not periphs.SDIO_CARD.STATUS.DTIMEOUT and -- data timeout
+         not periphs.SDIO_CARD.STATUS.RXOVERR  and -- FIFO error
+         not periphs.SDIO_CARD.STATUS.DATAEND      -- data end
+      loop
+
+         declare
+            subtype quad is byte_array (1 .. 4);
+            function to_4_bytes is new ada.unchecked_conversion
+              (word, quad);
+         begin
+            for i in periphs.SDIO_CARD.FIFO'range loop
+               output (idx .. idx + 3) := to_4_bytes (periphs.SDIO_CARD.FIFO (i));
+               idx := idx + 4;
+            end loop;
+         end;
+
+      end loop;
+
+   end read_blocks;
+
 
 end stm32f4.sdio.sd_card;
