@@ -7,8 +7,7 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
 
--- DEBUG (TO REMOVE)
-with stm32f4.sdio; pragma unreferenced (stm32f4.sdio);
+with stm32f4.sdio.sd_card;
 -- with tests.dma;
 
 procedure main is
@@ -23,7 +22,7 @@ begin
    -- -- Testing the DMA
    -- tests.dma.transfer_memory_to_memory;
 
-   stm32f4.sdio.initialize;
+   stm32f4.sdio.sd_card.initialize;
 
    -- Endless loop
    loop

@@ -377,90 +377,14 @@ package stm32f4.sdio is
       FIFO     at 16#80# range 0 .. 32*32 - 1;
    end record;
 
-   -------------------
-   -- SDIO commands --
-   -------------------
-
-   -- Ref.: 
-   --  . SD Specifications, Part 1 Physical Layer Simplified Specification,
-   --    version 4.10, 2013
-   --  . Simplified SDIO card spec, version 3.0, 2011
-
-   CMD0     : constant t_cmd_index := 0;
-   CMD1     : constant t_cmd_index := 1;
-   CMD2     : constant t_cmd_index := 2;
-   CMD3     : constant t_cmd_index := 3;
-   CMD5     : constant t_cmd_index := 5;
-   ACMD6    : constant t_cmd_index := 6;
-   CMD7     : constant t_cmd_index := 7;
-   CMD8     : constant t_cmd_index := 8;
-   CMD13    : constant t_cmd_index := 13;
-   CMD15    : constant t_cmd_index := 15;
-   ACMD41   : constant t_cmd_index := 41;
-   ACMD51   : constant t_cmd_index := 51;
-   CMD52    : constant t_cmd_index := 52;
-   CMD55    : constant t_cmd_index := 55;
-
-   CMD_GO_IDLE_STATE       : t_cmd_index renames CMD0;
-   CMD_ALL_SEND_CID        : t_cmd_index renames CMD2;
-   CMD_SEND_RELATIVE_ADDR  : t_cmd_index renames CMD3;
-   CMD_IO_SEND_OP_COND     : t_cmd_index renames CMD5;
-   CMD_SELECT_CARD         : t_cmd_index renames CMD7;
-   CMD_SEND_IF_COND        : t_cmd_index renames CMD8;
-   CMD_SET_BUS_WIDTH       : t_cmd_index renames ACMD6;
-   CMD_SEND_STATUS         : t_cmd_index renames CMD13;
-   CMD_GO_INACTIVE_STATE   : t_cmd_index renames CMD15;
-   CMD_SD_APP_OP_COND      : t_cmd_index renames ACMD41;
-   CMD_IO_RW_DIRECT        : t_cmd_index renames CMD52;
-   CMD_SEND_SCR            : t_cmd_index renames ACMD51;
-   CMD_APP_CMD             : t_cmd_index renames CMD55;
-
-   --------------------
-   -- SDIO responses --
-   --------------------
-
-   subtype t_short_response is t_SDIO_RESPx;
-   
-   type t_long_response is record
-      RESP4 : t_SDIO_RESPx;
-      RESP3 : t_SDIO_RESPx;
-      RESP2 : t_SDIO_RESPx;
-      RESP1 : t_SDIO_RESPx;
-   end record
-      with pack;
-
    ---------------
    -- Utilities --
    ---------------
    
+   -- Set up GPIO pins, SDIO clock and also set up interrupt handler
    procedure initialize;
 
-   -- Set up GPIO pins, SDIO clock and also set up interrupt handler
-   procedure low_level_init;
-
    -- Enable DMA
-   procedure set_dma;
-
-   procedure send_command
-     (cmd_index      : in  t_cmd_index;
-      argument       : in  t_SDIO_ARG;
-      response_type  : in  t_waitresp;
-      status         : out t_SDIO_STA;
-      success        : out boolean);
-
-   procedure send_app_command
-     (cmd55_arg      : in  t_SDIO_ARG;
-      cmd_index      : in  t_cmd_index;
-      cmd_arg        : in  t_SDIO_ARG;
-      response_type  : in  t_waitresp;
-      status         : out t_SDIO_STA;
-      success        : out boolean);
-
-   function get_short_response return t_short_response;
-   function get_long_response return t_long_response;
-
-   procedure read_single_block;
-
    procedure set_dma_transfer
      (DMA_controller : in out dma.t_DMA_controller;
       stream         : dma.t_DMA_stream_index;

@@ -2,12 +2,12 @@
 package body stm32f4.dma is
 
 
-   function get_ISR
+   function get_stream_ISR
      (DMA_controller : t_DMA_controller;
       stream         : t_DMA_stream_index)
-      return t_DMA_stream_interrupt_status
+      return t_DMA_stream_ISR
    is
-      ISR : t_DMA_stream_interrupt_status;
+      ISR : t_DMA_stream_ISR;
    begin
       case stream is
          when 0 => ISR := DMA_controller.LISR.stream_0;
@@ -20,7 +20,7 @@ package body stm32f4.dma is
          when 7 => ISR := DMA_controller.HISR.stream_7;
       end case;
       return ISR;
-   end get_ISR;
+   end get_stream_ISR;
 
 
    function stream_interrupt_is_set
@@ -29,8 +29,7 @@ package body stm32f4.dma is
       interrupt   : DMA_interrupts)
       return boolean
    is
-      ISR : constant t_DMA_stream_interrupt_status
-         := get_ISR (controller, stream);
+      ISR : constant t_DMA_stream_ISR := get_stream_ISR (controller, stream);
    begin
       case interrupt is
          when FIFO_ERROR               => return ISR.FEIF  = 1;

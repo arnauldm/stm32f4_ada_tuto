@@ -1,7 +1,62 @@
 with ada.unchecked_conversion;
-with stm32f4.sdio;
 
-package stm32f4.sd is
+--
+-- SD Memory Card 
+--
+
+package stm32f4.sdio.sd_card is
+
+   -----------------
+   -- SD commands --
+   -----------------
+
+   -- Ref.: 
+   --  . SD Specifications, Part 1 Physical Layer Simplified Specification,
+   --    version 4.10, 2013
+   --  . Simplified SDIO card spec, version 3.0, 2011
+
+   CMD0     : constant sdio.t_cmd_index := 0;
+   CMD1     : constant sdio.t_cmd_index := 1;
+   CMD2     : constant sdio.t_cmd_index := 2;
+   CMD3     : constant sdio.t_cmd_index := 3;
+   CMD5     : constant sdio.t_cmd_index := 5;
+   ACMD6    : constant sdio.t_cmd_index := 6;
+   CMD7     : constant sdio.t_cmd_index := 7;
+   CMD8     : constant sdio.t_cmd_index := 8;
+   CMD13    : constant sdio.t_cmd_index := 13;
+   CMD15    : constant sdio.t_cmd_index := 15;
+   ACMD41   : constant sdio.t_cmd_index := 41;
+   ACMD51   : constant sdio.t_cmd_index := 51;
+   CMD52    : constant sdio.t_cmd_index := 52;
+   CMD55    : constant sdio.t_cmd_index := 55;
+
+   CMD_GO_IDLE_STATE       : sdio.t_cmd_index renames CMD0;
+   CMD_ALL_SEND_CID        : sdio.t_cmd_index renames CMD2;
+   CMD_SEND_RELATIVE_ADDR  : sdio.t_cmd_index renames CMD3;
+   CMD_IO_SEND_OP_COND     : sdio.t_cmd_index renames CMD5;
+   CMD_SELECT_CARD         : sdio.t_cmd_index renames CMD7;
+   CMD_SEND_IF_COND        : sdio.t_cmd_index renames CMD8;
+   CMD_SET_BUS_WIDTH       : sdio.t_cmd_index renames ACMD6;
+   CMD_SEND_STATUS         : sdio.t_cmd_index renames CMD13;
+   CMD_GO_INACTIVE_STATE   : sdio.t_cmd_index renames CMD15;
+   CMD_SD_APP_OP_COND      : sdio.t_cmd_index renames ACMD41;
+   CMD_IO_RW_DIRECT        : sdio.t_cmd_index renames CMD52;
+   CMD_SEND_SCR            : sdio.t_cmd_index renames ACMD51;
+   CMD_APP_CMD             : sdio.t_cmd_index renames CMD55;
+
+   ------------------
+   -- SD responses --
+   ------------------
+
+   subtype t_short_response is sdio.t_SDIO_RESPx;
+   
+   type t_long_response is record
+      RESP4 : sdio.t_SDIO_RESPx;
+      RESP3 : sdio.t_SDIO_RESPx;
+      RESP2 : sdio.t_SDIO_RESPx;
+      RESP1 : sdio.t_SDIO_RESPx;
+   end record
+      with pack;
 
    --------------------
    -- SD card status --
@@ -68,7 +123,7 @@ package stm32f4.sd is
       with pack, size => 32;
 
    function to_card_status is new ada.unchecked_conversion
-     (sdio.t_short_response, t_card_status);
+     (t_short_response, t_card_status);
 
    -----------------------------------------
    -- Operation conditions register (OCR) --
@@ -120,7 +175,7 @@ package stm32f4.sd is
    end record;
 
    function to_ocr is new ada.unchecked_conversion
-     (sdio.t_short_response, t_OCR);
+     (t_short_response, t_OCR);
 
    ----------------------------------------
    -- Card IDentification (CID) register --
@@ -158,7 +213,7 @@ package stm32f4.sd is
    end record;
 
    function to_cid is new ada.unchecked_conversion
-     (sdio.t_long_response, t_CID);
+     (t_long_response, t_CID);
 
    ---------------------------------
    -- Relative Card Address (RCA) --
@@ -180,7 +235,7 @@ package stm32f4.sd is
       with pack, size => 32;
 
    function to_rca is new ada.unchecked_conversion
-     (sdio.t_short_response, t_RCA);
+     (t_short_response, t_RCA);
 
    ------------------------------------------
    -- SD CARD Configuration Register (SCR) --
@@ -201,4 +256,30 @@ package stm32f4.sd is
    end record
       with pack, size => 64;
 
-end stm32f4.sd;
+   ---------------
+   -- Utilities --
+   ---------------
+
+   procedure initialize;
+
+   procedure send_command
+     (cmd_index      : in  sdio.t_cmd_index;
+      argument       : in  sdio.t_SDIO_ARG;
+      response_type  : in  sdio.t_waitresp;
+      status         : out sdio.t_SDIO_STA;
+      success        : out boolean);
+
+   procedure send_app_command
+     (cmd55_arg      : in  sdio.t_SDIO_ARG;
+      cmd_index      : in  sdio.t_cmd_index;
+      cmd_arg        : in  sdio.t_SDIO_ARG;
+      response_type  : in  sdio.t_waitresp;
+      status         : out sdio.t_SDIO_STA;
+      success        : out boolean);
+
+   function get_short_response return t_short_response;
+   function get_long_response return t_long_response;
+
+   --procedure read_single_block;
+
+end stm32f4.sdio.sd_card;

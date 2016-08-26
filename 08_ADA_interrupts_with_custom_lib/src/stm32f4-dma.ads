@@ -9,7 +9,7 @@ package stm32f4.dma is
    -- DMA low interrupt status register (DMA_LISR) --
    --------------------------------------------------
 
-   type t_DMA_stream_interrupt_status is record
+   type t_DMA_stream_ISR is record
       FEIF        : bit;   -- Stream FIFO error interrupt flag
       reserved_1  : bit;
       DMEIF       : bit;   -- Stream direct mode error interrupt flag
@@ -20,11 +20,11 @@ package stm32f4.dma is
       with pack, size => 6;
 
    type t_DMA_LISR is record
-      stream_0       : t_DMA_stream_interrupt_status;
-      stream_1       : t_DMA_stream_interrupt_status;
+      stream_0       : t_DMA_stream_ISR;
+      stream_1       : t_DMA_stream_ISR;
       reserved_12_15 : uint4;
-      stream_2       : t_DMA_stream_interrupt_status;
-      stream_3       : t_DMA_stream_interrupt_status;
+      stream_2       : t_DMA_stream_ISR;
+      stream_3       : t_DMA_stream_ISR;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -34,11 +34,11 @@ package stm32f4.dma is
    ---------------------------------------------------
 
    type t_DMA_HISR is record
-      stream_4       : t_DMA_stream_interrupt_status;
-      stream_5       : t_DMA_stream_interrupt_status;
+      stream_4       : t_DMA_stream_ISR;
+      stream_5       : t_DMA_stream_ISR;
       reserved_12_15 : uint4;
-      stream_6       : t_DMA_stream_interrupt_status;
-      stream_7       : t_DMA_stream_interrupt_status;
+      stream_6       : t_DMA_stream_ISR;
+      stream_7       : t_DMA_stream_ISR;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -277,10 +277,10 @@ package stm32f4.dma is
      (FIFO_ERROR, DIRECT_MODE_ERROR, TRANSFER_ERROR,
       HALF_TRANSFER_COMPLETE, TRANSFER_COMPLETE);
 
-   function get_ISR
+   function get_stream_ISR
      (DMA_controller : t_DMA_controller;
       stream         : t_DMA_stream_index)
-      return t_DMA_stream_interrupt_status;
+      return t_DMA_stream_ISR;
 
    function stream_interrupt_is_set
      (controller  : t_DMA_controller;
