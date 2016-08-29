@@ -249,30 +249,46 @@ package stm32f4.sdio is
    ----------------------------------------------
    -- As its name doesn't say: it clear the *status* flags!
 
-   type t_clear_bit is (NOT_CLEARED, CLEARED) with size => 1;
+   type t_clear_bit is (DONT_CLEAR, CLEAR) with size => 1;
    for t_clear_bit use
-     (NOT_CLEARED => 0,
-      CLEARED     => 1);
+     (DONT_CLEAR => 0,
+      CLEAR     => 1);
 
    type t_SDIO_ICR is record
-      CCRCFAILC   : t_clear_bit := CLEARED;
-      DCRCFAILC   : t_clear_bit := CLEARED;
-      CTIMEOUTC   : t_clear_bit := CLEARED;
-      DTIMEOUTC   : t_clear_bit := CLEARED;
-      TXUNDERRC   : t_clear_bit := CLEARED;
-      RXOVERRC    : t_clear_bit := CLEARED;
-      CMDRENDC    : t_clear_bit := CLEARED;
-      CMDSENTC    : t_clear_bit := CLEARED;
-      DATAENDC    : t_clear_bit := CLEARED;
-      STBITERRC   : t_clear_bit := CLEARED;
-      DBCKENDC    : t_clear_bit := CLEARED;
-      reserved_11_15 : uint5    := 0;
-      reserved_16_21 : uint6    := 0;
-      SDIOITC     : t_clear_bit := CLEARED;
-      CEATAENDC   : t_clear_bit := CLEARED;
-      reserved_24_31 : byte     := 0;
+      CCRCFAILC   : t_clear_bit := CLEAR;
+      DCRCFAILC   : t_clear_bit := CLEAR;
+      CTIMEOUTC   : t_clear_bit := CLEAR;
+      DTIMEOUTC   : t_clear_bit := CLEAR;
+      TXUNDERRC   : t_clear_bit := CLEAR;
+      RXOVERRC    : t_clear_bit := CLEAR;
+      CMDRENDC    : t_clear_bit := CLEAR;
+      CMDSENTC    : t_clear_bit := CLEAR;
+      DATAENDC    : t_clear_bit := CLEAR;
+      STBITERRC   : t_clear_bit := CLEAR;
+      DBCKENDC    : t_clear_bit := CLEAR;
+      --reserved_11_15
+      --reserved_16_21
+      SDIOITC     : t_clear_bit := CLEAR;
+      CEATAENDC   : t_clear_bit := CLEAR;
+      --reserved_24_31 
    end record
-      with pack, size => 32, volatile_full_access;
+      with size => 32, volatile_full_access;
+
+   for t_SDIO_ICR use record
+      CCRCFAILC   at 0 range 0 .. 0;
+      DCRCFAILC   at 0 range 1 .. 1;
+      CTIMEOUTC   at 0 range 2 .. 2;
+      DTIMEOUTC   at 0 range 3 .. 3;
+      TXUNDERRC   at 0 range 4 .. 4;
+      RXOVERRC    at 0 range 5 .. 5;
+      CMDRENDC    at 0 range 6 .. 6;
+      CMDSENTC    at 0 range 7 .. 7;
+      DATAENDC    at 0 range 8 .. 8;
+      STBITERRC   at 0 range 9 .. 9;
+      DBCKENDC    at 0 range 10 .. 10;
+      SDIOITC     at 0 range 22 .. 22;
+      CEATAENDC   at 0 range 23 .. 23;
+   end record;
 
    ------------------------------------
    -- SDIO mask register (SDIO_MASK) --
@@ -389,6 +405,6 @@ package stm32f4.sdio is
      (DMA_controller : in out dma.t_DMA_controller;
       stream         : dma.t_DMA_stream_index;
       direction      : dma.t_data_transfer_dir;
-      memory         : byte_array_access);
+      memory         : byte_array);
 
 end stm32f4.sdio;

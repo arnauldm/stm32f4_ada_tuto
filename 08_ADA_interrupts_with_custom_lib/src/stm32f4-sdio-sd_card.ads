@@ -262,6 +262,56 @@ package stm32f4.sdio.sd_card is
    end record
       with pack, size => 64;
 
+   ---------------------------------------
+   -- Card-Specific Data register (CSD) --
+   ---------------------------------------
+
+   type t_CSD_version_2 is record
+      CRC                  : uint7;
+      TMP_WRITE_PROTECT    : boolean;
+         -- Temporarily protects the entire card content from being overwritten
+         -- or erased. 
+      PERM_WRITE_PROTECT   : boolean;
+      COPY                 : bit;
+         -- Defines whether the contents is original (0) or has been copied (1)
+      WRITE_BL_PARTIAL     : boolean;
+         -- Fixed to 0, which indicates only unit of block access is allowed
+      WRITE_BL_LEN         : uint4;
+         -- Fixed to 512 bytes
+      R2W_FACTOR           : uint3;
+         -- Fixed to 4 multiples
+      C_SIZE               : uint22;
+         -- User data area capacity in the SD memory card (not include the
+         -- protected area) : (C_SIZE+1) * 512KByte
+      DSR_IMP              : bit;
+         -- Driver stage register (DSR)
+      CCC                  : uint12;
+         -- Defines which command classes are supported by this card
+      TRAN_SPEED           : byte;
+         -- Maximum data transfer rate per one data line. Values:
+         --  . 0Bh (100Mbit/sec) in SDR50 and DDR50 mode
+         --  . 2Bh (200Mbit/sec) in SDR104 mode.
+         --  . Reset to 32h when CMD0 is received
+         --  . UHS-II mode is not related to this field.
+      CSD_STRUCTURE        : uint2;
+   end record
+      with size => 128;
+
+   for t_CSD_version_2 use record
+      CRC                  at 0 range 1 .. 7;
+      TMP_WRITE_PROTECT    at 0 range 12 .. 12;
+      PERM_WRITE_PROTECT   at 0 range 13 .. 13;
+      COPY                 at 0 range 14 .. 14;
+      WRITE_BL_PARTIAL     at 0 range 21 .. 21;
+      WRITE_BL_LEN         at 0 range 22 .. 25;
+      R2W_FACTOR           at 0 range 26 .. 28;
+      C_SIZE               at 0 range 48 .. 69;
+      DSR_IMP              at 0 range 76 .. 76;
+      CCC                  at 0 range 84 .. 95;
+      TRAN_SPEED           at 0 range 96 .. 103;
+      CSD_STRUCTURE        at 0 range 126 .. 127;
+   end record;
+
    ---------------
    -- Utilities --
    ---------------
@@ -287,7 +337,12 @@ package stm32f4.sdio.sd_card is
    function get_long_response return t_long_response;
 
    procedure read_blocks
-     (bl_num   : word;           -- block number
+     (bl_num   : in  word;       -- block number
+      output   : out byte_array; -- output
+      success  : out boolean);
+
+   procedure read_blocks_dma
+     (bl_num   : in  word;       -- block number
       output   : out byte_array; -- output
       success  : out boolean);
 

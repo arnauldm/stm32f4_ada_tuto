@@ -1,5 +1,4 @@
 with ada.real_time; use ada.real_time;
-with system; use system;
 with ada.interrupts.names;
 with ada.unchecked_conversion;
 
@@ -9,7 +8,7 @@ with stm32f4.gpio;
 with stm32f4.rcc;
 with stm32f4.nvic;
 with stm32f4.dma.interrupts;
-with serial;
+--with serial;
 
 package body stm32f4.sdio is
 
@@ -19,20 +18,6 @@ package body stm32f4.sdio is
    inbuf    : byte_array (1 .. 256) := (others => 0);
 
    DMA_controller : dma.t_DMA_controller renames stm32f4.periphs.DMA2;
-   stream_mem_to_sdio : constant dma.t_DMA_stream_index := 3;
-   stream_sdio_to_mem : constant dma.t_DMA_stream_index := 6;
-
-   DMA_mem_to_sdio_handler : 
-      dma.interrupts.handler
-        (DMA_controller'access,
-         stream_mem_to_sdio,
-         Ada.Interrupts.Names.DMA2_Stream3_Interrupt);
-
-   DMA_sdio_to_mem_handler : 
-      dma.interrupts.handler
-        (DMA_controller'access,
-         stream_sdio_to_mem,
-         Ada.Interrupts.Names.DMA2_Stream6_Interrupt);
 
    ----------------
    -- Initialize --
@@ -49,6 +34,7 @@ package body stm32f4.sdio is
       rcc.enable_gpio_clock (periphs.GPIOC);
       rcc.enable_gpio_clock (periphs.GPIOD);
       periphs.RCC.APB2ENR.SDIOEN := 1;
+      periphs.RCC.AHB1ENR.DMA2EN := 1;
 
       --
       -- Setup GPIO pins
@@ -151,7 +137,7 @@ package body stm32f4.sdio is
       periphs.SDIO_CARD.MASK.DBCKENDIE    := 1; -- Data block end
       periphs.SDIO_CARD.MASK.CMDACTIE     := 1; -- Command acting 
 
-      periphs.NVIC.ISER1.irq(nvic.SDIO)   := nvic.IRQ_ENABLED;
+      nvic.enable_irq (nvic.SDIO);
 
    end initialize;
 
@@ -160,7 +146,7 @@ package body stm32f4.sdio is
      (DMA_controller : in out dma.t_DMA_controller;
       stream         : dma.t_DMA_stream_index;
       direction      : dma.t_data_transfer_dir;
-      memory         : byte_array_access)
+      memory         : byte_array)
    is
    begin
 
@@ -173,7 +159,7 @@ package body stm32f4.sdio is
       end if;
 
       -- Clear interrupts flags
-      dma.clear_stream_interrupts (DMA_controller, stream);
+      dma.clear_interrupt_flags (DMA_controller, stream);
 
       -- Transfer direction 
       DMA_controller.streams(stream).CR.DIR  := direction;
@@ -183,10 +169,10 @@ package body stm32f4.sdio is
         (periphs.SDIO_CARD.FIFO'address);
 
       -- Memory address
-      DMA_controller.streams(stream).M0AR := to_word (memory.all'address);
+      DMA_controller.streams(stream).M0AR := to_word (memory'address);
 
       -- Total number of items to be tranferred
-      DMA_controller.streams(stream).NDTR.NDT := short (memory.all'size / 8);
+      DMA_controller.streams(stream).NDTR.NDT := short (memory'size / 8);
 
       -- Items size
       DMA_controller.streams(stream).CR.PSIZE   := dma.TRANSFER_BYTE;
@@ -216,53 +202,21 @@ package body stm32f4.sdio is
       DMA_controller.streams(stream).FCR.FTH    := dma.FIFO_FULL;
 
       -- FIFO error interrupt enable
-      DMA_controller.streams(stream).FCR.FEIE   := 1;
-      DMA_controller.streams(stream).CR.DMEIE   := 1;
-      DMA_controller.streams(stream).CR.TEIE    := 1;
-      DMA_controller.streams(stream).CR.HTIE    := 1;
-      DMA_controller.streams(stream).CR.TCIE    := 1;
+      DMA_controller.streams(stream).FCR.FIFO_ERROR            := true;
+      DMA_controller.streams(stream).CR.DIRECT_MODE_ERROR      := true;
+      DMA_controller.streams(stream).CR.TRANSFER_ERROR         := true;
+      DMA_controller.streams(stream).CR.HALF_TRANSFER_COMPLETE := true;
+      DMA_controller.streams(stream).CR.TRANSFER_COMPLETE      := true;
 
       declare
-         irq : nvic.interrupt;
+         irq : constant nvic.interrupt :=
+            dma.get_irq_number (DMA_controller, stream);
       begin
-         if DMA_controller'address = periphs.DMA1'address then
-            case stream is
-               when 0 => irq := nvic.DMA1_Stream_0;
-               when 1 => irq := nvic.DMA1_Stream_1;
-               when 2 => irq := nvic.DMA1_Stream_2;
-               when 3 => irq := nvic.DMA1_Stream_3;
-               when 4 => irq := nvic.DMA1_Stream_4;
-               when 5 => irq := nvic.DMA1_Stream_5;
-               when 6 => irq := nvic.DMA1_Stream_6;
-               when 7 => irq := nvic.DMA1_Stream_7;
-            end case;
-         elsif DMA_controller'address = periphs.DMA2'address then
-            case stream is
-               when 0 => irq := nvic.DMA2_Stream_0;
-               when 1 => irq := nvic.DMA2_Stream_1;
-               when 2 => irq := nvic.DMA2_Stream_2;
-               when 3 => irq := nvic.DMA2_Stream_3;
-               when 4 => irq := nvic.DMA2_Stream_4;
-               when 5 => irq := nvic.DMA2_Stream_5;
-               when 6 => irq := nvic.DMA2_Stream_6;
-               when 7 => irq := nvic.DMA2_Stream_7;
-            end case;
-         else
-            raise program_error;
-         end if;
-
-         periphs.NVIC.IPR(irq).priority   := 0;
-         periphs.NVIC.ISER1.irq(irq)      := nvic.IRQ_ENABLED;
+         nvic.set_priority (irq, 0);
+         nvic.enable_irq (irq);
       end;
 
    end set_dma_transfer;
-
-
---      set_dma_transfer (DMA_controller, stream_mem_to_sdio,
---         dma.MEMORY_TO_PERIPHERAL, outbuf'access);
---
---      set_dma_transfer (DMA_controller, stream_sdio_to_mem,
---         dma.PERIPHERAL_TO_MEMORY, inbuf'access);
 
 
 end stm32f4.sdio;

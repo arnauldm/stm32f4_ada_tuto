@@ -28,6 +28,7 @@ package stm32f4 is
    type uint7  is mod 2**7 with size => 7;
    type uint9  is mod 2**9 with size => 9;
    type uint12 is mod 2**12 with size => 12;
+   type uint22 is mod 2**22 with size => 22;
    type uint24 is mod 2**24 with size => 24;
    type uint25 is mod 2**25 with size => 25;
 

@@ -1,9 +1,19 @@
 with ada.unchecked_conversion;
+with stm32f4;
+with stm32f4.periphs;
 with serial;
 
 package body stm32f4.sdio.interrupts is
 
+   ------------------------------
+   -- SDIO interrupts handling --
+   ------------------------------
+
    protected body handler is
+
+      --
+      -- Return true if a SDIO interrupt occured
+      --
 
       procedure has_been_interrupted (ret : out boolean)
       is
@@ -12,20 +22,24 @@ package body stm32f4.sdio.interrupts is
          interrupted := false;
       end has_been_interrupted;
 
+
+      function get_saved_status return t_SDIO_STA
+      is
+      begin
+         return saved_status;
+      end get_saved_status;
+
+
+      --
+      -- Interrupt handler
+      --
+
       procedure interrupt_handler is 
       begin
-
-         declare
-            function to_mask is new ada.unchecked_conversion
-              (word, t_SDIO_MASK);
-         begin
-            periphs.SDIO_CARD.MASK := to_mask (0);
-         end;
-
-         status      := sdio_card.STATUS;
-         serial.put ("<SDIO>");
-         interrupted := true;
-
+         interrupted    := true;
+         saved_status   := periphs.SDIO_CARD.STATUS;
+         periphs.SDIO_CARD.ICR := (others => CLEAR);
+         serial.put ("<SDIO>"); -- DEBUG, TO REMOVE
       end interrupt_handler;
 
    end handler;

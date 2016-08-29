@@ -53,11 +53,12 @@ package body buttons is
       -- priority than any other exception. When the processor is executing
       -- an exception handler, the exception handler is preempted if a higher
       -- priority exception occurs. 
-      stm32f4.periphs.NVIC.IPR(stm32f4.nvic.EXTI_line_0).priority := 0;
+      stm32f4.nvic.set_priority
+        (irq      => stm32f4.nvic.EXTI_line_0,
+         priority => 0);
 
       -- Enable the Selected IRQ Channels
-      stm32f4.periphs.NVIC.ISER0.irq(stm32f4.nvic.EXTI_line_0)
-         := stm32f4.nvic.IRQ_ENABLED;
+      stm32f4.nvic.enable_irq (stm32f4.nvic.EXTI_line_0);
 
    end initialize;
 
