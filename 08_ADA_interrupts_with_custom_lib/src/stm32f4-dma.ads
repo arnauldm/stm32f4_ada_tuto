@@ -1,3 +1,6 @@
+with stm32f4; use stm32f4;
+with stm32f4.nvic;
+
 --
 -- Ref. : RM0090, p. 304-340
 --        AN4031, "Using the STM32Fx Series DMA controller"
@@ -5,19 +8,35 @@
 
 package stm32f4.dma is
 
-   --------------------------------------------------
-   -- DMA low interrupt status register (DMA_LISR) --
-   --------------------------------------------------
+   ------------------------------------------
+   -- DMA interrupt status registers (ISR) --
+   ------------------------------------------
 
    type t_DMA_stream_ISR is record
-      FEIF        : bit;   -- Stream FIFO error interrupt flag
-      reserved_1  : bit;
-      DMEIF       : bit;   -- Stream direct mode error interrupt flag
-      TEIF        : bit;   -- Stream transfer error interrupt flag
-      HTIF        : bit;   -- Stream half transfer interrupt flag
-      TCIF        : bit;   -- Stream transfer complete interrupt flag
+      -- Stream FIFO error interrupt flag (FEIF)
+      FIFO_ERROR              : boolean;
+      -- Stream direct mode error interrupt flag (DMEIF)
+      DIRECT_MODE_ERROR       : boolean;
+      -- Stream transfer error interrupt flag (TEIF)
+      TRANSFER_ERROR          : boolean;
+      -- Stream half transfer interrupt flag (HTIF)
+      HALF_TRANSFER_COMPLETE  : boolean;
+      -- Stream transfer complete interrupt flag (TCIF)
+      TRANSFER_COMPLETE       : boolean;
    end record
-      with pack, size => 6;
+      with size => 6;
+
+   for t_DMA_stream_ISR use record
+      FIFO_ERROR              at 0 range 0 .. 0;
+      DIRECT_MODE_ERROR       at 0 range 2 .. 2;
+      TRANSFER_ERROR          at 0 range 3 .. 3;
+      HALF_TRANSFER_COMPLETE  at 0 range 4 .. 4;
+      TRANSFER_COMPLETE       at 0 range 5 .. 5;
+   end record;
+
+   --
+   -- DMA low interrupt status register (DMA_LISR)
+   --
 
    type t_DMA_LISR is record
       stream_0       : t_DMA_stream_ISR;
@@ -29,9 +48,9 @@ package stm32f4.dma is
    end record
       with pack, size => 32, volatile_full_access;
 
-   ---------------------------------------------------
-   -- DMA high interrupt status register (DMA_HISR) --
-   ---------------------------------------------------
+   --
+   -- DMA high interrupt status register (DMA_HISR)
+   --
 
    type t_DMA_HISR is record
       stream_4       : t_DMA_stream_ISR;
@@ -43,19 +62,35 @@ package stm32f4.dma is
    end record
       with pack, size => 32, volatile_full_access;
 
-   -------------------------------------------------------
-   -- DMA low interrupt flag clear register (DMA_LIFCR) --
-   -------------------------------------------------------
+   ----------------------------------------
+   -- DMA interrupt flag clear registers --
+   ----------------------------------------
 
    type t_DMA_stream_clear_interrupts is record
-      CFEIF       : bit; -- Stream clear FIFO error interrupt flag
-      reserved_1  : bit;
-      CDMEIF      : bit; -- Stream clear direct mode error interrupt flag
-      CTEIF       : bit; -- Stream clear transfer error interrupt flag
-      CHTIF       : bit; -- Stream clear half transfer interrupt flag
-      CTCIF       : bit; -- Stream clear transfer complete interrupt flag
+      -- Stream clear FIFO error interrupt flag (CFEIF)
+      CLEAR_FIFO_ERROR_IF        : boolean; 
+      -- Stream clear direct mode error interrupt flag (CDMEIF)
+      CLEAR_DIRECT_MODE_ERROR_IF : boolean;
+      -- Stream clear transfer error interrupt flag (CTEIF)
+      CLEAR_TRANSFER_ERROR_IF    : boolean; 
+      -- Stream clear half transfer interrupt flag (CHTIF)
+      CLEAR_HALF_TRANSFER_IF     : boolean;
+      -- Stream clear transfer complete interrupt flag (CTCIF)
+      CLEAR_TRANSFER_COMPLETE_IF : boolean; 
    end record
-      with pack, size => 6;
+      with size => 6;
+
+   for t_DMA_stream_clear_interrupts use record
+      CLEAR_FIFO_ERROR_IF           at 0 range 0 .. 0;
+      CLEAR_DIRECT_MODE_ERROR_IF    at 0 range 2 .. 2;
+      CLEAR_TRANSFER_ERROR_IF       at 0 range 3 .. 3;
+      CLEAR_HALF_TRANSFER_IF        at 0 range 4 .. 4;
+      CLEAR_TRANSFER_COMPLETE_IF    at 0 range 5 .. 5;
+   end record;
+
+   --
+   -- DMA low interrupt flag clear register (DMA_LIFCR) 
+   --
 
    type t_DMA_LIFCR is record
       stream_0       : t_DMA_stream_clear_interrupts;
@@ -67,9 +102,9 @@ package stm32f4.dma is
    end record
       with pack, size => 32, volatile_full_access;
 
-   --------------------------------------------------------
-   -- DMA high interrupt flag clear register (DMA_HIFCR) --
-   --------------------------------------------------------
+   --
+   -- DMA high interrupt flag clear register (DMA_HIFCR) 
+   --
 
    type t_DMA_HIFCR is record
       stream_4       : t_DMA_stream_clear_interrupts;
@@ -107,8 +142,8 @@ package stm32f4.dma is
      (TRANSFER_BYTE        => 2#00#,
       TRANSFER_HALF_WORD   => 2#01#,
       TRANSFER_WORD        => 2#10#);
-      
-   type t_increment_offset_size is (INCREMENT_PSIZE, INCREMENT_WORD) 
+
+   type t_increment_offset_size is (INCREMENT_PSIZE, INCREMENT_WORD)
       with size => 1;
    for t_increment_offset_size use
      (INCREMENT_PSIZE   => 0,
@@ -116,9 +151,9 @@ package stm32f4.dma is
 
    type t_priority_level is (LOW, MEDIUM, HIGH, VERY_HIGH) with size => 2;
    for t_priority_level use
-     (LOW         => 2#00#, 
-      MEDIUM      => 2#01#, 
-      HIGH        => 2#10#, 
+     (LOW         => 2#00#,
+      MEDIUM      => 2#01#,
+      HIGH        => 2#10#,
       VERY_HIGH   => 2#11#);
 
    type t_current_target is (MEMORY_0, MEMORY_1) with size => 1;
@@ -137,10 +172,10 @@ package stm32f4.dma is
 
    type t_DMA_SxCR is record
       EN       : bit;   -- Stream enable / flag stream ready when read low
-      DMEIE    : bit;   -- Direct mode error interrupt enable
-      TEIE     : bit;   -- Transfer error interrupt enable
-      HTIE     : bit;   -- Half transfer interrupt enable
-      TCIE     : bit;   -- Transfer complete interrupt enable
+      DIRECT_MODE_ERROR : boolean; -- Direct mode error interrupt enable (DMEIE)
+      TRANSFER_ERROR    : boolean; -- Transfer error interrupt enable (TEIE)
+      HALF_TRANSFER_COMPLETE : boolean; -- Half transfer interrupt enable (HTIE)
+      TRANSFER_COMPLETE : boolean; -- Transfer complete interrupt enable (TCIE)
       PFCTRL   : t_flow_controller; -- Peripheral flow controller
       DIR      : t_data_transfer_dir; -- Data transfer direction
       CIRC     : bit;   -- Circular mode enable
@@ -214,11 +249,11 @@ package stm32f4.dma is
       FIFO_IS_FULL      => 2#101#);
 
    type t_DMA_SxFCR is record
-      FTH         : t_FIFO_threshold;  -- FIFO threshold selection
-      DMDIS       : bit;               -- Direct mode disable
-      FS          : t_FIFO_status;     -- FIFO status
-      reserved_6  : bit;
-      FEIE        : bit;               -- FIFO error interrupt enable
+      FTH            : t_FIFO_threshold;  -- FIFO threshold selection
+      DMDIS          : bit;               -- Direct mode disable
+      FS             : t_FIFO_status;     -- FIFO status
+      reserved_6     : bit;
+      FIFO_ERROR     : boolean;           -- FIFO error interrupt enable (FEIE)
       reserved_8_15  : byte;
       reserved_16_31 : short;
    end record
@@ -273,7 +308,7 @@ package stm32f4.dma is
    -- Utilities --
    ---------------
 
-   type DMA_interrupts is
+   type t_DMA_interrupts is
      (FIFO_ERROR, DIRECT_MODE_ERROR, TRANSFER_ERROR,
       HALF_TRANSFER_COMPLETE, TRANSFER_COMPLETE);
 
@@ -282,19 +317,17 @@ package stm32f4.dma is
       stream         : t_DMA_stream_index)
       return t_DMA_stream_ISR;
 
-   function stream_interrupt_is_set
-     (controller  : t_DMA_controller;
-      stream      : t_DMA_stream_index;
-      interrupt   : DMA_interrupts)
-      return boolean;
-
-   procedure clear_stream_interrupt
+   procedure clear_interrupt_flag
      (controller  : in out t_DMA_controller;
       stream      : t_DMA_stream_index;
-      interrupt   : DMA_interrupts);
+      interrupt   : t_DMA_interrupts);
 
-   procedure clear_stream_interrupts
+   procedure clear_interrupt_flags
      (controller  : in out t_DMA_controller;
       stream      : t_DMA_stream_index);
+
+   function get_irq_number
+     (DMA_controller : t_DMA_controller;
+      stream         : t_DMA_stream_index) return nvic.interrupt;
 
 end stm32f4.dma;

@@ -1,4 +1,3 @@
-with system;
 with ada.real_time; use ada.real_time;
 with interfaces; use interfaces;
 with ada.unchecked_conversion;
@@ -19,10 +18,10 @@ package body tests.dma is
    DMA_controller : stm32f4.dma.t_DMA_controller renames stm32f4.periphs.DMA2;
    stream         : constant stm32f4.dma.t_DMA_stream_index := 1;
 
-   irq_handler : 
+   irq_handler    : 
       stm32f4.dma.interrupts.handler
-        (DMA_controller'access,
-         stream,
+        (stm32f4.periphs.DMA2'access,
+         1,
          Ada.Interrupts.Names.DMA2_Stream1_Interrupt);
 
    start_time  : ada.real_time.time;
@@ -55,7 +54,7 @@ package body tests.dma is
       end if;
 
       -- Clear interrupts flags
-      stm32f4.dma.clear_stream_interrupts (DMA_controller, stream);
+      stm32f4.dma.clear_interrupt_flags (DMA_controller, stream);
 
       -- Transfer direction
       DMA_controller.streams(stream).CR.DIR  := stm32f4.dma.MEMORY_TO_MEMORY;
@@ -103,15 +102,14 @@ package body tests.dma is
       --
 
       -- FIFO error interrupt enable
-      DMA_controller.streams(stream).FCR.FEIE   := 1;
-      DMA_controller.streams(stream).CR.DMEIE   := 1;
-      DMA_controller.streams(stream).CR.TEIE    := 1;
-      DMA_controller.streams(stream).CR.HTIE    := 1;
-      DMA_controller.streams(stream).CR.TCIE    := 1;
+      DMA_controller.streams(stream).FCR.FIFO_ERROR            := true;
+      DMA_controller.streams(stream).CR.DIRECT_MODE_ERROR      := true;
+      DMA_controller.streams(stream).CR.TRANSFER_ERROR         := true;
+      DMA_controller.streams(stream).CR.HALF_TRANSFER_COMPLETE := true;
+      DMA_controller.streams(stream).CR.TRANSFER_COMPLETE      := true;
 
-      stm32f4.periphs.NVIC.IPR(stm32f4.nvic.DMA2_Stream_3).priority := 0;
-      stm32f4.periphs.NVIC.ISER1.irq(stm32f4.nvic.DMA2_Stream_3)
-         := stm32f4.nvic.IRQ_ENABLED;
+      stm32f4.nvic.set_priority (stm32f4.nvic.DMA2_Stream_3, 0);
+      stm32f4.nvic.enable_irq (stm32f4.nvic.DMA2_Stream_3);
 
       --
       -- Launch transfer!
@@ -123,34 +121,33 @@ package body tests.dma is
       loop
          declare 
             interrupted : boolean;
-            flags       : stm32f4.dma.interrupts.t_interrupt_flags;
+            status      : stm32f4.dma.t_DMA_stream_ISR;
          begin
 
             irq_handler.has_been_interrupted (interrupted);
 
             if interrupted then
                end_time := ada.real_time.clock;
-               flags    := irq_handler.get_flags;
+               status    := irq_handler.get_saved_ISR;
 
-               if flags.FIFO_ERROR then
-                  serial.put ("FIFO error"); serial.new_line;
+               if status.FIFO_ERROR then
+                  serial.put_line ("FIFO error");
                end if;
 
-               if flags.DIRECT_MODE_ERROR then
-                  serial.put ("Direct mode error"); serial.new_line;
+               if status.DIRECT_MODE_ERROR then
+                  serial.put_line ("Direct mode error");
                end if;
 
-               if flags.TRANSFER_ERROR then
-                  serial.put ("Transfer error"); serial.new_line;
+               if status.TRANSFER_ERROR then
+                  serial.put_line ("Transfer error");
                end if;
 
-               if flags.HALF_TRANSFER_COMPLETE then
-                  serial.put ("Half transfer"); 
-                  serial.new_line;
+               if status.HALF_TRANSFER_COMPLETE then
+                  serial.put_line ("Half transfer"); 
                end if;
 
-               if flags.TRANSFER_COMPLETE then
-                  serial.put ("Transfer complete"); serial.new_line;
+               if status.TRANSFER_COMPLETE then
+                  serial.put_line ("Transfer complete");
                   exit;
                end if;
 

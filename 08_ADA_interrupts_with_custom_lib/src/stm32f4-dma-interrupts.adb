@@ -20,11 +20,11 @@ package body stm32f4.dma.interrupts is
       end has_been_interrupted;
 
 
-      function get_flags return t_interrupt_flags
+      function get_saved_ISR return t_DMA_stream_ISR
       is
       begin
-         return flags;
-      end get_flags;
+         return saved_ISR;
+      end get_saved_ISR;
 
 
       --
@@ -32,59 +32,13 @@ package body stm32f4.dma.interrupts is
       --
 
       procedure interrupt_handler is 
+         -- Interrupt Status Register
+         ISR : constant t_DMA_stream_ISR :=
+            get_stream_ISR (controller.all, stream);
       begin
-         -- Clear interrupts flags
-         if stream_interrupt_is_set
-               (controller.all, stream, FIFO_ERROR)
-         then
-            clear_stream_interrupt (controller.all, stream, FIFO_ERROR);
-            flags.FIFO_ERROR := true;
-         else
-            flags.FIFO_ERROR := false;
-         end if;
-
-         if stream_interrupt_is_set
-              (controller.all, stream, DIRECT_MODE_ERROR)
-         then
-            clear_stream_interrupt
-              (controller.all, stream, DIRECT_MODE_ERROR);
-            flags.DIRECT_MODE_ERROR := true;
-         else
-            flags.DIRECT_MODE_ERROR := false;
-         end if;
-
-         if stream_interrupt_is_set
-              (controller.all, stream, TRANSFER_ERROR)
-         then
-            clear_stream_interrupt
-              (controller.all, stream, TRANSFER_ERROR);
-            flags.TRANSFER_ERROR := true;
-         else
-            flags.TRANSFER_ERROR := false;
-         end if;
-
-         if stream_interrupt_is_set
-              (controller.all, stream, HALF_TRANSFER_COMPLETE) 
-         then
-            clear_stream_interrupt
-              (controller.all, stream, HALF_TRANSFER_COMPLETE);
-            flags.HALF_TRANSFER_COMPLETE := true;
-         else
-            flags.HALF_TRANSFER_COMPLETE := false;
-         end if;
-
-         if stream_interrupt_is_set
-              (controller.all, stream, TRANSFER_COMPLETE) 
-         then
-            clear_stream_interrupt
-              (controller.all, stream, TRANSFER_COMPLETE);
-            flags.TRANSFER_COMPLETE := true;
-         else
-            flags.TRANSFER_COMPLETE := false;
-         end if;
-
          interrupted := true;
-
+         saved_ISR   := ISR;
+         clear_interrupt_flags (controller.all, stream);
       end interrupt_handler;
 
    end handler;

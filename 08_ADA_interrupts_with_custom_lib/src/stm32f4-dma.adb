@@ -1,6 +1,7 @@
+with system; use system;
+with stm32f4.periphs;
 
 package body stm32f4.dma is
-
 
    function get_stream_ISR
      (DMA_controller : t_DMA_controller;
@@ -23,24 +24,6 @@ package body stm32f4.dma is
    end get_stream_ISR;
 
 
-   function stream_interrupt_is_set
-     (controller  : t_DMA_controller;
-      stream      : t_DMA_stream_index;
-      interrupt   : DMA_interrupts)
-      return boolean
-   is
-      ISR : constant t_DMA_stream_ISR := get_stream_ISR (controller, stream);
-   begin
-      case interrupt is
-         when FIFO_ERROR               => return ISR.FEIF  = 1;
-         when DIRECT_MODE_ERROR        => return ISR.DMEIF = 1;
-         when TRANSFER_ERROR           => return ISR.TEIF  = 1;
-         when HALF_TRANSFER_COMPLETE   => return ISR.HTIF  = 1;
-         when TRANSFER_COMPLETE        => return ISR.TCIF  = 1;
-      end case;
-   end stream_interrupt_is_set;
-
-
    procedure set_IFCR
      (DMA_controller : in out t_DMA_controller;
       stream         : t_DMA_stream_index;
@@ -60,41 +43,71 @@ package body stm32f4.dma is
    end set_IFCR;
 
 
-   procedure clear_stream_interrupt
+   procedure clear_interrupt_flag
      (controller  : in out t_DMA_controller;
       stream      : t_DMA_stream_index;
-      interrupt   : DMA_interrupts)
+      interrupt   : t_DMA_interrupts)
    is
-      IFCR : t_DMA_stream_clear_interrupts := (others => 0);
+      IFCR : t_DMA_stream_clear_interrupts := (others => false);
    begin
 
       case interrupt is
-         when FIFO_ERROR               => IFCR.CFEIF  := 1;
-         when DIRECT_MODE_ERROR        => IFCR.CDMEIF := 1;
-         when TRANSFER_ERROR           => IFCR.CTEIF  := 1;
-         when HALF_TRANSFER_COMPLETE   => IFCR.CHTIF  := 1;
-         when TRANSFER_COMPLETE        => IFCR.CTCIF  := 1;
+         when FIFO_ERROR         => IFCR.CLEAR_FIFO_ERROR_IF := true;
+         when DIRECT_MODE_ERROR  => IFCR.CLEAR_DIRECT_MODE_ERROR_IF := true;
+         when TRANSFER_ERROR     => IFCR.CLEAR_TRANSFER_ERROR_IF := true;
+         when HALF_TRANSFER_COMPLETE => IFCR.CLEAR_HALF_TRANSFER_IF := true;
+         when TRANSFER_COMPLETE  => IFCR.CLEAR_TRANSFER_COMPLETE_IF := true;
       end case;
 
       set_IFCR (controller, stream, IFCR);
 
-   end clear_stream_interrupt;
+   end clear_interrupt_flag;
 
 
-   procedure clear_stream_interrupts
+   procedure clear_interrupt_flags
      (controller  : in out t_DMA_controller;
       stream      : t_DMA_stream_index)
    is
-      IFCR : constant t_DMA_stream_clear_interrupts :=
-        (CFEIF       => 1,
-         reserved_1  => 0,
-         CDMEIF      => 1,
-         CTEIF       => 1,
-         CHTIF       => 1,
-         CTCIF       => 1);
+      IFCR : constant t_DMA_stream_clear_interrupts := (others => true);
    begin
       set_IFCR (controller, stream, IFCR);
-   end clear_stream_interrupts;
+   end clear_interrupt_flags;
+
+
+   function get_irq_number
+     (DMA_controller : t_DMA_controller;
+      stream         : t_DMA_stream_index)
+      return nvic.interrupt
+   is
+      irq : nvic.interrupt;
+   begin
+      if DMA_controller'address = periphs.DMA1'address then
+         case stream is
+            when 0 => irq := nvic.DMA1_Stream_0;
+            when 1 => irq := nvic.DMA1_Stream_1;
+            when 2 => irq := nvic.DMA1_Stream_2;
+            when 3 => irq := nvic.DMA1_Stream_3;
+            when 4 => irq := nvic.DMA1_Stream_4;
+            when 5 => irq := nvic.DMA1_Stream_5;
+            when 6 => irq := nvic.DMA1_Stream_6;
+            when 7 => irq := nvic.DMA1_Stream_7;
+         end case;
+      elsif DMA_controller'address = periphs.DMA2'address then
+         case stream is
+            when 0 => irq := nvic.DMA2_Stream_0;
+            when 1 => irq := nvic.DMA2_Stream_1;
+            when 2 => irq := nvic.DMA2_Stream_2;
+            when 3 => irq := nvic.DMA2_Stream_3;
+            when 4 => irq := nvic.DMA2_Stream_4;
+            when 5 => irq := nvic.DMA2_Stream_5;
+            when 6 => irq := nvic.DMA2_Stream_6;
+            when 7 => irq := nvic.DMA2_Stream_7;
+         end case;
+      else
+         raise program_error;
+      end if;
+      return irq;
+   end get_irq_number;
 
 
 end stm32f4.dma;
