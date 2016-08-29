@@ -1,5 +1,3 @@
-with System.STM32; -- System package
-
 with stm32f4; use stm32f4;
 with stm32f4.periphs;
 with stm32f4.usart;
