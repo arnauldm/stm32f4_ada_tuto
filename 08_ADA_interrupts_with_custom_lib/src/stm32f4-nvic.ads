@@ -121,4 +121,7 @@ package stm32f4.nvic is
       IPR   at 16#300# range 0 .. (8*81)-1;
    end record;
 
+   procedure set_priority (irq : interrupt; priority : uint4);
+   procedure enable_irq (irq : interrupt);
+
 end stm32f4.nvic;
