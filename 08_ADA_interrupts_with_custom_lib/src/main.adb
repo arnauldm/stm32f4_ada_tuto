@@ -7,37 +7,25 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
 
-with stm32f4.sdio.sd_card;
---with tests.dma;
+with tests.dma;   pragma unreferenced (tests.dma);
+with tests.sdio;  pragma unreferenced (tests.sdio);
 
 procedure main is
    counter  : integer         := 0;
    period   : constant ada.real_time.time_span := 
       ada.real_time.milliseconds (1000);
-   buf      : stm32f4.byte_array (1 .. 512);
-   ok       : boolean;
 begin
 
    -- Initialize USART 
    serial.initialize;
 
-   -- Testing the DMA
+   -- Testing 
    --tests.dma.transfer_memory_to_memory;
-
-   stm32f4.sdio.sd_card.initialize;
-   stm32f4.sdio.sd_card.read_blocks_dma (1, buf, ok);
-
-   if not ok then
-      serial.put_line ("error: stm32f4.sdio.sd_card.read_blocks (1, ...)");
-   else
-      for i in buf'range loop
-         serial.put (byte'image (buf(i)));
-      end loop;
-   end if;
+   tests.sdio.read_with_dma;
 
    -- Endless loop
    loop
-      serial.put ('.');
+      --serial.put ('.');
       counter := counter + 1;
       delay until ada.real_time.clock + period;
    end loop;

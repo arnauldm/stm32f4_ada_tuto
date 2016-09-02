@@ -1,3 +1,4 @@
+with ada.unchecked_conversion;
 with stm32f4.dma;
 
 --
@@ -45,16 +46,25 @@ package stm32f4.sdio is
 
    type t_SDIO_CLKCR is record
       CLKDIV   : byte;        -- Clock divide factor
-      CLKEN    : bit;         -- Clock enable bit
-      PWRSAV   : bit;         -- Power saving configuration bit
-      BYPASS   : bit;         -- Clock divider bypass enable bit
+      CLKEN    : boolean;     -- Clock enable bit
+      PWRSAV   : boolean;     -- Power saving configuration bit
+      BYPASS   : boolean;     -- Clock divider bypass enable bit
       WIDBUS   : t_widbus;    -- Wide bus mode enable bit
       NEGEDGE  : t_negedge;   -- SDIO_CK dephasing selection bit
-      HWFC_EN  : bit;         -- HW Flow Control enable
-      reserved_15    : bit;
-      reserved_16_31 : short;
+      HWFC_EN  : boolean;     -- HW Flow Control enable
+      -- reserved_15_31
    end record
-      with pack, size => 32, volatile_full_access;
+      with size => 32, volatile_full_access;
+
+   for t_SDIO_CLKCR use record
+      CLKDIV   at 0 range 0 .. 7;
+      CLKEN    at 0 range 8 .. 8;
+      PWRSAV   at 0 range 9 .. 9;
+      BYPASS   at 0 range 10 .. 10;
+      WIDBUS   at 0 range 11 .. 12;
+      NEGEDGE  at 0 range 13 .. 13;
+      HWFC_EN  at 0 range 14 .. 14;
+   end record;
 
    ---------------------------------------
    -- SDIO argument register (SDIO_ARG) --
@@ -191,11 +201,21 @@ package stm32f4.sdio is
       RWSTART     : bit       := 0;          -- Read wait start
       RWSTOP      : bit       := 0;          -- Read wait stop
       RWMOD       : t_rwmode  := RWMOD_SDIO_D2; -- Read wait mode
-      SDIOEN      : bit       := 0;          -- SD I/O enable functions
-      reserved_12_15 : uint4  := 0;
-      reserved_16_31 : short  := 0;
+      SDIOEN      : bit       := 0;          -- SD I/O-card-specific operation
    end record
       with pack, size => 32, volatile_full_access;
+
+   for t_SDIO_DCTRL use record
+      DTEN        at 0 range 0 .. 0;
+      DTDIR       at 0 range 1 .. 1;
+      DTMODE      at 0 range 2 .. 2;
+      DMAEN       at 0 range 3 .. 3;
+      DBLOCKSIZE  at 0 range 4 .. 7;
+      RWSTART     at 0 range 8 .. 8;
+      RWSTOP      at 0 range 9 .. 9;
+      RWMOD       at 0 range 10 .. 10;
+      SDIOEN      at 0 range 11 .. 11;
+   end record;
 
    ----------------------------------------------
    -- SDIO data counter register (SDIO_DCOUNT) --
@@ -295,34 +315,61 @@ package stm32f4.sdio is
    ------------------------------------
 
    type t_SDIO_MASK is record
-      CCRCFAILIE : bit; -- Command CRC fail interrupt enable
-      DCRCFAILIE : bit; -- Data CRC fail interrupt enable
-      CTIMEOUTIE : bit; -- Command timeout interrupt enable
-      DTIMEOUTIE : bit; -- Data timeout interrupt enable
-      TXUNDERRIE : bit; -- Tx FIFO underrun error interrupt enable
-      RXOVERRIE  : bit; -- Rx FIFO overrun error interrupt enable
-      CMDRENDIE  : bit; -- Command response received interrupt enable
-      CMDSENTIE  : bit; -- Command sent interrupt enable
-      DATAENDIE  : bit; -- Data end interrupt enable
-      STBITERRIE : bit; -- Start bit error interrupt enable
-      DBCKENDIE  : bit; -- Data block end interrupt enable
-      CMDACTIE   : bit; -- Command acting interrupt enable
-      TXACTIE    : bit; -- Data transmit acting interrupt enable
-      RXACTIE    : bit; -- Data receive acting interrupt enable
-      TXFIFOHEIE : bit; -- Tx FIFO half empty interrupt enable
-      RXFIFOHFIE : bit; -- Rx FIFO half empty interrupt enable
-      TXFIFOFIE  : bit; -- Tx FIFO full interrupt enable
-      RXFIFOFIE  : bit; -- Rx FIFO full interrupt enable
-      TXFIFOEIE  : bit; -- Tx FIFO empty interrupt enable
-      RXFIFOEIE  : bit; -- Rx FIFO empty interrupt enable
-      TXDAVLIE   : bit; -- Data available in Tx FIFO interrupt enable
-      RXDAVLIE   : bit; -- Data available in Rx FIFO interrupt enable
-      SDIOITIE   : bit; -- SDIO mode interrupt received interrupt enable
-      CEATAENDIE : bit; -- CE-ATA command completion signal received
-                        -- interrupt enable
-      reserved_24_31 : byte;
+      CCRCFAIL   : boolean; -- Command CRC fail interrupt enable
+      DCRCFAIL   : boolean; -- Data CRC fail interrupt enable
+      CTIMEOUT   : boolean; -- Command timeout interrupt enable
+      DTIMEOUT   : boolean; -- Data timeout interrupt enable
+      TXUNDERR   : boolean; -- Tx FIFO underrun error interrupt enable
+      RXOVERR    : boolean; -- Rx FIFO overrun error interrupt enable
+      CMDREND    : boolean; -- Command response received interrupt enable
+      CMDSENT    : boolean; -- Command sent interrupt enable
+      DATAEND    : boolean; -- Data end interrupt enable
+      STBITERR   : boolean; -- Start bit error interrupt enable
+      DBCKEND    : boolean; -- Data block end interrupt enable
+      CMDACT     : boolean; -- Command acting interrupt enable
+      TXACT      : boolean; -- Data transmit acting interrupt enable
+      RXACT      : boolean; -- Data receive acting interrupt enable
+      TXFIFOHE   : boolean; -- Tx FIFO half empty interrupt enable
+      RXFIFOHF   : boolean; -- Rx FIFO half empty interrupt enable
+      TXFIFOF    : boolean; -- Tx FIFO full interrupt enable
+      RXFIFOF    : boolean; -- Rx FIFO full interrupt enable
+      TXFIFOE    : boolean; -- Tx FIFO empty interrupt enable
+      RXFIFOE    : boolean; -- Rx FIFO empty interrupt enable
+      TXDAVL     : boolean; -- Data available in Tx FIFO interrupt enable
+      RXDAVL     : boolean; -- Data available in Rx FIFO interrupt enable
+      SDIOIT     : boolean; -- SDIO mode interrupt received interrupt enable
+      CEATAEND   : boolean; -- CE-ATA command completion signal received
+                            -- interrupt enable
+      -- reserved_24_31 
    end record
-      with pack, size => 32, volatile_full_access;
+      with size => 32, volatile_full_access;
+
+   for t_SDIO_MASK use record
+      CCRCFAIL   at 0 range 0 .. 0;
+      DCRCFAIL   at 0 range 1 .. 1;
+      CTIMEOUT   at 0 range 2 .. 2;
+      DTIMEOUT   at 0 range 3 .. 3;
+      TXUNDERR   at 0 range 4 .. 4;
+      RXOVERR    at 0 range 5 .. 5;
+      CMDREND    at 0 range 6 .. 6;
+      CMDSENT    at 0 range 7 .. 7;
+      DATAEND    at 0 range 8 .. 8;
+      STBITERR   at 0 range 9 .. 9;
+      DBCKEND    at 0 range 10 .. 10;
+      CMDACT     at 0 range 11 .. 11;
+      TXACT      at 0 range 12 .. 12;
+      RXACT      at 0 range 13 .. 13;
+      TXFIFOHE   at 0 range 14 .. 14;
+      RXFIFOHF   at 0 range 15 .. 15;
+      TXFIFOF    at 0 range 16 .. 16;
+      RXFIFOF    at 0 range 17 .. 17;
+      TXFIFOE    at 0 range 18 .. 18;
+      RXFIFOE    at 0 range 19 .. 19;
+      TXDAVL     at 0 range 20 .. 20;
+      RXDAVL     at 0 range 21 .. 21;
+      SDIOIT     at 0 range 22 .. 22;
+      CEATAEND   at 0 range 23 .. 23;
+   end record;
 
    -----------------------------------------------
    -- SDIO FIFO counter register (SDIO_FIFOCNT) --
@@ -335,17 +382,14 @@ package stm32f4.sdio is
    end record
       with pack, size => 32, volatile_full_access;
 
+   function to_word is new ada.unchecked_conversion
+     (t_SDIO_FIFOCNT, word);
+
    -----------------------------------------
    -- SDIO data FIFO register (SDIO_FIFO) --
    -----------------------------------------
 
-   -- Receive and transmit FIFO data
-   subtype t_SDIO_FIFO_DATA is word;
-
-   -- The FIFO data occupies 32 entries of 32-bit words, from address:
-   -- SDIO base + 0x080 to SDIO base + 0xFC
-   type t_SDIO_FIFO is array (1 .. 32) of t_SDIO_FIFO_DATA
-      with pack, size => 32 * 32;
+   subtype t_SDIO_FIFO is word;
 
    ---------------------
    -- SDIO Peripheral --
@@ -390,7 +434,7 @@ package stm32f4.sdio is
       ICR      at 16#38# range 0 .. 31;
       MASK     at 16#3C# range 0 .. 31;
       FIFOCNT  at 16#48# range 0 .. 31;
-      FIFO     at 16#80# range 0 .. 32*32 - 1;
+      FIFO     at 16#80# range 0 .. 32;
    end record;
 
    ---------------

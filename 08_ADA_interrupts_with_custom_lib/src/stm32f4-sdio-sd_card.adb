@@ -93,7 +93,10 @@ package body stm32f4.sdio.sd_card is
 
       for i in 1 .. 100 loop
          sd_card.ocr :=
-           (VDD_3_DOT_3 => true, CCS => SDHC_or_SDXC, power_up => 0,
+           (VDD_3_DOT_3 => true,
+            VDD_1_DOT_8 => false,
+            CCS         => SDHC_or_SDXC,
+            power_up    => 0,
             others => <>);
 
          -- ACMD41 expect an R3 response : failed CRC and wrong RESPCMD must be
@@ -152,35 +155,39 @@ package body stm32f4.sdio.sd_card is
       end if;
 
       --
-      -- Select the detected SD card
+      -- Set 4-bit bus transfer
       --
 
-      serial.put_line ("SELECT_CARD (CMD7)"); 
+      -- Select the detected SD card
       send_command (CMD7, sd_card.id, sdio.SHORT_RESPONSE, sdio_status, success);
 
       if not success then
          goto bad_return;
       end if;
 
-      --
-      -- Set 4-bit bus transfer
-      --
-
       -- Note: defines the data bus width (2#00# = 1 bit or 2#10# = 4 bits bus)
       -- to be used for data transfer.
       send_app_command
         (sd_card.id, ACMD6, 2#10#, sdio.SHORT_RESPONSE, sdio_status, success);
-      
+
       if not success then
          goto bad_return;
       end if;
 
-      --
-      -- Now use the card to nominal speed
-      --
+      -- Set the new clock parameters. Now use the card to nominal speed
+      declare
+         clkcr : t_SDIO_CLKCR := periphs.SDIO_CARD.CLKCR;
+      begin
+         clkcr.clkdiv := 0;
+         clkcr.widbus := WIDBUS_4WIDE_MODE;
+         periphs.SDIO_CARD.CLKCR := clkcr;
+      end;
 
-      delay until ada.real_time.clock + ada.real_time.microseconds (1);
-      periphs.SDIO_CARD.CLKCR.CLKDIV   := 0;
+      case periphs.SDIO_CARD.CLKCR.WIDBUS is
+         when WIDBUS_1WIDE_MODE => serial.put_line ("bus width: 1 bit");
+         when WIDBUS_4WIDE_MODE => serial.put_line ("bus width: 4 bit");
+         when others => serial.put_line ("bus width: ????");
+      end case;
 
       -- Successful return
       serial.put_line ("SD card initialized");
@@ -204,8 +211,6 @@ package body stm32f4.sdio.sd_card is
       status         : out sdio.t_SDIO_STA;
       success        : out boolean)
    is
-      function to_mask is new ada.unchecked_conversion
-        (word, sdio.t_SDIO_MASK);
       function to_word is new ada.unchecked_conversion
         (sdio.t_SDIO_RESPx, word);
       function to_word is new ada.unchecked_conversion
@@ -216,10 +221,10 @@ package body stm32f4.sdio.sd_card is
       cmd := periphs.SDIO_CARD.CMD;
 
       -- Clear status flags (cf. default value)
-      periphs.SDIO_CARD.ICR  := (others => <>);
+      periphs.SDIO_CARD.ICR  := (others => CLEAR);
 
-      -- Clear interrupts
-      periphs.SDIO_CARD.MASK := to_mask (0);
+      -- Disable interrupts
+      periphs.SDIO_CARD.MASK := (others => false);
 
       -- Set the command parameters
       periphs.SDIO_CARD.ARG   := argument;
@@ -227,7 +232,7 @@ package body stm32f4.sdio.sd_card is
       cmd.WAITRESP            := response_type;
       cmd.CPSMEN              := 1;
 
-      -- SDIO card host enabled to send a command
+      -- /!\ Command is launched here /!\
       periphs.SDIO_CARD.CMD   := cmd;
 
       -- Block till we get a response
@@ -249,12 +254,17 @@ package body stm32f4.sdio.sd_card is
       status := periphs.SDIO_CARD.STATUS;
 
       if DEBUG then
-         serial.put_line
+         serial.put
            ("RESPCMD: " & word'image (to_word (periphs.SDIO_CARD.RESPCMD)) &
-            ", RESP1: " & word'image (to_word (periphs.SDIO_CARD.RESP1))   &
-            ", RESP2: " & word'image (to_word (periphs.SDIO_CARD.RESP2))   &
-            ", RESP3: " & word'image (to_word (periphs.SDIO_CARD.RESP3))   &
-            ", RESP4: " & word'image (to_word (periphs.SDIO_CARD.RESP4)));
+            ", RESP1: " & word'image (to_word (periphs.SDIO_CARD.RESP1)));
+         if response_type = sdio.SHORT_RESPONSE then
+            serial.new_line;
+         else
+            serial.put_line
+              (", RESP2: " & word'image (to_word (periphs.SDIO_CARD.RESP2))   &
+               ", RESP3: " & word'image (to_word (periphs.SDIO_CARD.RESP3))   &
+               ", RESP4: " & word'image (to_word (periphs.SDIO_CARD.RESP4)));
+         end if;
       end if;
 
       -- Timeout error
@@ -341,13 +351,12 @@ package body stm32f4.sdio.sd_card is
 
    procedure read_blocks
      (bl_num   : in  word;       -- block number
-      output   : out byte_array;  -- output
+      output   : out byte_array; -- output
       success  : out boolean)
    is
       sdio_status    : sdio.t_SDIO_STA;
       n_blocks       : positive;
       bl_addr        : word;
-      idx            : natural;
    begin
 
       -- Important notes :
@@ -388,9 +397,7 @@ package body stm32f4.sdio.sd_card is
       --
 
       -- Reading how many blocks ?
-      n_blocks := output'length / 512;
-
-      if n_blocks > 1 then
+      if output'length > 512 then
 
          send_command (CMD18_READ_MULTIPLE_BLOCK, bl_addr,
             sdio.SHORT_RESPONSE, sdio_status, success);
@@ -415,28 +422,46 @@ package body stm32f4.sdio.sd_card is
       --
       -- Polling flags and reading datas
       --
+      declare
+         subtype quad is byte_array (1 .. 4);
+         function to_4_bytes is new ada.unchecked_conversion
+           (word, quad);
+         idx      : natural := output'first;
+         status   : t_SDIO_STA;
+      begin
+         loop
+            status := periphs.SDIO_CARD.STATUS;
+            exit when
+               status.DCRCFAIL or status.DTIMEOUT or status.DATAEND or
+               status.DBCKEND  or status.RXOVERR;
 
-      idx   := output'first;
-
-      while
-         not periphs.SDIO_CARD.STATUS.DCRCFAIL and -- data CRC failed
-         not periphs.SDIO_CARD.STATUS.DTIMEOUT and -- data timeout
-         not periphs.SDIO_CARD.STATUS.RXOVERR  and -- FIFO error
-         not periphs.SDIO_CARD.STATUS.DATAEND      -- data end
-      loop
-
-         declare
-            subtype quad is byte_array (1 .. 4);
-            function to_4_bytes is new ada.unchecked_conversion
-              (word, quad);
-         begin
-            for i in periphs.SDIO_CARD.FIFO'range loop
-               output (idx .. idx + 3) := to_4_bytes (periphs.SDIO_CARD.FIFO (i));
+            for i in 1 .. to_word (periphs.SDIO_CARD.FIFOCNT)
+            loop
+               output (idx .. idx + 3) := to_4_bytes (periphs.SDIO_CARD.FIFO);
                idx := idx + 4;
             end loop;
-         end;
+         end loop;
+      end;
 
-      end loop;
+      if periphs.SDIO_CARD.STATUS.DCRCFAIL then
+         serial.put_line ("DCRCFAIL");
+         success := false;
+      end if;
+
+      if periphs.SDIO_CARD.STATUS.DTIMEOUT then
+         serial.put_line ("DTIMEOUT");
+         success := false;
+      end if;
+
+      if periphs.SDIO_CARD.STATUS.RXOVERR then
+         serial.put_line ("RXOVERR");
+         success := false;
+      end if;
+
+      if periphs.SDIO_CARD.STATUS.DATAEND then
+         serial.put_line ("DATAEND");
+         success := true;
+      end if;
 
    end read_blocks;
 
@@ -452,11 +477,9 @@ package body stm32f4.sdio.sd_card is
       sdio_status          : sdio.t_SDIO_STA;
    begin
 
-      set_dma_transfer
-        (DMA_controller => periphs.DMA2,
-         stream         => 6,
-         direction      => dma.PERIPHERAL_TO_MEMORY,
-         memory         => output);
+      --
+      -- Send 'read' command
+      --
 
       if sd_card.ccs = SDHC_or_SDXC then
          bl_addr  := bl_num;
@@ -472,17 +495,7 @@ package body stm32f4.sdio.sd_card is
          end if;
       end if;
 
-      periphs.SDIO_CARD.DLEN.DATALENGTH := output'length;
-
-      periphs.SDIO_CARD.DCTRL :=
-        (DTEN        => 1,
-         DTDIR       => TO_HOST,
-         DTMODE      => MODE_BLOCK,
-         DMAEN       => 1, -- DMA enable
-         DBLOCKSIZE  => BLOCK_512BYTES,
-         others      => <>);
-
-      if output'length / 512 > 1 then
+      if output'length > 512 then
 
          send_command (CMD18_READ_MULTIPLE_BLOCK, bl_addr,
             sdio.SHORT_RESPONSE, sdio_status, success);
@@ -504,8 +517,37 @@ package body stm32f4.sdio.sd_card is
 
       end if;
 
+      -- 
+      -- Setup DMA
+      -- 
+
+      set_dma_transfer
+        (DMA_controller => periphs.DMA2,
+         stream         => 6,
+         direction      => dma.PERIPHERAL_TO_MEMORY,
+         memory         => output);
 
       periphs.DMA2.streams(6).CR.EN := 1;
+
+      periphs.SDIO_CARD.DLEN.DATALENGTH := output'length;
+
+      periphs.SDIO_CARD.MASK :=
+        (DCRCFAIL => true,
+         DTIMEOUT => true,
+         RXOVERR  => true,
+         DATAEND  => true,
+         DBCKEND  => true,
+         RXFIFOHF => true,
+         RXFIFOF  => true,
+         others   => false);
+
+      periphs.SDIO_CARD.DCTRL :=
+        (DTEN        => 1,
+         DTDIR       => TO_HOST,
+         DTMODE      => MODE_BLOCK,
+         DMAEN       => 1, -- DMA enable
+         DBLOCKSIZE  => BLOCK_512BYTES,
+         others      => <>);
 
       loop
 
@@ -519,23 +561,23 @@ package body stm32f4.sdio.sd_card is
             dma_interrupt_status := DMA_sdio_to_mem_handler.get_saved_ISR;
 
             if dma_interrupt_status.FIFO_ERROR then
-               serial.put_line ("FIFO error");
+               serial.put_line ("DMA: FIFO error");
             end if;
 
             if dma_interrupt_status.DIRECT_MODE_ERROR then
-               serial.put_line ("Direct mode error");
+               serial.put_line ("DMA: Direct mode error");
             end if;
 
             if dma_interrupt_status.TRANSFER_ERROR then
-               serial.put_line ("Transfer error");
+               serial.put_line ("DMA: Transfer error");
             end if;
 
             if dma_interrupt_status.HALF_TRANSFER_COMPLETE then
-               serial.put_line ("Half transfer"); 
+               serial.put_line ("DMA: Half transfer"); 
             end if;
 
             if dma_interrupt_status.TRANSFER_COMPLETE then
-               serial.put_line ("Transfer complete");
+               serial.put_line ("DMA: Transfer complete");
                exit;
             end if;
 

@@ -39,7 +39,15 @@ package body stm32f4.sdio.interrupts is
          interrupted    := true;
          saved_status   := periphs.SDIO_CARD.STATUS;
          periphs.SDIO_CARD.ICR := (others => CLEAR);
-         serial.put ("<SDIO>"); -- DEBUG, TO REMOVE
+
+         -- DEBUG, TO REMOVE
+         declare
+            function to_word is new ada.unchecked_conversion
+              (sdio.t_SDIO_STA, word);
+         begin
+            serial.put_line
+              ("SDIO interrupt:" & word'image (to_word (saved_status)));
+         end;
       end interrupt_handler;
 
    end handler;

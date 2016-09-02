@@ -24,6 +24,7 @@ package body stm32f4.sdio is
    ----------------
 
    procedure initialize is
+      clock_register : t_SDIO_CLKCR;
    begin
 
       --
@@ -82,6 +83,8 @@ package body stm32f4.sdio is
       periphs.SDIO_CARD.POWER.PWRCTRL  := POWER_OFF;
       delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
+      clock_register := periphs.SDIO_CARD.CLKCR;
+
       -- /!\ RM0090, p. 1025, 1064-1065
       -- . SDIO adapter clock (SDIOCLK) = 48 MHz
       -- . CLKDIV defines the divide factor between the input clock
@@ -89,18 +92,22 @@ package body stm32f4.sdio is
       --      SDIO_CK frequency = SDIOCLK / [CLKDIV + 2]
       -- . While the SD/SDIO card or MultiMediaCard is in identification
       --   mode, the SDIO_CK frequency must be less than 400 kHz.
-      periphs.SDIO_CARD.CLKCR.CLKDIV   := 118;
+      clock_register.CLKDIV   := 118;
 
       -- Default bus mode: SDIO_D0 used (1 bit bus width)
-      periphs.SDIO_CARD.CLKCR.WIDBUS   := WIDBUS_1WIDE_MODE;
+      clock_register.WIDBUS   := WIDBUS_1WIDE_MODE;
 
       -- The HW flow control functionality is used to avoid FIFO underrun
       -- and overrun errors 
       -- Errata sheet STM: glitches => DCRCFAIL asserted. Do not use.
-      periphs.SDIO_CARD.CLKCR.HWFC_EN  := 0;
+      clock_register.HWFC_EN  := false;
 
       -- Errata sheet STM: NEGEDGE=1 (falling) should *not* be used
-      periphs.SDIO_CARD.CLKCR.NEGEDGE  := RISING_EDGE;
+      clock_register.NEGEDGE  := RISING_EDGE;
+
+      -- Writing params in the register
+      periphs.SDIO_CARD.CLKCR := clock_register;
+      delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       -- The data timeout period in card bus clock periods
       periphs.SDIO_CARD.DTIMER         := 16#FFFF_FFFF#;
@@ -110,32 +117,26 @@ package body stm32f4.sdio is
       delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       -- SDIO_CK is enabled
-      periphs.SDIO_CARD.CLKCR.CLKEN    := 1;
+      periphs.SDIO_CARD.CLKCR.CLKEN    := true;
       delay until ada.real_time.clock + ada.real_time.microseconds (1);
 
       --
       -- Setup IRQs 
       --
 
-      declare
-         function to_mask is new ada.unchecked_conversion
-           (word, t_SDIO_MASK);
-      begin
-         periphs.SDIO_CARD.MASK := to_mask (0);
-      end;
-
-      periphs.SDIO_CARD.MASK.CCRCFAILIE   := 1; -- Command CRC fail
-      periphs.SDIO_CARD.MASK.DCRCFAILIE   := 1; -- Data CRC fail
-      periphs.SDIO_CARD.MASK.CTIMEOUTIE   := 1; -- Command timeout
-      periphs.SDIO_CARD.MASK.DTIMEOUTIE   := 1; -- Data timeout
-      periphs.SDIO_CARD.MASK.TXUNDERRIE   := 1; -- Tx FIFO underrun error
-      periphs.SDIO_CARD.MASK.RXOVERRIE    := 1; -- Rx FIFO overrun error
-      periphs.SDIO_CARD.MASK.CMDRENDIE    := 1; -- Command response received
-      periphs.SDIO_CARD.MASK.CMDSENTIE    := 1; -- Command sent
-      periphs.SDIO_CARD.MASK.DATAENDIE    := 1; -- Data end
-      periphs.SDIO_CARD.MASK.STBITERRIE   := 1; -- Start bit error
-      periphs.SDIO_CARD.MASK.DBCKENDIE    := 1; -- Data block end
-      periphs.SDIO_CARD.MASK.CMDACTIE     := 1; -- Command acting 
+      periphs.SDIO_CARD.MASK :=
+        (CCRCFAIL => true,
+         DCRCFAIL => true,
+         CTIMEOUT => true,
+         DTIMEOUT => true,
+         TXUNDERR => true,
+         RXOVERR  => true,
+         DATAEND  => true,
+         DBCKEND  => true,
+         STBITERR => true,
+         RXFIFOHF => true,
+         RXFIFOF  => true,
+         others => false);
 
       nvic.enable_irq (nvic.SDIO);
 
@@ -175,10 +176,10 @@ package body stm32f4.sdio is
       DMA_controller.streams(stream).NDTR.NDT := short (memory'size / 8);
 
       -- Items size
-      DMA_controller.streams(stream).CR.PSIZE   := dma.TRANSFER_BYTE;
-      DMA_controller.streams(stream).CR.MSIZE   := dma.TRANSFER_BYTE;
-      DMA_controller.streams(stream).CR.PINC    := 1;
-      DMA_controller.streams(stream).CR.MINC    := 1;
+      DMA_controller.streams(stream).CR.PSIZE   := dma.TRANSFER_WORD;
+      DMA_controller.streams(stream).CR.MSIZE   := dma.TRANSFER_WORD;
+      DMA_controller.streams(stream).CR.PINC    := true;
+      DMA_controller.streams(stream).CR.MINC    := true;
       DMA_controller.streams(stream).CR.PINCOS  := dma.INCREMENT_PSIZE;
       
       -- Select the DMA channel 
