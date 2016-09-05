@@ -1,4 +1,3 @@
---with serial;
 
 package body stm32f4.dma.interrupts is
 
@@ -20,7 +19,7 @@ package body stm32f4.dma.interrupts is
       end has_been_interrupted;
 
 
-      function get_saved_ISR return t_DMA_stream_ISR
+      function get_saved_ISR return t_dma_stream_ISR
       is
       begin
          return saved_ISR;
@@ -33,7 +32,7 @@ package body stm32f4.dma.interrupts is
 
       procedure interrupt_handler is 
          -- Interrupt Status Register
-         ISR : constant t_DMA_stream_ISR :=
+         ISR : constant t_dma_stream_ISR :=
             get_stream_ISR (controller.all, stream);
       begin
          interrupted := true;

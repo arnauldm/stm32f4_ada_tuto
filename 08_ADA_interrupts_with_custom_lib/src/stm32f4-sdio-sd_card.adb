@@ -1,5 +1,4 @@
 with ada.interrupts.names;
-with ada.real_time; use ada.real_time;
 with stm32f4.periphs;
 with stm32f4.dma.interrupts;
 with stm32f4.sdio.interrupts;
@@ -9,16 +8,19 @@ package body stm32f4.sdio.sd_card is
 
    DEBUG    : constant boolean := true;
 
-   DMA_mem_to_sdio_handler : 
+   stream_memory_to_sdio : constant dma.t_dma_stream_index := 3;
+   stream_sdio_to_memory : constant dma.t_dma_stream_index := 6;
+
+   dma_handler_memory_to_sdio : 
       dma.interrupts.handler
         (controller  => stm32f4.periphs.DMA2'access,
-         stream      => 3,
+         stream      => stream_memory_to_sdio,
          IRQ         => Ada.Interrupts.Names.DMA2_Stream3_Interrupt);
 
-   DMA_sdio_to_mem_handler : 
+   dma_handler_sdio_to_memory : 
       dma.interrupts.handler
         (controller  => stm32f4.periphs.DMA2'access,
-         stream      => 6,
+         stream      => stream_sdio_to_memory,
          IRQ         => Ada.Interrupts.Names.DMA2_Stream6_Interrupt);
 
    type t_sd_card is record
@@ -355,7 +357,6 @@ package body stm32f4.sdio.sd_card is
       success  : out boolean)
    is
       sdio_status    : sdio.t_SDIO_STA;
-      n_blocks       : positive;
       bl_addr        : word;
    begin
 
@@ -477,8 +478,20 @@ package body stm32f4.sdio.sd_card is
       sdio_status          : sdio.t_SDIO_STA;
    begin
 
+      -- 
+      -- Setup and enable the DMA stream
+      -- 
+
+      set_dma_transfer
+        (dma_controller => periphs.DMA2,
+         stream         => stream_sdio_to_memory,
+         direction      => dma.PERIPHERAL_TO_MEMORY,
+         memory         => output);
+
+      periphs.DMA2.streams(stream_sdio_to_memory).CR.EN := true;
+
       --
-      -- Send 'read' command
+      -- Configure the data path
       --
 
       if sd_card.ccs = SDHC_or_SDXC then
@@ -494,6 +507,30 @@ package body stm32f4.sdio.sd_card is
             return;
          end if;
       end if;
+
+      periphs.SDIO_CARD.DLEN.DATALENGTH := output'length;
+
+      periphs.SDIO_CARD.MASK :=
+        (DCRCFAIL => true,
+         DTIMEOUT => true,
+         RXOVERR  => true,
+         DATAEND  => true,
+         DBCKEND  => true,
+         RXFIFOHF => true,
+         RXFIFOF  => true,
+         others   => false);
+
+      periphs.SDIO_CARD.DCTRL :=
+        (DTEN        => 1,
+         DTDIR       => TO_HOST,
+         DTMODE      => MODE_BLOCK,
+         DMAEN       => 1, -- DMA enable
+         DBLOCKSIZE  => BLOCK_512BYTES,
+         others      => <>);
+
+      --
+      -- Send command
+      --
 
       if output'length > 512 then
 
@@ -517,37 +554,9 @@ package body stm32f4.sdio.sd_card is
 
       end if;
 
-      -- 
-      -- Setup DMA
-      -- 
-
-      set_dma_transfer
-        (DMA_controller => periphs.DMA2,
-         stream         => 6,
-         direction      => dma.PERIPHERAL_TO_MEMORY,
-         memory         => output);
-
-      periphs.DMA2.streams(6).CR.EN := 1;
-
-      periphs.SDIO_CARD.DLEN.DATALENGTH := output'length;
-
-      periphs.SDIO_CARD.MASK :=
-        (DCRCFAIL => true,
-         DTIMEOUT => true,
-         RXOVERR  => true,
-         DATAEND  => true,
-         DBCKEND  => true,
-         RXFIFOHF => true,
-         RXFIFOF  => true,
-         others   => false);
-
-      periphs.SDIO_CARD.DCTRL :=
-        (DTEN        => 1,
-         DTDIR       => TO_HOST,
-         DTMODE      => MODE_BLOCK,
-         DMAEN       => 1, -- DMA enable
-         DBLOCKSIZE  => BLOCK_512BYTES,
-         others      => <>);
+      --
+      -- Loop until interrupted
+      --
 
       loop
 
@@ -555,30 +564,29 @@ package body stm32f4.sdio.sd_card is
          -- DMA interrupt
          -- 
 
-         DMA_sdio_to_mem_handler.has_been_interrupted (interrupted);
+         dma_handler_sdio_to_memory.has_been_interrupted (interrupted);
 
          if interrupted then
-            dma_interrupt_status := DMA_sdio_to_mem_handler.get_saved_ISR;
 
-            if dma_interrupt_status.FIFO_ERROR then
-               serial.put_line ("DMA: FIFO error");
-            end if;
-
-            if dma_interrupt_status.DIRECT_MODE_ERROR then
-               serial.put_line ("DMA: Direct mode error");
-            end if;
-
-            if dma_interrupt_status.TRANSFER_ERROR then
-               serial.put_line ("DMA: Transfer error");
-            end if;
-
-            if dma_interrupt_status.HALF_TRANSFER_COMPLETE then
-               serial.put_line ("DMA: Half transfer"); 
-            end if;
+            dma_interrupt_status := dma_handler_sdio_to_memory.get_saved_ISR;
 
             if dma_interrupt_status.TRANSFER_COMPLETE then
                serial.put_line ("DMA: Transfer complete");
                exit;
+            elsif dma_interrupt_status.FIFO_ERROR then
+               serial.put_line ("DMA: FIFO error");
+               exit;
+            elsif dma_interrupt_status.DIRECT_MODE_ERROR then
+               serial.put_line ("DMA: Direct mode error");
+               exit;
+            elsif dma_interrupt_status.TRANSFER_ERROR then
+               serial.put_line ("DMA: Transfer error");
+               exit;
+            elsif dma_interrupt_status.HALF_TRANSFER_COMPLETE then
+               serial.put_line ("DMA: half transfer complete");
+            else
+               serial.put_line ("DMA: unknown interrupt");
+               raise program_error;
             end if;
 
          end if;
@@ -590,18 +598,167 @@ package body stm32f4.sdio.sd_card is
          sdio.interrupts.handler.has_been_interrupted (interrupted);
 
          if interrupted then
+            serial.put_line ("<SDIO>");
             sdio_status := sdio.interrupts.handler.get_saved_status;
 
             if periphs.SDIO_CARD.STATUS.DATAEND then
                exit;
             else
-               serial.put_line ("SDIO interrupt: unexpected error!");
+               serial.put_line ("SDIO: other interrupt"); 
             end if;
          end if;
 
       end loop;
 
    end read_blocks_dma;
+
+
+   procedure write_blocks_dma
+     (bl_num   : in  word;       -- block number
+      input    : in  byte_array;
+      success  : out boolean)
+   is
+      bl_addr     : word;
+      interrupted : boolean;
+      dma_interrupt_status : dma.t_DMA_stream_ISR;
+      sdio_status          : sdio.t_SDIO_STA;
+   begin
+
+      -- 
+      -- Setup and enable the DMA stream
+      -- 
+
+      set_dma_transfer
+        (dma_controller => periphs.DMA2,
+         stream         => stream_memory_to_sdio,
+         direction      => dma.MEMORY_TO_PERIPHERAL,
+         memory         => input);
+
+      periphs.DMA2.streams(stream_memory_to_sdio).CR.EN := true;
+
+      --
+      -- Configure the data path
+      --
+
+      if sd_card.ccs = SDHC_or_SDXC then
+         bl_addr  := bl_num;
+      else -- SDSC
+         bl_addr  := bl_num * 512;
+         send_command
+           (CMD16_SET_BLOCKLEN, 512, sdio.SHORT_RESPONSE, sdio_status,
+            success);
+
+         if not success then
+            serial.put ("error: read_blocks: SET_BLOCKLEN failure");
+            return;
+         end if;
+      end if;
+
+      periphs.SDIO_CARD.DLEN.DATALENGTH := input'length;
+
+      periphs.SDIO_CARD.MASK :=
+        (DCRCFAIL => true,
+         DTIMEOUT => true,
+         TXUNDERR => true,
+         DATAEND  => true,
+         DBCKEND  => true,
+         TXFIFOF  => true,
+         others   => false);
+
+      periphs.SDIO_CARD.DCTRL :=
+        (DTEN        => 0,
+         DTDIR       => TO_CARD,
+         DTMODE      => MODE_BLOCK,
+         DMAEN       => 1, -- DMA enable
+         DBLOCKSIZE  => BLOCK_512BYTES,
+         others      => <>);
+
+      --
+      -- Send command
+      --
+
+      if input'length > 512 then
+
+         send_command (CMD25_WRITE_BLOCKS, bl_addr, sdio.SHORT_RESPONSE,
+            sdio_status, success);
+
+         if not success then
+            serial.put ("error: write_blocks_dma: WRITE_BLOCKS (CMD25) failure");
+            return;
+         end if;
+
+      else
+
+         send_command (CMD24_WRITE_BLOCK, bl_addr, sdio.SHORT_RESPONSE,
+            sdio_status, success);
+
+         if not success then
+            serial.put ("error: write_blocks_dma: WRITE_BLOCK (CMD24) failure");
+            return;
+         end if;
+
+      end if;
+
+      periphs.SDIO_CARD.DCTRL.DTEN := 1;
+
+      --
+      -- Loop until interrupted
+      --
+
+      loop
+         -- 
+         -- DMA interrupt
+         -- 
+         dma_handler_memory_to_sdio.has_been_interrupted (interrupted);
+
+         if interrupted then
+            dma_interrupt_status := dma_handler_memory_to_sdio.get_saved_ISR;
+
+            if dma_interrupt_status.TRANSFER_COMPLETE then
+               serial.put_line ("DMA: Transfer complete");
+               success := true;
+               exit;
+            elsif dma_interrupt_status.FIFO_ERROR then
+               serial.put_line ("DMA: FIFO error");
+               success := false;
+               exit;
+            elsif dma_interrupt_status.DIRECT_MODE_ERROR then
+               serial.put_line ("DMA: Direct mode error");
+               success := false;
+               exit;
+            elsif dma_interrupt_status.TRANSFER_ERROR then
+               serial.put_line ("DMA: Transfer error");
+               success := false;
+               exit;
+            elsif dma_interrupt_status.HALF_TRANSFER_COMPLETE then
+               serial.put_line ("DMA: half transfer complete");
+               success := false;
+            else
+               serial.put_line ("DMA: unknown interrupt");
+               raise program_error;
+            end if;
+         end if;
+
+         -- 
+         -- SDIO interrupt
+         -- 
+         sdio.interrupts.handler.has_been_interrupted (interrupted);
+
+         if interrupted then
+            serial.put_line ("<SDIO>");
+            sdio_status := sdio.interrupts.handler.get_saved_status;
+
+            if periphs.SDIO_CARD.STATUS.DATAEND then
+               exit;
+            else
+               serial.put_line ("SDIO: other interrupt"); 
+            end if;
+         end if;
+
+      end loop;
+
+   end write_blocks_dma;
+
 
 
 end stm32f4.sdio.sd_card;

@@ -1,23 +1,13 @@
 with ada.real_time; use ada.real_time;
-with ada.interrupts.names;
-with ada.unchecked_conversion;
 
 with stm32f4;
 with stm32f4.periphs;
 with stm32f4.gpio;
 with stm32f4.rcc;
 with stm32f4.nvic;
-with stm32f4.dma.interrupts;
---with serial;
+with serial;
 
 package body stm32f4.sdio is
-
-   DEBUG    : constant boolean := true;
-
-   outbuf   : byte_array (1 .. 256) := (others => 0);
-   inbuf    : byte_array (1 .. 256) := (others => 0);
-
-   DMA_controller : dma.t_DMA_controller renames stm32f4.periphs.DMA2;
 
    ----------------
    -- Initialize --
@@ -144,74 +134,84 @@ package body stm32f4.sdio is
 
 
    procedure set_dma_transfer
-     (DMA_controller : in out dma.t_DMA_controller;
-      stream         : dma.t_DMA_stream_index;
-      direction      : dma.t_data_transfer_dir;
+     (dma_controller : in out dma.t_dma_controller;
+      stream         : dma.t_dma_stream_index;
+      direction      : dma.t_transfer_dir;
       memory         : byte_array)
    is
    begin
 
+      -- Aligment should be on word * burst size bytes
+      if to_word (memory(memory'first)'address) mod 16 /= 0 then
+         serial.put_line ("set_dma_transfer: unaligned buffer");
+         raise program_error;
+      end if;
+
       -- Reset the stream
-      if (DMA_controller.streams(stream).CR.EN = 1) then
-         DMA_controller.streams(stream).CR.EN := 0;
+      if dma_controller.streams(stream).CR.EN  then
+         dma_controller.streams(stream).CR.EN := false;
          loop
-            exit when DMA_controller.streams(stream).CR.EN = 0;
+            exit when dma_controller.streams(stream).CR.EN = false;
          end loop;
       end if;
 
       -- Clear interrupts flags
-      dma.clear_interrupt_flags (DMA_controller, stream);
+      dma.clear_interrupt_flags (dma_controller, stream);
 
       -- Transfer direction 
-      DMA_controller.streams(stream).CR.DIR  := direction;
+      dma_controller.streams(stream).CR.DIR  := direction;
 
       -- Peripheral FIFO address
-      DMA_controller.streams(stream).PAR  := to_word
+      dma_controller.streams(stream).PAR  := to_word
         (periphs.SDIO_CARD.FIFO'address);
 
       -- Memory address
-      DMA_controller.streams(stream).M0AR := to_word (memory'address);
+      dma_controller.streams(stream).M0AR := to_word (memory'address);
 
-      -- Total number of items to be tranferred
-      DMA_controller.streams(stream).NDTR.NDT := short (memory'size / 8);
+      -- Total number of items (words) to be tranferred
+      dma_controller.streams(stream).NDTR.NDT := short (memory'size / 8) / 4;
 
-      -- Items size
-      DMA_controller.streams(stream).CR.PSIZE   := dma.TRANSFER_WORD;
-      DMA_controller.streams(stream).CR.MSIZE   := dma.TRANSFER_WORD;
-      DMA_controller.streams(stream).CR.PINC    := true;
-      DMA_controller.streams(stream).CR.MINC    := true;
-      DMA_controller.streams(stream).CR.PINCOS  := dma.INCREMENT_PSIZE;
-      
       -- Select the DMA channel 
-      DMA_controller.streams(stream).CR.CHSEL := 4; -- Channel 4
+      dma_controller.streams(stream).CR.CHSEL := 4; -- Channel 4
 
       -- Flow controler
-      DMA_controller.streams(stream).CR.PFCTRL 
-         := dma.DMA_FLOW_CONTROLLER;
+      dma_controller.streams(stream).CR.PFCTRL 
+         := dma.PERIPH_FLOW_CONTROLLER;
 
       -- Priority
-      DMA_controller.streams(stream).CR.PL   := dma.HIGH;
+      dma_controller.streams(stream).CR.PL   := dma.HIGH;
 
+      -- Items size
+      dma_controller.streams(stream).CR.MSIZE   := dma.TRANSFER_WORD;
+      dma_controller.streams(stream).CR.PSIZE   := dma.TRANSFER_WORD;
+      dma_controller.streams(stream).CR.MINC    := true;
+
+      -- Disabling the Increment mode useful because the peripheral source
+      -- is accessed through a single register.
+      dma_controller.streams(stream).CR.PINC    := false;
+
+      dma_controller.streams(stream).CR.PINCOS  := dma.INCREMENT_PSIZE;
+      
       -- DMA bursts
-      DMA_controller.streams(stream).CR.PBURST  := dma.INCR_4_BEATS;
-      DMA_controller.streams(stream).CR.MBURST  := dma.INCR_4_BEATS;
+      dma_controller.streams(stream).CR.PBURST  := dma.INCR_4_BEATS;
+      dma_controller.streams(stream).CR.MBURST  := dma.INCR_4_BEATS;
 
       -- FIFO mode
-      DMA_controller.streams(stream).FCR.DMDIS  := 1;
+      dma_controller.streams(stream).FCR.DMDIS  := 1;
 
       -- FIFO threshold
-      DMA_controller.streams(stream).FCR.FTH    := dma.FIFO_FULL;
+      dma_controller.streams(stream).FCR.FTH    := dma.FIFO_FULL;
 
       -- FIFO error interrupt enable
-      DMA_controller.streams(stream).FCR.FIFO_ERROR            := true;
-      DMA_controller.streams(stream).CR.DIRECT_MODE_ERROR      := true;
-      DMA_controller.streams(stream).CR.TRANSFER_ERROR         := true;
-      DMA_controller.streams(stream).CR.HALF_TRANSFER_COMPLETE := true;
-      DMA_controller.streams(stream).CR.TRANSFER_COMPLETE      := true;
+      dma_controller.streams(stream).FCR.FIFO_ERROR            := true;
+      dma_controller.streams(stream).CR.DIRECT_MODE_ERROR      := true;
+      dma_controller.streams(stream).CR.TRANSFER_ERROR         := true;
+      dma_controller.streams(stream).CR.HALF_TRANSFER_COMPLETE := true;
+      dma_controller.streams(stream).CR.TRANSFER_COMPLETE      := true;
 
       declare
          irq : constant nvic.interrupt :=
-            dma.get_irq_number (DMA_controller, stream);
+            dma.get_irq_number (dma_controller, stream);
       begin
          nvic.set_priority (irq, 0);
          nvic.enable_irq (irq);

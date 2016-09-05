@@ -28,6 +28,8 @@ package stm32f4.sdio.sd_card is
    CMD16    : constant sdio.t_cmd_index := 16;
    CMD17    : constant sdio.t_cmd_index := 17;
    CMD18    : constant sdio.t_cmd_index := 18;
+   CMD24    : constant sdio.t_cmd_index := 24;
+   CMD25    : constant sdio.t_cmd_index := 25;
    ACMD41   : constant sdio.t_cmd_index := 41;
    ACMD51   : constant sdio.t_cmd_index := 51;
    CMD52    : constant sdio.t_cmd_index := 52;
@@ -45,6 +47,8 @@ package stm32f4.sdio.sd_card is
    CMD16_SET_BLOCKLEN         : sdio.t_cmd_index renames CMD16;
    CMD17_READ_SINGLE_BLOCK    : sdio.t_cmd_index renames CMD17;
    CMD18_READ_MULTIPLE_BLOCK  : sdio.t_cmd_index renames CMD18;
+   CMD24_WRITE_BLOCK          : sdio.t_cmd_index renames CMD24;
+   CMD25_WRITE_BLOCKS         : sdio.t_cmd_index renames CMD25;
    ACMD41_SD_APP_OP_COND      : sdio.t_cmd_index renames ACMD41;
    ACMD51_SEND_SCR            : sdio.t_cmd_index renames ACMD51;
    CMD52_IO_RW_DIRECT         : sdio.t_cmd_index renames CMD52;
@@ -344,6 +348,11 @@ package stm32f4.sdio.sd_card is
    procedure read_blocks_dma
      (bl_num   : in  word;       -- block number
       output   : out byte_array; -- output
+      success  : out boolean);
+
+   procedure write_blocks_dma
+     (bl_num   : in  word;       -- block number
+      input    : in  byte_array; -- output
       success  : out boolean);
 
 end stm32f4.sdio.sd_card;

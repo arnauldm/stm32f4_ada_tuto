@@ -203,7 +203,7 @@ package stm32f4.sdio is
       RWMOD       : t_rwmode  := RWMOD_SDIO_D2; -- Read wait mode
       SDIOEN      : bit       := 0;          -- SD I/O-card-specific operation
    end record
-      with pack, size => 32, volatile_full_access;
+      with size => 32, volatile_full_access;
 
    for t_SDIO_DCTRL use record
       DTEN        at 0 range 0 .. 0;
@@ -446,9 +446,9 @@ package stm32f4.sdio is
 
    -- Enable DMA
    procedure set_dma_transfer
-     (DMA_controller : in out dma.t_DMA_controller;
-      stream         : dma.t_DMA_stream_index;
-      direction      : dma.t_data_transfer_dir;
+     (dma_controller : in out dma.t_dma_controller;
+      stream         : dma.t_dma_stream_index;
+      direction      : dma.t_transfer_dir;
       memory         : byte_array);
 
 end stm32f4.sdio;

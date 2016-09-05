@@ -12,7 +12,7 @@ package stm32f4.dma is
    -- DMA interrupt status registers (ISR) --
    ------------------------------------------
 
-   type t_DMA_stream_ISR is record
+   type t_dma_stream_ISR is record
       -- Stream FIFO error interrupt flag (FEIF)
       FIFO_ERROR              : boolean;
       -- Stream direct mode error interrupt flag (DMEIF)
@@ -26,7 +26,7 @@ package stm32f4.dma is
    end record
       with size => 6;
 
-   for t_DMA_stream_ISR use record
+   for t_dma_stream_ISR use record
       FIFO_ERROR              at 0 range 0 .. 0;
       DIRECT_MODE_ERROR       at 0 range 2 .. 2;
       TRANSFER_ERROR          at 0 range 3 .. 3;
@@ -39,11 +39,11 @@ package stm32f4.dma is
    --
 
    type t_DMA_LISR is record
-      stream_0       : t_DMA_stream_ISR;
-      stream_1       : t_DMA_stream_ISR;
+      stream_0       : t_dma_stream_ISR;
+      stream_1       : t_dma_stream_ISR;
       reserved_12_15 : uint4;
-      stream_2       : t_DMA_stream_ISR;
-      stream_3       : t_DMA_stream_ISR;
+      stream_2       : t_dma_stream_ISR;
+      stream_3       : t_dma_stream_ISR;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -53,11 +53,11 @@ package stm32f4.dma is
    --
 
    type t_DMA_HISR is record
-      stream_4       : t_DMA_stream_ISR;
-      stream_5       : t_DMA_stream_ISR;
+      stream_4       : t_dma_stream_ISR;
+      stream_5       : t_dma_stream_ISR;
       reserved_12_15 : uint4;
-      stream_6       : t_DMA_stream_ISR;
-      stream_7       : t_DMA_stream_ISR;
+      stream_6       : t_dma_stream_ISR;
+      stream_7       : t_dma_stream_ISR;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -66,7 +66,7 @@ package stm32f4.dma is
    -- DMA interrupt flag clear registers --
    ----------------------------------------
 
-   type t_DMA_stream_clear_interrupts is record
+   type t_dma_stream_clear_interrupts is record
       -- Stream clear FIFO error interrupt flag (CFEIF)
       CLEAR_FIFO_ERROR_IF        : boolean; 
       -- Stream clear direct mode error interrupt flag (CDMEIF)
@@ -80,7 +80,7 @@ package stm32f4.dma is
    end record
       with size => 6;
 
-   for t_DMA_stream_clear_interrupts use record
+   for t_dma_stream_clear_interrupts use record
       CLEAR_FIFO_ERROR_IF           at 0 range 0 .. 0;
       CLEAR_DIRECT_MODE_ERROR_IF    at 0 range 2 .. 2;
       CLEAR_TRANSFER_ERROR_IF       at 0 range 3 .. 3;
@@ -93,11 +93,11 @@ package stm32f4.dma is
    --
 
    type t_DMA_LIFCR is record
-      stream_0       : t_DMA_stream_clear_interrupts;
-      stream_1       : t_DMA_stream_clear_interrupts;
+      stream_0       : t_dma_stream_clear_interrupts;
+      stream_1       : t_dma_stream_clear_interrupts;
       reserved_12_15 : uint4;
-      stream_2       : t_DMA_stream_clear_interrupts;
-      stream_3       : t_DMA_stream_clear_interrupts;
+      stream_2       : t_dma_stream_clear_interrupts;
+      stream_3       : t_dma_stream_clear_interrupts;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -107,11 +107,11 @@ package stm32f4.dma is
    --
 
    type t_DMA_HIFCR is record
-      stream_4       : t_DMA_stream_clear_interrupts;
-      stream_5       : t_DMA_stream_clear_interrupts;
+      stream_4       : t_dma_stream_clear_interrupts;
+      stream_5       : t_dma_stream_clear_interrupts;
       reserved_12_15 : uint4;
-      stream_6       : t_DMA_stream_clear_interrupts;
-      stream_7       : t_DMA_stream_clear_interrupts;
+      stream_6       : t_dma_stream_clear_interrupts;
+      stream_7       : t_dma_stream_clear_interrupts;
       reserved_28_31 : uint4;
    end record
       with pack, size => 32, volatile_full_access;
@@ -127,18 +127,18 @@ package stm32f4.dma is
      (DMA_FLOW_CONTROLLER     => 0,
       PERIPH_FLOW_CONTROLLER  => 1);
 
-   type t_data_transfer_dir is
+   type t_transfer_dir is
      (PERIPHERAL_TO_MEMORY, MEMORY_TO_PERIPHERAL, MEMORY_TO_MEMORY)
       with size => 2;
-   for t_data_transfer_dir use
+   for t_transfer_dir use
      (PERIPHERAL_TO_MEMORY => 2#00#,
       MEMORY_TO_PERIPHERAL => 2#01#,
       MEMORY_TO_MEMORY     => 2#10#);
 
-   type t_data_transfer_size is
+   type t_data_size is
      (TRANSFER_BYTE, TRANSFER_HALF_WORD, TRANSFER_WORD)
       with size => 2;
-   for t_data_transfer_size use
+   for t_data_size use
      (TRANSFER_BYTE        => 2#00#,
       TRANSFER_HALF_WORD   => 2#01#,
       TRANSFER_WORD        => 2#10#);
@@ -171,29 +171,51 @@ package stm32f4.dma is
       INCR_16_BEATS     => 2#11#);
 
    type t_DMA_SxCR is record
-      EN       : bit;   -- Stream enable / flag stream ready when read low
-      DIRECT_MODE_ERROR : boolean; -- Direct mode error interrupt enable (DMEIE)
-      TRANSFER_ERROR    : boolean; -- Transfer error interrupt enable (TEIE)
-      HALF_TRANSFER_COMPLETE : boolean; -- Half transfer interrupt enable (HTIE)
-      TRANSFER_COMPLETE : boolean; -- Transfer complete interrupt enable (TCIE)
-      PFCTRL   : t_flow_controller; -- Peripheral flow controller
-      DIR      : t_data_transfer_dir; -- Data transfer direction
-      CIRC     : bit;   -- Circular mode enable
-      PINC     : bit;   -- Peripheral increment mode enable
-      MINC     : bit;   -- Memory increment mode enable
-      PSIZE    : t_data_transfer_size; -- Peripheral data size
-      MSIZE    : t_data_transfer_size; -- Memory data size
-      PINCOS   : t_increment_offset_size; -- Peripheral increment offset size
-      PL       : t_priority_level; -- Priority level
-      DBM      : bit;   -- Double buffer mode
-      CT       : t_current_target; -- Current target
-      reserved_20    : bit;
-      PBURST   : t_burst_size; -- Peripheral burst transfer configuration
-      MBURST   : t_burst_size; -- Memory burst transfer configuration
-      CHSEL    : uint3; -- Channel selection (0..7)
-      reserved_28_31 : uint4;
+      EN       : boolean            := false; -- Stream enable
+      DIRECT_MODE_ERROR : boolean   := false; -- Direct mode error interrupt (DMEIE)
+      TRANSFER_ERROR    : boolean   := false; -- Transfer error interrupt (TEIE)
+      HALF_TRANSFER_COMPLETE : boolean := false; -- Half transfer interrupt (HTIE)
+      TRANSFER_COMPLETE : boolean   := false; -- Transfer complete interrupt (TCIE)
+      PFCTRL   : t_flow_controller  := DMA_FLOW_CONTROLLER;
+      DIR      : t_transfer_dir     := PERIPHERAL_TO_MEMORY; 
+      CIRC     : boolean            := false; -- Circular mode enable
+      PINC     : boolean            := false; -- Peripheral incr. mode enable
+      MINC     : boolean            := false; -- Memory incr. mode enable
+      PSIZE    : t_data_size        := TRANSFER_BYTE; -- Peripheral data size
+      MSIZE    : t_data_size        := TRANSFER_BYTE; -- Memory data size
+      PINCOS   : t_increment_offset_size := INCREMENT_PSIZE;
+      PL       : t_priority_level   := LOW;
+      DBM      : boolean            := false; -- Double buffer mode
+      CT       : t_current_target   := MEMORY_0;
+      -- Reserved_20
+      PBURST   : t_burst_size       := SINGLE_TRANSFER; -- Periph. burst transfer
+      MBURST   : t_burst_size       := SINGLE_TRANSFER; -- Memory burst transfer 
+      CHSEL    : uint3              := 0;     -- Channel selection (0..7)
+      -- Reserved_28_31
    end record
-      with pack, size => 32, volatile_full_access;
+      with size => 32, volatile_full_access;
+
+   for t_DMA_SxCR use record
+      EN                at 0 range 0 .. 0;
+      DIRECT_MODE_ERROR at 0 range 1 .. 1;
+      TRANSFER_ERROR    at 0 range 2 .. 2;
+      HALF_TRANSFER_COMPLETE at 0 range 3 .. 3;
+      TRANSFER_COMPLETE at 0 range 4 .. 4;
+      PFCTRL   			at 0 range 5 .. 5;
+      DIR      			at 0 range 6 .. 7;
+      CIRC     			at 0 range 8 .. 8;
+      PINC     			at 0 range 9 .. 9;
+      MINC     			at 0 range 10 .. 10;
+      PSIZE    			at 0 range 11 .. 12;
+      MSIZE    			at 0 range 13 .. 14;
+      PINCOS   			at 0 range 15 .. 15;
+      PL       			at 0 range 16 .. 17;
+      DBM      			at 0 range 18 .. 18;
+      CT       			at 0 range 19 .. 19;
+      PBURST   			at 0 range 21 .. 22;
+      MBURST   			at 0 range 23 .. 24;
+      CHSEL    			at 0 range 25 .. 27;
+   end record;
 
    -------------------------------------------------------
    -- DMA stream x number of data register (DMA_SxNDTR) --
@@ -263,7 +285,7 @@ package stm32f4.dma is
    -- DMA Controller --
    --------------------
 
-   subtype t_DMA_stream_index is natural range 0 .. 7;
+   subtype t_dma_stream_index is natural range 0 .. 7;
 
    type t_stream_registers is record
       CR    : t_DMA_SxCR;     -- Control register
@@ -283,10 +305,10 @@ package stm32f4.dma is
       FCR   at 16#14# range 0 .. 31;
    end record;
 
-   type t_streams_registers is array (t_DMA_stream_index) of t_stream_registers
+   type t_streams_registers is array (t_dma_stream_index) of t_stream_registers
       with pack;
 
-   type t_DMA_controller is record
+   type t_dma_controller is record
       LISR     : t_DMA_LISR;  -- Interrupt status register (0 .. 3)
       HISR     : t_DMA_HISR;  -- Interrupt status register (4 .. 7)
       LIFCR    : t_DMA_LIFCR; -- Interrupt clear register (0 .. 3)
@@ -294,7 +316,7 @@ package stm32f4.dma is
       streams  : t_streams_registers;
    end record;
 
-   for t_DMA_controller use record
+   for t_dma_controller use record
       LISR     at 16#00# range 0 .. 31;
       HISR     at 16#04# range 0 .. 31;
       LIFCR    at 16#08# range 0 .. 31;
@@ -302,32 +324,32 @@ package stm32f4.dma is
       streams  at 16#10# range 0 .. (32 * 6 * 8) - 1;
    end record;
 
-   type t_DMA_controller_access is access all t_DMA_controller;
+   type t_dma_controller_access is access all t_dma_controller;
 
    ---------------
    -- Utilities --
    ---------------
 
-   type t_DMA_interrupts is
+   type t_dma_interrupts is
      (FIFO_ERROR, DIRECT_MODE_ERROR, TRANSFER_ERROR,
       HALF_TRANSFER_COMPLETE, TRANSFER_COMPLETE);
 
    function get_stream_ISR
-     (DMA_controller : t_DMA_controller;
-      stream         : t_DMA_stream_index)
-      return t_DMA_stream_ISR;
+     (dma_controller : t_dma_controller;
+      stream         : t_dma_stream_index)
+      return t_dma_stream_ISR;
 
    procedure clear_interrupt_flag
-     (controller  : in out t_DMA_controller;
-      stream      : t_DMA_stream_index;
-      interrupt   : t_DMA_interrupts);
+     (controller  : in out t_dma_controller;
+      stream      : t_dma_stream_index;
+      interrupt   : t_dma_interrupts);
 
    procedure clear_interrupt_flags
-     (controller  : in out t_DMA_controller;
-      stream      : t_DMA_stream_index);
+     (controller  : in out t_dma_controller;
+      stream      : t_dma_stream_index);
 
    function get_irq_number
-     (DMA_controller : t_DMA_controller;
-      stream         : t_DMA_stream_index) return nvic.interrupt;
+     (dma_controller : t_dma_controller;
+      stream         : t_dma_stream_index) return nvic.interrupt;
 
 end stm32f4.dma;

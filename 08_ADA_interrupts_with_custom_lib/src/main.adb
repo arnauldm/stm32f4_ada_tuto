@@ -4,8 +4,10 @@ with last_chance_handler;  pragma unreferenced (last_chance_handler);
 with stm32f4; use stm32f4;
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
 
-with serial;
 with leds; pragma unreferenced (leds); -- task blinking_leds
+with serial;
+with stm32f4.sdio.sd_card;
+
 
 with tests.dma;   pragma unreferenced (tests.dma);
 with tests.sdio;  pragma unreferenced (tests.sdio);
@@ -16,12 +18,14 @@ procedure main is
       ada.real_time.milliseconds (1000);
 begin
 
-   -- Initialize USART 
+   -- Initialize USART and SD card
    serial.initialize;
+   stm32f4.sdio.sd_card.initialize;
 
    -- Testing 
    --tests.dma.transfer_memory_to_memory;
-   tests.sdio.read_with_dma;
+   --tests.sdio.read_with_dma;
+   tests.sdio.write_with_dma;
 
    -- Endless loop
    loop

@@ -46,10 +46,10 @@ package body tests.dma is
 
       -- Reset the stream
       --    (AN4031 p. 14-15)
-      if (DMA_controller.streams(stream).CR.EN = 1) then
-         DMA_controller.streams(stream).CR.EN := 0;
+      if DMA_controller.streams(stream).CR.EN then
+         DMA_controller.streams(stream).CR.EN := false;
          loop
-            exit when DMA_controller.streams(stream).CR.EN = 0;
+            exit when DMA_controller.streams(stream).CR.EN = false;
          end loop;
       end if;
 
@@ -71,8 +71,8 @@ package body tests.dma is
       -- Items size
       DMA_controller.streams(stream).CR.PSIZE   := stm32f4.dma.TRANSFER_BYTE;
       DMA_controller.streams(stream).CR.MSIZE   := stm32f4.dma.TRANSFER_BYTE;
-      DMA_controller.streams(stream).CR.PINC    := 1;
-      DMA_controller.streams(stream).CR.MINC    := 1;
+      DMA_controller.streams(stream).CR.PINC    := true;
+      DMA_controller.streams(stream).CR.MINC    := true;
       DMA_controller.streams(stream).CR.PINCOS  := stm32f4.dma.INCREMENT_PSIZE;
       
       -- Select the DMA channel 
@@ -116,7 +116,7 @@ package body tests.dma is
       --
 
       start_time := ada.real_time.clock;
-      DMA_controller.streams(stream).CR.EN := 1;
+      DMA_controller.streams(stream).CR.EN := true;
       
       loop
          declare 
