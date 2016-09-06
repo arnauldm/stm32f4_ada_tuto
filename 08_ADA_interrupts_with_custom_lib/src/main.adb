@@ -24,8 +24,8 @@ begin
 
    -- Testing 
    --tests.dma.transfer_memory_to_memory;
-   --tests.sdio.read_with_dma;
    tests.sdio.write_with_dma;
+   tests.sdio.read_with_dma;
 
    -- Endless loop
    loop

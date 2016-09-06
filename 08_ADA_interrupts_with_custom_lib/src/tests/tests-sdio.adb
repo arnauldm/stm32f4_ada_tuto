@@ -6,7 +6,7 @@ with serial;
 
 package body tests.sdio is
 
-   buf : stm32f4.byte_array (1 .. 512)
+   buf : stm32f4.byte_array (1 .. 1024)
       with alignment => 16;
 
    procedure dump (buf : stm32f4.byte_array) is
@@ -30,25 +30,6 @@ package body tests.sdio is
       end loop;
 
    end dump;
-
-
-   procedure read is
-      ok  : boolean;
-   begin
-      serial.put_line ("--- TEST: sdio.sd_card.read_blocks (0, ...) ---");
-
-      stm32f4.sdio.sd_card.read_blocks (0, buf, ok);
-
-      if not ok then
-         serial.put_line ("error: stm32f4.sdio.sd_card.read_blocks");
-      end if;
-
-      serial.put_line ("buf:");
-      dump (buf);
-      serial.put_line ("cksum (buf):" & stm32f4.word'image (cksum(buf)));
-
-      serial.put_line ("--- /TEST ---");
-   end read;
 
 
    procedure read_with_dma is
@@ -85,13 +66,15 @@ package body tests.sdio is
       serial.put_line ("--- TEST: sdio.sd_card.write_blocks_dma () ---");
 
       -- Set input buffer with a recognizable pattern
-      pattern := 16#30#;
+      pattern := 16#00#;
       for i in buf'range loop
          buf(i) := pattern;
-         if pattern < 16#7D# then
-            pattern := pattern + 1;
-         else
-            pattern := 16#30#;
+         if i mod 8 = 0 then
+            if pattern < 16#7D# then
+               pattern := pattern + 1;
+            else
+               pattern := 16#00#;
+            end if;
          end if;
       end loop;
 

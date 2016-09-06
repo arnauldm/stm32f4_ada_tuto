@@ -15,44 +15,26 @@ package stm32f4.sdio.sd_card is
    --    version 4.10, 2013
    --  . Simplified SDIO card spec, version 3.0, 2011
 
-   CMD0     : constant sdio.t_cmd_index := 0;
-   CMD1     : constant sdio.t_cmd_index := 1;
-   CMD2     : constant sdio.t_cmd_index := 2;
-   CMD3     : constant sdio.t_cmd_index := 3;
-   CMD5     : constant sdio.t_cmd_index := 5;
-   ACMD6    : constant sdio.t_cmd_index := 6;
-   CMD7     : constant sdio.t_cmd_index := 7;
-   CMD8     : constant sdio.t_cmd_index := 8;
-   CMD13    : constant sdio.t_cmd_index := 13;
-   CMD15    : constant sdio.t_cmd_index := 15;
-   CMD16    : constant sdio.t_cmd_index := 16;
-   CMD17    : constant sdio.t_cmd_index := 17;
-   CMD18    : constant sdio.t_cmd_index := 18;
-   CMD24    : constant sdio.t_cmd_index := 24;
-   CMD25    : constant sdio.t_cmd_index := 25;
-   ACMD41   : constant sdio.t_cmd_index := 41;
-   ACMD51   : constant sdio.t_cmd_index := 51;
-   CMD52    : constant sdio.t_cmd_index := 52;
-   CMD55    : constant sdio.t_cmd_index := 55;
-
-   CMD0_GO_IDLE_STATE         : sdio.t_cmd_index renames CMD0;
-   CMD2_ALL_SEND_CID          : sdio.t_cmd_index renames CMD2;
-   CMD3_SEND_RELATIVE_ADDR    : sdio.t_cmd_index renames CMD3;
-   CMD5_IO_SEND_OP_COND       : sdio.t_cmd_index renames CMD5;
-   CMD7_SELECT_CARD           : sdio.t_cmd_index renames CMD7;
-   CMD8_SEND_IF_COND          : sdio.t_cmd_index renames CMD8;
-   ACMD6_SET_BUS_WIDTH        : sdio.t_cmd_index renames ACMD6;
-   CMD13_SEND_STATUS          : sdio.t_cmd_index renames CMD13;
-   CMD15_GO_INACTIVE_STATE    : sdio.t_cmd_index renames CMD15;
-   CMD16_SET_BLOCKLEN         : sdio.t_cmd_index renames CMD16;
-   CMD17_READ_SINGLE_BLOCK    : sdio.t_cmd_index renames CMD17;
-   CMD18_READ_MULTIPLE_BLOCK  : sdio.t_cmd_index renames CMD18;
-   CMD24_WRITE_BLOCK          : sdio.t_cmd_index renames CMD24;
-   CMD25_WRITE_BLOCKS         : sdio.t_cmd_index renames CMD25;
-   ACMD41_SD_APP_OP_COND      : sdio.t_cmd_index renames ACMD41;
-   ACMD51_SEND_SCR            : sdio.t_cmd_index renames ACMD51;
-   CMD52_IO_RW_DIRECT         : sdio.t_cmd_index renames CMD52;
-   CMD55_APP_CMD              : sdio.t_cmd_index renames CMD55;
+   CMD0_GO_IDLE_STATE         : constant sdio.t_cmd_index := 0;
+   CMD1_SEND_OP_COND          : constant sdio.t_cmd_index := 1;
+   CMD2_ALL_SEND_CID          : constant sdio.t_cmd_index := 2;
+   CMD3_SEND_RELATIVE_ADDR    : constant sdio.t_cmd_index := 3;
+   CMD5_IO_SEND_OP_COND       : constant sdio.t_cmd_index := 5;
+   ACMD6_SET_BUS_WIDTH        : constant sdio.t_cmd_index := 6;
+   CMD7_SELECT_CARD           : constant sdio.t_cmd_index := 7;
+   CMD8_SEND_IF_COND          : constant sdio.t_cmd_index := 8;
+   CMD12_STOP_TRANSMISSION    : constant sdio.t_cmd_index := 12;
+   CMD13_SEND_STATUS          : constant sdio.t_cmd_index := 13;
+   CMD15_GO_INACTIVE_STATE    : constant sdio.t_cmd_index := 15;
+   CMD16_SET_BLOCKLEN         : constant sdio.t_cmd_index := 16;
+   CMD17_READ_SINGLE_BLOCK    : constant sdio.t_cmd_index := 17;
+   CMD18_READ_MULTIPLE_BLOCK  : constant sdio.t_cmd_index := 18;
+   CMD24_WRITE_BLOCK          : constant sdio.t_cmd_index := 24;
+   CMD25_WRITE_BLOCKS         : constant sdio.t_cmd_index := 25;
+   ACMD41_SD_APP_OP_COND      : constant sdio.t_cmd_index := 41;
+   ACMD51_SEND_SCR            : constant sdio.t_cmd_index := 51;
+   CMD52_IO_RW_DIRECT         : constant sdio.t_cmd_index := 52;
+   CMD55_APP_CMD              : constant sdio.t_cmd_index := 55;
 
    ------------------
    -- SD responses --
@@ -340,9 +322,8 @@ package stm32f4.sdio.sd_card is
    function get_short_response return t_short_response;
    function get_long_response return t_long_response;
 
-   procedure read_blocks
-     (bl_num   : in  word;       -- block number
-      output   : out byte_array; -- output
+   procedure get_card_status
+     (status   : out t_card_status;
       success  : out boolean);
 
    procedure read_blocks_dma

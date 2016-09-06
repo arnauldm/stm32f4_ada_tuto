@@ -128,6 +128,7 @@ package body stm32f4.sdio is
          RXFIFOF  => true,
          others => false);
 
+      nvic.set_priority (nvic.SDIO, 0);
       nvic.enable_irq (nvic.SDIO);
 
    end initialize;
@@ -206,7 +207,7 @@ package body stm32f4.sdio is
       dma_controller.streams(stream).FCR.FIFO_ERROR            := true;
       dma_controller.streams(stream).CR.DIRECT_MODE_ERROR      := true;
       dma_controller.streams(stream).CR.TRANSFER_ERROR         := true;
-      dma_controller.streams(stream).CR.HALF_TRANSFER_COMPLETE := true;
+      dma_controller.streams(stream).CR.HALF_TRANSFER_COMPLETE := false;
       dma_controller.streams(stream).CR.TRANSFER_COMPLETE      := true;
 
       declare
