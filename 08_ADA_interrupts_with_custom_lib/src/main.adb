@@ -13,6 +13,7 @@ with tests.dma;   pragma unreferenced (tests.dma);
 with tests.sdio;  pragma unreferenced (tests.sdio);
 
 procedure main is
+   ok       : boolean;
    counter  : integer         := 0;
    period   : constant ada.real_time.time_span := 
       ada.real_time.milliseconds (1000);
@@ -20,12 +21,12 @@ begin
 
    -- Initialize USART and SD card
    serial.initialize;
-   stm32f4.sdio.sd_card.initialize;
 
-   -- Testing 
-   --tests.dma.transfer_memory_to_memory;
-   tests.sdio.write_with_dma;
-   tests.sdio.read_with_dma;
+   stm32f4.sdio.sd_card.initialize (ok);
+   if ok then
+      tests.sdio.write_with_dma;
+      tests.sdio.read_with_dma;
+   end if;
 
    -- Endless loop
    loop

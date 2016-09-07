@@ -23,6 +23,7 @@ package stm32f4.sdio.sd_card is
    ACMD6_SET_BUS_WIDTH        : constant sdio.t_cmd_index := 6;
    CMD7_SELECT_CARD           : constant sdio.t_cmd_index := 7;
    CMD8_SEND_IF_COND          : constant sdio.t_cmd_index := 8;
+   CMD9_SEND_CSD              : constant sdio.t_cmd_index := 9;
    CMD12_STOP_TRANSMISSION    : constant sdio.t_cmd_index := 12;
    CMD13_SEND_STATUS          : constant sdio.t_cmd_index := 13;
    CMD15_GO_INACTIVE_STATE    : constant sdio.t_cmd_index := 15;
@@ -85,7 +86,7 @@ package stm32f4.sdio.sd_card is
 
    type t_card_status is record
       reserved_0_2      : uint3;
-      AKE_SEQ_ERROR     : bit; -- Sequence of the authentication process error
+      AKE_SEQ_ERROR     : boolean; -- Sequence of the authentication process error
       reserved_4        : bit;
       APP_CMD           : boolean; -- The card will expect ACMD
       reserved_6_7      : uint2;
@@ -93,24 +94,24 @@ package stm32f4.sdio.sd_card is
       CURRENT_STATE     : t_card_state;
       ERASE_RESET       : bit;
       CARD_ECC_DISABLED : bit;
-      WP_ERASE_SKIP     : bit;
-      CSD_OVERWRITE     : bit; 
+      WP_ERASE_SKIP     : boolean;
+      CSD_OVERWRITE     : boolean; 
       reserved_17_18    : uint2;
-      ERROR             : bit; -- General/unknown error
-      CC_ERROR          : bit; -- Internal card controller error
-      CARD_ECC_FAILED   : bit; -- ECC failed to correct the data
-      ILLEGAL_COMMAND   : bit; -- Illegal command
-      COM_CRC_ERROR     : bit; -- CRC check of the previous command failed
-      LOCK_UNLOCK_FAILED   : bit; -- Sequence or password error in lock/unlock
-                                  -- command
-      CARD_IS_LOCKED    : bit; -- Card locked by the host
-      WP_VIOLATION      : bit; -- Write protection violation
-      ERASE_PARAM       : bit; -- Invalid selection of write-blocks for erase
-      ERASE_SEQ_ERROR   : bit; -- Error in the sequence of erase command
-      BLOCK_LEN_ERROR   : bit; -- Block length is not allowed / transferred
-                               -- bytes does not match the block length
-      ADDRESS_ERROR     : bit; -- Misaligned address (did not match block length)
-      OUT_OF_RANGE      : bit; -- Out of range command's argument 
+      ERROR             : boolean; -- General/unknown error
+      CC_ERROR          : boolean; -- Internal card controller error
+      CARD_ECC_FAILED   : boolean; -- ECC failed to correct the data
+      ILLEGAL_COMMAND   : boolean; -- Illegal command
+      COM_CRC_ERROR     : boolean; -- CRC check of the previous command failed
+      LOCK_UNLOCK_FAILED : boolean; -- Sequence or password error in lock/unlock
+                                    -- command
+      CARD_IS_LOCKED    : boolean; -- Card locked by the host
+      WP_VIOLATION      : boolean; -- Write protection violation
+      ERASE_PARAM       : boolean; -- Invalid selection of write-blocks for erase
+      ERASE_SEQ_ERROR   : boolean; -- Error in the sequence of erase command
+      BLOCK_LEN_ERROR   : boolean; -- Block length is not allowed / transferred
+                                   -- bytes does not match the block length
+      ADDRESS_ERROR     : boolean; -- Misaligned address (did not match block length)
+      OUT_OF_RANGE      : boolean; -- Out of range command's argument 
    end record
       with pack, size => 32;
 
@@ -249,7 +250,7 @@ package stm32f4.sdio.sd_card is
       with pack, size => 64;
 
    ---------------------------------------
-   -- Card-Specific Data register (CSD) --
+   -- Card Specific Data register (CSD) --
    ---------------------------------------
 
    type t_CSD_version_2 is record
@@ -298,33 +299,75 @@ package stm32f4.sdio.sd_card is
       CSD_STRUCTURE        at 0 range 126 .. 127;
    end record;
 
+   function to_csd is new ada.unchecked_conversion
+     (t_long_response, t_CSD_version_2);
+
    ---------------
    -- Utilities --
    ---------------
 
-   procedure initialize;
+   procedure initialize
+     (success : out boolean);
 
    procedure send_command
      (cmd_index      : in  sdio.t_cmd_index;
       argument       : in  sdio.t_SDIO_ARG;
-      response_type  : in  sdio.t_waitresp;
-      status         : out sdio.t_SDIO_STA;
-      success        : out boolean);
+      response_type  : in  sdio.t_waitresp);
 
    procedure send_app_command
      (cmd55_arg      : in  sdio.t_SDIO_ARG;
       cmd_index      : in  sdio.t_cmd_index;
       cmd_arg        : in  sdio.t_SDIO_ARG;
-      response_type  : in  sdio.t_waitresp;
-      status         : out sdio.t_SDIO_STA;
+      cmd_resp_type  : in  sdio.t_waitresp;
       success        : out boolean);
 
    function get_short_response return t_short_response;
    function get_long_response return t_long_response;
 
+   -- R1 (normal response command)
+   procedure check_R1
+     (cmd_index      : in  sdio.t_cmd_index;
+      sdio_status    : out sdio.t_SDIO_STA;
+      card_status    : out t_card_status;
+      success        : out boolean);
+
+   -- R2 (CID, CSD register)
+   procedure check_R2
+     (cmd_index      : in  sdio.t_cmd_index;
+      sdio_status    : out sdio.t_SDIO_STA;
+      long_response  : out t_long_response;
+      success        : out boolean);
+
+   -- R3 (OCR register)
+   procedure check_R3
+     (cmd_index   : in  sdio.t_cmd_index;
+      sdio_status : out sdio.t_SDIO_STA;
+      ocr         : out t_OCR;
+      success     : out boolean);
+
+   -- R6 (Published RCA response)
+   procedure check_R6
+     (cmd_index   : in  sdio.t_cmd_index;
+      sdio_status : out sdio.t_SDIO_STA;
+      rca         : out t_RCA;
+      success     : out boolean);
+
+   -- R7 (Card interface condition)
+   procedure check_R7
+     (cmd_index   : in  sdio.t_cmd_index;
+      sdio_status : out sdio.t_SDIO_STA;
+      success     : out boolean);
+
    procedure get_card_status
-     (status   : out t_card_status;
-      success  : out boolean);
+     (card_status : out t_card_status;
+      success     : out boolean);
+
+   function card_status_error
+     (card_status : t_card_status)
+      return boolean;
+
+   procedure display_card_status_error
+     (card_status : t_card_status);
 
    procedure read_blocks_dma
      (bl_num   : in  word;       -- block number

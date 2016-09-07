@@ -9,6 +9,11 @@ package body tests.sdio is
    buf : stm32f4.byte_array (1 .. 1024)
       with alignment => 16;
 
+   buf_cksum : stm32f4.word;
+
+   lba : constant stm32f4.word := 10;
+   --lba : constant stm32f4.word := 30881792;
+
    procedure dump (buf : stm32f4.byte_array) is
       idx : integer := 0;
    begin
@@ -33,15 +38,19 @@ package body tests.sdio is
 
 
    procedure read_with_dma is
-      ok  : boolean;
-      time_start : ada.real_time.time;
-      time_end   : ada.real_time.time;
+      ok             : boolean;
+      time_start     : ada.real_time.time;
+      time_end       : ada.real_time.time;
    begin
       serial.put_line ("--- TEST: sdio.sd_card.read_blocks_dma () ---");
 
+
+      buf_cksum:= cksum (buf);
+      serial.put_line ("expected cksum (buf):" & stm32f4.word'image (buf_cksum));
+
       time_start  := ada.real_time.clock;
 
-      stm32f4.sdio.sd_card.read_blocks_dma (0, buf, ok);
+      stm32f4.sdio.sd_card.read_blocks_dma (lba, buf, ok);
 
       time_end    := ada.real_time.clock;
 
@@ -66,19 +75,19 @@ package body tests.sdio is
       serial.put_line ("--- TEST: sdio.sd_card.write_blocks_dma () ---");
 
       -- Set input buffer with a recognizable pattern
-      pattern := 16#00#;
+      pattern := 16#10#;
       for i in buf'range loop
          buf(i) := pattern;
          if i mod 8 = 0 then
             if pattern < 16#7D# then
                pattern := pattern + 1;
             else
-               pattern := 16#00#;
+               pattern := 16#10#;
             end if;
          end if;
       end loop;
 
-      stm32f4.sdio.sd_card.write_blocks_dma (0, buf, ok);
+      stm32f4.sdio.sd_card.write_blocks_dma (lba, buf, ok);
       if not ok then
          serial.put_line ("error: stm32f4.sdio.sd_card.write_blocks_dma");
       end if;
