@@ -1,4 +1,3 @@
-with ada.real_time; use ada.real_time;
 with interfaces; use interfaces;
 
 with stm32f4.sdio.sd_card;
@@ -39,8 +38,6 @@ package body tests.sdio is
 
    procedure read_with_dma is
       ok             : boolean;
-      time_start     : ada.real_time.time;
-      time_end       : ada.real_time.time;
    begin
       serial.put_line ("--- TEST: sdio.sd_card.read_blocks_dma () ---");
 
@@ -48,14 +45,7 @@ package body tests.sdio is
       buf_cksum:= cksum (buf);
       serial.put_line ("expected cksum (buf):" & stm32f4.word'image (buf_cksum));
 
-      time_start  := ada.real_time.clock;
-
       stm32f4.sdio.sd_card.read_blocks_dma (lba, buf, ok);
-
-      time_end    := ada.real_time.clock;
-
-      serial.put_line ("duration: " & 
-         duration'image (to_duration (time_end - time_start)));
 
       if not ok then
          serial.put_line ("error: stm32f4.sdio.sd_card.read_blocks");

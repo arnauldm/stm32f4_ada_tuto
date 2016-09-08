@@ -968,9 +968,9 @@ package body stm32f4.sdio.sd_card is
            ("DMA transfer complete while SDIO status DBCKEND is set to false");
       end if;
 
-      get_card_status (card_status, success);
+      get_card_status (card_status, ok);
 
-      if not success then
+      if not ok then
          serial.put_line ("Can't get card status (CMD13)");
          success := false;
       end if;

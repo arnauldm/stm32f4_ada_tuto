@@ -1,4 +1,3 @@
-with ada.real_time;     use ada.real_time;
 with ada.unchecked_conversion;
 
 with stm32f4;           use stm32f4;
@@ -16,8 +15,8 @@ package body last_chance_handler is
 
    procedure put (ptr : system.address) is
 
-      type c_string_ptr is access string (1 .. positive'last) with
-        storage_size => 0, size => standard'address_size;
+      type c_string_ptr is access all string (positive)
+         with storage_size => 0, size => standard'address_size;
 
       function as_c_string_ptr is new ada.unchecked_conversion
         (system.address, c_string_ptr);
@@ -64,11 +63,10 @@ package body last_chance_handler is
          serial.put (ASCII.CR);
       end if;
 
+      turn_on (LED_RED);
+
       loop
-         turn_on (LED_RED);
-         delay until clock + milliseconds (500);
-         turn_off (LED_RED);
-         delay until clock + milliseconds (500);
+         null;
       end loop;
    end last_chance_handler;
 
