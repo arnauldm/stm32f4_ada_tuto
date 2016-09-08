@@ -8,7 +8,7 @@ package body leds is
    begin
       -- The leds are on GPIOD pins. We have to enable GPIOD clock (see
       -- RM0090, p. 65,244)
-      periphs.RCC.AHB1ENR.GPIODEN := 1;
+      periphs.RCC.AHB1ENR.GPIODEN := true;
 
       -- Set the leds pins to output mode
       -- (see RM0090, p. 270)

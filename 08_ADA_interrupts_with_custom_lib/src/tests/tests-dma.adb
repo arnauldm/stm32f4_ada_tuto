@@ -42,7 +42,7 @@ package body tests.dma is
    begin
 
       -- DMA2 clock enable
-      stm32f4.periphs.RCC.AHB1ENR.DMA2EN := 1;
+      stm32f4.periphs.RCC.AHB1ENR.DMA2EN := true;
 
       -- Reset the stream
       --    (AN4031 p. 14-15)

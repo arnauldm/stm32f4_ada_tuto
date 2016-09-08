@@ -100,6 +100,8 @@ package stm32f4.periphs is
    PB7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 7);
    PB8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 8);
    PB9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 9);
+   PB10   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 10);
+   PB11   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 11);
 
    PC6   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 6);
    PC7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 7);
@@ -110,7 +112,8 @@ package stm32f4.periphs is
    PC12   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 12);
 
    PD2   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 2);
-
+   PD8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 8);
+   PD9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 9);
    PD12  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 12);
    PD13  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 13);
    PD14  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 14);
@@ -120,27 +123,33 @@ package stm32f4.periphs is
    -- Led & buttons --
    -------------------
 
-   LED_GREEN   : constant stm32f4.gpio.t_GPIO_pin  := PD12;
-   LED_ORANGE  : constant stm32f4.gpio.t_GPIO_pin  := PD13;
-   LED_RED     : constant stm32f4.gpio.t_GPIO_pin  := PD14;
-   LED_BLUE    : constant stm32f4.gpio.t_GPIO_pin  := PD15;
+   LED_GREEN   : stm32f4.gpio.t_GPIO_pin renames PD12;
+   LED_ORANGE  : stm32f4.gpio.t_GPIO_pin renames PD13;
+   LED_RED     : stm32f4.gpio.t_GPIO_pin renames PD14;
+   LED_BLUE    : stm32f4.gpio.t_GPIO_pin renames PD15;
 
-   BLUE_BUTTON : constant stm32f4.gpio.t_GPIO_pin  := PA0;
+   BLUE_BUTTON : stm32f4.gpio.t_GPIO_pin renames PA0;
 
    ----------
    -- SDIO --
    ----------
 
-   SDIO_D4  : constant stm32f4.gpio.t_GPIO_pin  := PB8;
-   SDIO_D5  : constant stm32f4.gpio.t_GPIO_pin  := PB9;
-   SDIO_D6  : constant stm32f4.gpio.t_GPIO_pin  := PC6;
-   SDIO_D7  : constant stm32f4.gpio.t_GPIO_pin  := PC7;
-   SDIO_D0  : constant stm32f4.gpio.t_GPIO_pin  := PC8;
-   SDIO_D1  : constant stm32f4.gpio.t_GPIO_pin  := PC9;
-   SDIO_D2  : constant stm32f4.gpio.t_GPIO_pin  := PC10;
-   SDIO_D3  : constant stm32f4.gpio.t_GPIO_pin  := PC11;
-   SDIO_CK  : constant stm32f4.gpio.t_GPIO_pin  := PC12;
-   SDIO_CMD : constant stm32f4.gpio.t_GPIO_pin  := PD2;
+   SDIO_D4  : stm32f4.gpio.t_GPIO_pin renames PB8;
+   SDIO_D5  : stm32f4.gpio.t_GPIO_pin renames PB9;
+   SDIO_D6  : stm32f4.gpio.t_GPIO_pin renames PC6;
+   SDIO_D7  : stm32f4.gpio.t_GPIO_pin renames PC7;
+   SDIO_D0  : stm32f4.gpio.t_GPIO_pin renames PC8;
+   SDIO_D1  : stm32f4.gpio.t_GPIO_pin renames PC9;
+   SDIO_D2  : stm32f4.gpio.t_GPIO_pin renames PC10;
+   SDIO_D3  : stm32f4.gpio.t_GPIO_pin renames PC11;
+   SDIO_CK  : stm32f4.gpio.t_GPIO_pin renames PC12;
+   SDIO_CMD : stm32f4.gpio.t_GPIO_pin renames PD2;
 
+   ------------
+   -- USART3 --
+   ------------
+
+   TX_PIN   : stm32f4.gpio.t_GPIO_pin renames PD8;
+   RX_PIN   : stm32f4.gpio.t_GPIO_pin renames PD9;
 
 end stm32f4.periphs;

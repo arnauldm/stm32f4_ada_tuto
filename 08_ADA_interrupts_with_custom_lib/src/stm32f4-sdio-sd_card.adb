@@ -119,6 +119,8 @@ package body stm32f4.sdio.sd_card is
          check_R3 (ACMD41_SD_APP_OP_COND, sdio_status, sd_card.ocr, success);
 
          exit when not success or sd_card.ocr.power_up = 1;
+
+         delay until ada.real_time.clock + ada.real_time.milliseconds (10);
       end loop;
 
       if sd_card.ocr.power_up /= 1 then

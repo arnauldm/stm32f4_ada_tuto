@@ -7,20 +7,20 @@ with stm32f4.gpio;
 package stm32f4.rcc is
 
    type t_RCC_CR is record
-      HSION          : bit;
-      HSIRDY         : bit;
+      HSION          : boolean;  -- Internal high-speed clock enable
+      HSIRDY         : boolean;  -- Internal high-speed clock ready flag
       Reserved_2_2   : bit;
-      HSITRIM        : uint5;
-      HSICAL         : byte;
-      HSEON          : bit;
-      HSERDY         : bit;
-      HSEBYP         : bit;
-      CSSON          : bit;
+      HSITRIM        : uint5;    -- Internal high-speed clock trimming
+      HSICAL         : byte;     -- Internal high-speed clock calibration
+      HSEON          : boolean;  -- HSE clock enable
+      HSERDY         : boolean;  -- HSE clock ready flag
+      HSEBYP         : boolean;  -- HSE clock bypassed (with an ext. clock)
+      CSSON          : boolean;  -- Clock security system enable
       Reserved_20_23 : uint4;
-      PLLON          : bit;
-      PLLRDY         : bit;
-      PLLI2SON       : bit;
-      PLLI2SRDY      : bit;
+      PLLON          : boolean;  -- Main PLL enable
+      PLLRDY         : boolean;  -- Main PLL clock ready flag
+      PLLI2SON       : boolean;  -- PLLI2S enable
+      PLLI2SRDY      : boolean;  -- PLLI2S clock ready flag
       Reserved_28_31 : uint4;
    end record
      with volatile_full_access, size => 32;
@@ -51,31 +51,69 @@ package stm32f4.rcc is
    -- Ref. : RM0090, p. 242
 
    type t_RCC_AHB1ENR is record
-      GPIOAEN        : bit;   -- IO port A clock enable
-      GPIOBEN        : bit;   -- IO port B clock enable
-      GPIOCEN        : bit;   -- IO port C clock enable
-      GPIODEN        : bit;   -- IO port D clock enable
-      GPIOEEN        : bit;   -- IO port E clock enable
-      GPIOFEN        : bit;   -- IO port F clock enable
-      GPIOGEN        : bit;   -- IO port G clock enable
-      GPIOHEN        : bit;   -- IO port H clock enable
-      GPIOIEN        : bit;   -- IO port I clock enable
+      GPIOAEN        : boolean;   -- IO port A clock enable
+      GPIOBEN        : boolean;   -- IO port B clock enable
+      GPIOCEN        : boolean;   -- IO port C clock enable
+      GPIODEN        : boolean;   -- IO port D clock enable
+      GPIOEEN        : boolean;   -- IO port E clock enable
+      GPIOFEN        : boolean;   -- IO port F clock enable
+      GPIOGEN        : boolean;   -- IO port G clock enable
+      GPIOHEN        : boolean;   -- IO port H clock enable
+      GPIOIEN        : boolean;   -- IO port I clock enable
       reserved_9_11  : uint3;
-      CRCEN          : bit;   -- CRC clock enable
+      CRCEN          : boolean;   -- CRC clock enable
       reserved_13_17 : uint5;
-      BKPSRAMEN      : bit;   -- Backup SRAM interface clock enable
+      BKPSRAMEN      : boolean;   -- Backup SRAM interface clock enable
       reserved_19    : bit;
-      CCMDATARAMEN   : bit;   -- CCM data RAM clock enable
-      DMA1EN         : bit;   -- DMA1 clock enable
-      DMA2EN         : bit;   -- DMA2 clock enable
+      CCMDATARAMEN   : boolean;   -- CCM data RAM clock enable
+      DMA1EN         : boolean;   -- DMA1 clock enable
+      DMA2EN         : boolean;   -- DMA2 clock enable
       reserved_23_24 : bit;
-      ETHMACEN       : bit;   -- Ethernet MAC clock enable
-      ETHMACTXEN     : bit;   -- Ethernet Transmission clock enable
-      ETHMACRXEN     : bit;   -- Ethernet Reception clock enable
-      ETHMACPTPEN    : bit;   -- Ethernet PTP clock enable
-      OTGHSEN        : bit;   -- USB OTG HS clock enable
-      OTGHSULPIEN    : bit;   -- USB OTG HSULPI clock enable
+      ETHMACEN       : boolean;   -- Ethernet MAC clock enable
+      ETHMACTXEN     : boolean;   -- Ethernet Transmission clock enable
+      ETHMACRXEN     : boolean;   -- Ethernet Reception clock enable
+      ETHMACPTPEN    : boolean;   -- Ethernet PTP clock enable
+      OTGHSEN        : boolean;   -- USB OTG HS clock enable
+      OTGHSULPIEN    : boolean;   -- USB OTG HSULPI clock enable
       reserved_31    : bit;
+   end record
+      with pack, size => 32, volatile_full_access;
+
+   -----------------
+   -- RCC_AHB3ENR --
+   -----------------
+
+   type t_RCC_AHB3ENR is record
+      TIM2EN         : boolean;  -- TIM2 clock enable
+      TIM3EN         : boolean;  -- TIM3 clock enable
+      TIM4EN         : boolean;  -- TIM4 clock enable
+      TIM5EN         : boolean;  -- TIM5 clock enable
+      TIM6EN         : boolean;  -- TIM6 clock enable
+      TIM7EN         : boolean;  -- TIM7 clock enable
+      TIM12EN        : boolean;  -- TIM12 clock enable
+      TIM13EN        : boolean;  -- TIM13 clock enable
+      TIM14EN        : boolean;  -- TIM14 clock enable
+      reserved_9_10  : uint2;
+      WWDGEN         : boolean;  -- Window watchdog clock enable
+      reserved_12_13 : uint2;
+      SPI2EN         : boolean;  -- SPI2 clock enable
+      SPI3EN         : boolean;  -- SPI3 clock enable
+      reserved_16    : boolean;
+      USART2EN       : boolean;  -- USART2 clock enable
+      USART3EN       : boolean;  -- USART3 clock enable
+      USART4EN       : boolean;  -- USART4 clock enable
+      USART5EN       : boolean;  -- USART5 clock enable
+      I2C1EN         : boolean;  -- I2C1 clock enable
+      I2C2EN         : boolean;  -- I2C2 clock enable
+      I2C3EN         : boolean;  -- I2C3 clock enable
+      reserved_24    : bit;
+      CAN1EN         : boolean;  -- CAN 1 clock enable
+      CAN2EN         : boolean;  -- CAN 2 clock enable
+      reserved_27    : bit;
+      PWREN          : boolean;  -- Power interface clock enable
+      DACEN          : boolean;  -- DAC interface clock enable
+      UART7EN        : boolean;  -- UART7 clock enable
+      UART8EN        : boolean;  -- UART8 clock enable   
    end record
       with pack, size => 32, volatile_full_access;
 
@@ -87,24 +125,24 @@ package stm32f4.rcc is
    -- Ref. : RM0090, p. 248
 
    type t_RCC_APB2ENR is record
-      TIM1EN         : bit;   -- TIM1 clock enable
-      TIM8EN         : bit;   -- TIM8 clock enable
+      TIM1EN         : boolean;  -- TIM1 clock enable
+      TIM8EN         : boolean;  -- TIM8 clock enable
       reserved_2_3   : uint2;
-      USART1EN       : bit;   -- USART1 clock enable
-      USART6EN       : bit;   -- USART6 clock enable
+      USART1EN       : boolean;  -- USART1 clock enable
+      USART6EN       : boolean;  -- USART6 clock enable
       reserved_6_7   : uint2;
-      ADC1EN         : bit;   -- ADC1 clock enable
-      ADC2EN         : bit;   -- ADC2 clock enable
-      ADC3EN         : bit;   -- ADC3 clock enable
-      SDIOEN         : bit;   -- SDIO clock enable
-      SPI1EN         : bit;   -- SPI1 clock enable
+      ADC1EN         : boolean;  -- ADC1 clock enable
+      ADC2EN         : boolean;  -- ADC2 clock enable
+      ADC3EN         : boolean;  -- ADC3 clock enable
+      SDIOEN         : boolean;  -- SDIO clock enable
+      SPI1EN         : boolean;  -- SPI1 clock enable
       reserved_13    : bit;
-      SYSCFGEN       : bit;
+      SYSCFGEN       : boolean;
          -- System configuration controller clock enable
       reserved_15    : bit;
-      TIM9EN         : bit;   -- TIM9 clock enable
-      TIM10EN        : bit;   -- TIM10 clock enable
-      TIM11EN        : bit;   -- TIM11 clock enable
+      TIM9EN         : boolean;  -- TIM9 clock enable
+      TIM10EN        : boolean;  -- TIM10 clock enable
+      TIM11EN        : boolean;  -- TIM11 clock enable
       reserved_19_23 : uint5;
       reserved_24_31 : byte;
    end record
@@ -117,17 +155,22 @@ package stm32f4.rcc is
    type t_RCC_periph is record
       CR       : t_RCC_CR;
       AHB1ENR  : t_RCC_AHB1ENR;
+      AHB3ENR  : t_RCC_AHB3ENR;
       APB2ENR  : t_RCC_APB2ENR;
    end record;
 
    for t_RCC_periph use record
       CR       at 16#00# range 0 .. 31;
       AHB1ENR  at 16#30# range 0 .. 31;
+      AHB3ENR  at 16#38# range 0 .. 31;
       APB2ENR  at 16#44# range 0 .. 31;
    end record;
 
 
    procedure enable_gpio_clock
      (GPIOx : aliased in gpio.t_GPIO_port);
+
+   procedure enable_gpio_clock
+     (pin   : gpio.t_GPIO_pin);
 
 end stm32f4.rcc;

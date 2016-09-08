@@ -1,6 +1,7 @@
 with stm32f4; use stm32f4;
 with stm32f4.periphs;
 with stm32f4.usart;
+with stm32f4.rcc;
 with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
 
 ------------------------------------------------------------------
@@ -13,9 +14,7 @@ with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
 
 package body serial is
 
-   USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
-   TX_PIN   : stm32f4.gpio.t_GPIO_pin renames periphs.PB6;
-   RX_PIN   : stm32f4.gpio.t_GPIO_pin renames periphs.PB7;
+   USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART3;
 
    procedure initialize
    is
@@ -24,33 +23,34 @@ package body serial is
       --
       -- Enable clocks
       --
-      periphs.RCC.AHB1ENR.GPIOBEN  := 1;   -- /!\ FIXME
-      periphs.RCC.APB2ENR.USART1EN := 1;   -- /!\ FIXME
+      rcc.enable_gpio_clock (periphs.TX_PIN);
+      rcc.enable_gpio_clock (periphs.RX_PIN);
+      periphs.RCC.AHB3ENR.USART3EN := true;   -- /!\ FIXME
       
       --
       -- Configure TX and RX pins
       --
       gpio.configure
-        (TX_PIN,
+        (periphs.TX_PIN,
          gpio.MODE_AF,
          gpio.PUSH_PULL,
          gpio.SPEED_HIGH,
          gpio.PULL_UP);
 
       gpio.set_alternate_function
-        (TX_PIN,
-         gpio.GPIO_AF_USART1);   -- /!\ FIXME
+        (periphs.TX_PIN,
+         gpio.GPIO_AF_USART3);   -- /!\ FIXME
 
       gpio.configure
-        (RX_PIN,
+        (periphs.RX_PIN,
          gpio.MODE_AF,
          gpio.PUSH_PULL,
          gpio.SPEED_HIGH,
          gpio.PULL_UP);
 
       gpio.set_alternate_function
-        (RX_PIN,
-         gpio.GPIO_AF_USART1);   -- /!\ FIXME
+        (periphs.RX_PIN,
+         gpio.GPIO_AF_USART3);   -- /!\ FIXME
 
       --
       -- Configure USART

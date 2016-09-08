@@ -38,7 +38,7 @@ package body last_chance_handler is
    begin
 
       -- The leds are on GPIOD pins. We have to enable GPIOD clock 
-      periphs.RCC.AHB1ENR.GPIODEN := 1;
+      periphs.RCC.AHB1ENR.GPIODEN := true;
       configure (LED_GREEN, MODE_OUT, PUSH_PULL, SPEED_HIGH, PULL_DOWN);
       configure (LED_ORANGE, MODE_OUT, PUSH_PULL, SPEED_HIGH, PULL_DOWN);
       configure (LED_RED, MODE_OUT, PUSH_PULL, SPEED_HIGH, PULL_DOWN);
