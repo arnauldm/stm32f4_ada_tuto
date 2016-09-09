@@ -80,10 +80,10 @@ package stm32f4.rcc is
       with pack, size => 32, volatile_full_access;
 
    -----------------
-   -- RCC_AHB3ENR --
+   -- RCC_APB1ENR --
    -----------------
 
-   type t_RCC_AHB3ENR is record
+   type t_RCC_APB1ENR is record
       TIM2EN         : boolean;  -- TIM2 clock enable
       TIM3EN         : boolean;  -- TIM3 clock enable
       TIM4EN         : boolean;  -- TIM4 clock enable
@@ -101,8 +101,8 @@ package stm32f4.rcc is
       reserved_16    : boolean;
       USART2EN       : boolean;  -- USART2 clock enable
       USART3EN       : boolean;  -- USART3 clock enable
-      USART4EN       : boolean;  -- USART4 clock enable
-      USART5EN       : boolean;  -- USART5 clock enable
+      UART4EN        : boolean;  -- UART4 clock enable
+      UART5EN        : boolean;  -- UART5 clock enable
       I2C1EN         : boolean;  -- I2C1 clock enable
       I2C2EN         : boolean;  -- I2C2 clock enable
       I2C3EN         : boolean;  -- I2C3 clock enable
@@ -155,14 +155,14 @@ package stm32f4.rcc is
    type t_RCC_periph is record
       CR       : t_RCC_CR;
       AHB1ENR  : t_RCC_AHB1ENR;
-      AHB3ENR  : t_RCC_AHB3ENR;
+      APB1ENR  : t_RCC_APB1ENR;
       APB2ENR  : t_RCC_APB2ENR;
    end record;
 
    for t_RCC_periph use record
       CR       at 16#00# range 0 .. 31;
       AHB1ENR  at 16#30# range 0 .. 31;
-      AHB3ENR  at 16#38# range 0 .. 31;
+      APB1ENR  at 16#40# range 0 .. 31;
       APB2ENR  at 16#44# range 0 .. 31;
    end record;
 

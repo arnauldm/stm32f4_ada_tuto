@@ -24,6 +24,7 @@ package body stm32f4.sdio is
       rcc.enable_gpio_clock (periphs.GPIOB);
       rcc.enable_gpio_clock (periphs.GPIOC);
       rcc.enable_gpio_clock (periphs.GPIOD);
+
       periphs.RCC.APB2ENR.SDIOEN := true;
       periphs.RCC.AHB1ENR.DMA2EN := true;
 

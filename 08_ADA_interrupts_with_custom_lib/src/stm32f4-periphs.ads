@@ -95,16 +95,16 @@ package stm32f4.periphs is
    ---------------
 
    PA0   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOA'access, 0);
+   PA4   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOA'access, 4);
+   PA11  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOA'access, 11);
+   PA12  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOA'access, 12);
 
    PB6   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 6);
    PB7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 7);
-   PB8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 8);
-   PB9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 9);
-   PB10   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 10);
    PB11   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 11);
+   PB14   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 14);
+   PB15   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOB'access, 15);
 
-   PC6   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 6);
-   PC7   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 7);
    PC8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 8);
    PC9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOC'access, 9);
    PC10   : constant stm32f4.gpio.t_GPIO_pin := (GPIOC'access, 10);
@@ -113,7 +113,6 @@ package stm32f4.periphs is
 
    PD2   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 2);
    PD8   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 8);
-   PD9   : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 9);
    PD12  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 12);
    PD13  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 13);
    PD14  : constant stm32f4.gpio.t_GPIO_pin  := (GPIOD'access, 14);
@@ -134,10 +133,6 @@ package stm32f4.periphs is
    -- SDIO --
    ----------
 
-   SDIO_D4  : stm32f4.gpio.t_GPIO_pin renames PB8;
-   SDIO_D5  : stm32f4.gpio.t_GPIO_pin renames PB9;
-   SDIO_D6  : stm32f4.gpio.t_GPIO_pin renames PC6;
-   SDIO_D7  : stm32f4.gpio.t_GPIO_pin renames PC7;
    SDIO_D0  : stm32f4.gpio.t_GPIO_pin renames PC8;
    SDIO_D1  : stm32f4.gpio.t_GPIO_pin renames PC9;
    SDIO_D2  : stm32f4.gpio.t_GPIO_pin renames PC10;
@@ -149,7 +144,19 @@ package stm32f4.periphs is
    -- USART3 --
    ------------
 
-   TX_PIN   : stm32f4.gpio.t_GPIO_pin renames PD8;
-   RX_PIN   : stm32f4.gpio.t_GPIO_pin renames PD9;
+   USART3_TX   : stm32f4.gpio.t_GPIO_pin renames PD8;
+   USART3_RX   : stm32f4.gpio.t_GPIO_pin renames PB11;
+
+   ---------
+   -- USB --
+   ---------
+
+   USB_OTG_FS_DM  : stm32f4.gpio.t_GPIO_pin renames PA11;
+   USB_OTG_FS_DP  : stm32f4.gpio.t_GPIO_pin renames PA12;
+
+   USB_OTG_HS_DM  : stm32f4.gpio.t_GPIO_pin renames PB14;
+   USB_OTG_HS_DP  : stm32f4.gpio.t_GPIO_pin renames PB15;
+   USB_OTG_HS_SOF : stm32f4.gpio.t_GPIO_pin renames PA4;
+
 
 end stm32f4.periphs;

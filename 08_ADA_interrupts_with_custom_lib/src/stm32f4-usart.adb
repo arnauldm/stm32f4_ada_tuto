@@ -1,4 +1,6 @@
+with system; use system;
 with System.STM32; -- System package
+with stm32f4.periphs;
 
 package body stm32f4.usart is
 
@@ -6,16 +8,22 @@ package body stm32f4.usart is
      (USARTx   : stm32f4.usart.t_USART_periph_access;
       baudrate : unsigned_32)
    is
-      APB2_clock  : unsigned_32;
+      APB_clock   : unsigned_32;
       mantissa    : unsigned_32;
       fraction    : unsigned_32;
    begin
       -- Configuring the baud rate is a tricky part. See RM0090 p. 982-983
       -- for further informations
-      APB2_clock  := System.STM32.System_Clocks.PCLK2;
+      if USARTx.all'address = periphs.USART1_Base or
+         USARTx.all'address = periphs.USART6_Base 
+      then
+         APB_clock   := System.STM32.System_Clocks.PCLK2;
+      else
+         APB_clock   := System.STM32.System_Clocks.PCLK1;
+      end if;
 
-      mantissa    := APB2_clock / (16 * baudrate);
-      fraction    := ((APB2_clock * 25) / (4 * baudrate)) - mantissa * 100;
+      mantissa    := APB_clock / (16 * baudrate);
+      fraction    := ((APB_clock * 25) / (4 * baudrate)) - mantissa * 100;
       fraction    := (fraction * 16) / 100;
 
       USARTx.BRR.DIV_Mantissa   := uint12 (mantissa);
