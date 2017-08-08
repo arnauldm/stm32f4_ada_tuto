@@ -1,3 +1,4 @@
+with system;
 with ada.real_time; use ada.real_time;
 with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
@@ -13,9 +14,10 @@ with tests.dma;   pragma unreferenced (tests.dma);
 with tests.sdio;  pragma unreferenced (tests.sdio);
 
 procedure main is
+   pragma priority (system.priority'first);
    ok       : boolean;
    period   : constant ada.real_time.time_span := 
-      ada.real_time.milliseconds (500);
+      ada.real_time.milliseconds (250);
 begin
 
    leds.initialize;
@@ -29,6 +31,9 @@ begin
 
    loop
       gpio.toggle (periphs.LED_GREEN);
+      gpio.toggle (periphs.LED_ORANGE);
+      gpio.toggle (periphs.LED_RED);
+      gpio.toggle (periphs.LED_BLUE);
       delay until ada.real_time.clock + period;
    end loop;
 
