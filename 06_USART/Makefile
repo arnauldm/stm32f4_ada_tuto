@@ -1,5 +1,5 @@
 
-GNATDIR = /opt/arm-gnat-2016/bin
+GNATDIR = /opt/arm-gnat-2017/bin
 export PATH := $(GNATDIR):$(PATH)
 
 all:

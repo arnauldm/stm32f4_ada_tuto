@@ -53,7 +53,6 @@ package body tests.sdio is
 
       --serial.put_line ("buf:"); dump (buf);
       serial.put_line ("cksum (buf):" & stm32f4.word'image (cksum(buf)));
-
       serial.put_line ("--- /TEST ---");
    end read_with_dma;
 
