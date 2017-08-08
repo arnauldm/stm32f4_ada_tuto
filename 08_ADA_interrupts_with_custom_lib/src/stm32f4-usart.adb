@@ -6,11 +6,11 @@ package body stm32f4.usart is
 
    procedure set_baud
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : unsigned_32)
+      baudrate : Interfaces.Stm32.UInt32)
    is
-      APB_clock   : unsigned_32;
-      mantissa    : unsigned_32;
-      fraction    : unsigned_32;
+      APB_clock   : Interfaces.Stm32.UInt32;
+      mantissa    : Interfaces.Stm32.UInt32;
+      fraction    : Interfaces.Stm32.UInt32;
    begin
       -- Configuring the baud rate is a tricky part. See RM0090 p. 982-983
       -- for further informations
@@ -33,7 +33,7 @@ package body stm32f4.usart is
 
    procedure configure
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : unsigned_32;
+      baudrate : Interfaces.Stm32.UInt32;
       data     : t_data_len;
       parity   : t_parity_select;
       stop     : t_stop_bits)

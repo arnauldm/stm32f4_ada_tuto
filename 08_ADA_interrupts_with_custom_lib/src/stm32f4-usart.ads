@@ -174,11 +174,11 @@ package stm32f4.usart is
 
    procedure set_baud
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : unsigned_32);
+      baudrate : Interfaces.Stm32.UInt32);
 
    procedure configure
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : unsigned_32;
+      baudrate : Interfaces.Stm32.UInt32;
       data     : t_data_len;
       parity   : t_parity_select;
       stop     : t_stop_bits);
