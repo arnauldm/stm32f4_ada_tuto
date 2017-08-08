@@ -1,3 +1,7 @@
+with ada.real_time; use ada.real_time;
+with stm32f4; use stm32f4;
+with stm32f4.gpio; 
+with stm32f4.periphs;
 
 package body leds.blinking is
 
@@ -10,11 +14,11 @@ package body leds.blinking is
       index    : integer := 1;
 
       period   : constant ada.real_time.time_span := 
-         ada.real_time.milliseconds (125);
+         ada.real_time.milliseconds (250);
 
    begin
 
-      init;
+      initialize;
 
       loop
          gpio.turn_off (led(index));
