@@ -1,6 +1,7 @@
 with system;
 with ada.unchecked_conversion;
 with interfaces;  use interfaces;
+with interfaces.stm32;  use interfaces.stm32;
 
 package stm32f4 is
 
