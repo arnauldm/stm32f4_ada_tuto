@@ -23,18 +23,23 @@ begin
    leds.initialize;
    serial.initialize;
 
+   serial.put ("-- Hello, world!");
+   serial.new_line;
+
    stm32f4.sdio.sd_card.initialize (ok);
-   if ok then
+
+   if not ok then
+      loop
+         gpio.toggle (periphs.LED_RED);
+         delay until ada.real_time.clock + period;
+      end loop;
+   else
       tests.sdio.write_with_dma;
       tests.sdio.read_with_dma;
+      loop
+         gpio.toggle (periphs.LED_GREEN);
+         delay until ada.real_time.clock + 2*period;
+      end loop;
    end if;
-
-   loop
-      gpio.toggle (periphs.LED_GREEN);
-      gpio.toggle (periphs.LED_ORANGE);
-      gpio.toggle (periphs.LED_RED);
-      gpio.toggle (periphs.LED_BLUE);
-      delay until ada.real_time.clock + period;
-   end loop;
 
 end main;
