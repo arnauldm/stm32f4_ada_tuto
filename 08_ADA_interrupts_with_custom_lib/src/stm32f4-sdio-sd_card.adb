@@ -83,7 +83,7 @@ package body stm32f4.sdio.sd_card is
       --           [7:0]:   Check Pattern 
 
       send_command (CMD8_SEND_IF_COND, 16#1AA#, sdio.SHORT_RESPONSE);
-      check_R7 (CMD0_GO_IDLE_STATE, sdio_status, success);
+      check_R7 (CMD8_SEND_IF_COND, sdio_status, success);
 
       if not success then
          serial.put_line
@@ -495,12 +495,11 @@ package body stm32f4.sdio.sd_card is
       sdio_status : out sdio.t_SDIO_STA;
       success     : out boolean)
    is
-      pragma unreferenced (cmd_index);
    begin
 
       success := true;
 
-      if periphs.SDIO_CARD.RESPCMD.CMD /= 8 then
+      if periphs.SDIO_CARD.RESPCMD.CMD /= cmd_index then
          serial.put_line
            ("Wrong command index (RESPCMD:" & 
             uint6'image (periphs.SDIO_CARD.RESPCMD.CMD) & ")");
