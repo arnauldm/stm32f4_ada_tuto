@@ -34,22 +34,22 @@ package body stm32f4.sdio is
 
       -- SDIO_D0 pin
       gpio.configure (periphs.SDIO_D0,
-         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.FLOATING);
+         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_VERY_HIGH, gpio.FLOATING);
       gpio.set_alternate_function (periphs.SDIO_D0, gpio.GPIO_AF_SDIO);
 
       -- SDIO_D1 pin
       gpio.configure (periphs.SDIO_D1,
-         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.FLOATING);
+         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_VERY_HIGH, gpio.FLOATING);
       gpio.set_alternate_function (periphs.SDIO_D1, gpio.GPIO_AF_SDIO);
 
       -- SDIO_D2 pin
       gpio.configure (periphs.SDIO_D2,
-         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.FLOATING);
+         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_VERY_HIGH, gpio.FLOATING);
       gpio.set_alternate_function (periphs.SDIO_D2, gpio.GPIO_AF_SDIO);
 
       -- SDIO_D3 pin
       gpio.configure (periphs.SDIO_D3,
-         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.FLOATING);
+         gpio.MODE_AF, gpio.PUSH_PULL, gpio.SPEED_VERY_HIGH, gpio.FLOATING);
       gpio.set_alternate_function (periphs.SDIO_D3, gpio.GPIO_AF_SDIO);
 
       -- SDIO_CK pin
@@ -80,10 +80,11 @@ package body stm32f4.sdio is
       -- . SDIO adapter clock (SDIOCLK) = 48 MHz
       -- . CLKDIV defines the divide factor between the input clock
       --   (SDIOCLK) and the output clock (SDIO_CK) : 
-      --      SDIO_CK frequency = SDIOCLK / [CLKDIV + 2]
+      --      SDIO_CK = SDIOCLK / (CLKDIV + 2)
       -- . While the SD/SDIO card or MultiMediaCard is in identification
       --   mode, the SDIO_CK frequency must be less than 400 kHz.
       clock_register.CLKDIV   := 118;
+      clock_register.BYPASS   := false;
 
       -- Default bus mode: SDIO_D0 used (1 bit bus width)
       clock_register.WIDBUS   := WIDBUS_1WIDE_MODE;
@@ -95,6 +96,9 @@ package body stm32f4.sdio is
 
       -- Errata sheet STM: NEGEDGE=1 (falling) should *not* be used
       clock_register.NEGEDGE  := RISING_EDGE;
+
+      -- SDIO_CK is not enabled yet
+      periphs.SDIO_CARD.CLKCR.CLKEN    := false;
 
       -- Writing params in the register
       periphs.SDIO_CARD.CLKCR := clock_register;
@@ -109,7 +113,7 @@ package body stm32f4.sdio is
 
       -- SDIO_CK is enabled
       periphs.SDIO_CARD.CLKCR.CLKEN    := true;
-      delay until ada.real_time.clock + ada.real_time.microseconds (1);
+      delay until ada.real_time.clock + ada.real_time.microseconds (20);
 
       --
       -- Setup IRQs 
