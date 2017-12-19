@@ -124,7 +124,7 @@ package body stm32f4.sdio.sd_card is
       end loop;
 
       if sd_card.ocr.power_up /= 1 then
-         serial.put_line ("Unusable card");
+         serial.put_line ("Unusable card or voltage mismatch");
          goto bad_return;
       end if;
 
@@ -292,6 +292,10 @@ package body stm32f4.sdio.sd_card is
       end if;
 
       if DEBUG then
+         serial.put
+           ("CMD: " & t_cmd_index'image (cmd_index));
+         serial.new_line;
+
          serial.put
            ("RESPCMD: " & word'image (to_word (periphs.SDIO_CARD.RESPCMD)) &
             ", RESP1: " & word'image (to_word (periphs.SDIO_CARD.RESP1)));
@@ -969,6 +973,16 @@ package body stm32f4.sdio.sd_card is
            ("DMA transfer complete while SDIO status DBCKEND is set to false");
       end if;
 
+      if cmd12_finalization then
+         send_command (CMD12_STOP_TRANSMISSION, 0, sdio.SHORT_RESPONSE);
+         check_R1 (CMD12_STOP_TRANSMISSION, sdio_status, card_status, ok);
+         if not ok then
+            serial.put_line ("CMD12 (STOP_TRANSMISSION) failure");
+            success := false;
+         end if;
+         delay until ada.real_time.clock + ada.real_time.milliseconds (500);
+      end if;
+
       get_card_status (card_status, ok);
 
       if not ok then
@@ -981,13 +995,8 @@ package body stm32f4.sdio.sd_card is
          success := false;
       end if;
 
-      if cmd12_finalization then
-         send_command (CMD12_STOP_TRANSMISSION, 0, sdio.SHORT_RESPONSE);
-         check_R1 (CMD12_STOP_TRANSMISSION, sdio_status, card_status, ok);
-         if not ok then
-            serial.put_line ("CMD12 (STOP_TRANSMISSION) failure");
-            success := false;
-         end if;
+      if card_status.CURRENT_STATE /= CARD_STATE_READY then
+         delay until ada.real_time.clock + ada.real_time.milliseconds (500);
       end if;
 
    end write_blocks_dma;

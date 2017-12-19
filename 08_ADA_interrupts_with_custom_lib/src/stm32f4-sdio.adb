@@ -141,9 +141,9 @@ package body stm32f4.sdio is
 
    procedure set_dma_transfer
      (dma_controller : in out dma.t_dma_controller;
-      stream         : dma.t_dma_stream_index;
-      direction      : dma.t_transfer_dir;
-      memory         : byte_array)
+      stream         : in     dma.t_dma_stream_index;
+      direction      : in     dma.t_transfer_dir;
+      memory         : in     byte_array)
    is
    begin
 

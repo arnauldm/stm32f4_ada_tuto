@@ -34,8 +34,8 @@ begin
          delay until ada.real_time.clock + period;
       end loop;
    else
-      tests.sdio.write_with_dma;
-      tests.sdio.read_with_dma;
+      tests.sdio.write_with_dma (10, 512*20);
+      tests.sdio.read_with_dma (10, 512*20);
       loop
          gpio.toggle (periphs.LED_GREEN);
          delay until ada.real_time.clock + 2*period;

@@ -1,17 +1,18 @@
-with interfaces; use interfaces;
+with system;      use system;
+with interfaces;  use interfaces;
+with ada.unchecked_deallocation;
 
 with stm32f4.sdio.sd_card;
 with serial;
 
 package body tests.sdio is
 
-   buf : stm32f4.byte_array (1 .. 1024)
-      with alignment => 16;
+   -- Buffer  used for DMA transfers must be 16 bytes aligned
+   type dma_array is new stm32f4.byte_array with alignment => 16;
+   type dma_array_access is access all dma_array;
+   procedure free_dma_array is
+      new ada.unchecked_deallocation (dma_array, dma_array_access);
 
-   buf_cksum : stm32f4.word;
-
-   lba : constant stm32f4.word := 10;
-   --lba : constant stm32f4.word := 30881792;
 
    procedure dump (buf : stm32f4.byte_array) is
       idx : integer := 0;
@@ -36,37 +37,58 @@ package body tests.sdio is
    end dump;
 
 
-   procedure read_with_dma is
-      ok             : boolean;
+   procedure read_with_dma 
+     (lba   : in stm32f4.word;
+      size  : in natural)
+   is
+      ok       : boolean;
+      buf_a    : dma_array_access;
    begin
       serial.put_line ("--- TEST: sdio.sd_card.read_blocks_dma () ---");
 
+      -- Allocate the input buffer
+      buf_a := new dma_array (1 .. size);
 
-      buf_cksum:= cksum (buf);
-      serial.put_line ("expected cksum (buf):" & stm32f4.word'image (buf_cksum));
+      for i in buf_a'range loop
+         buf_a(i) := 0;
+      end loop;
 
-      stm32f4.sdio.sd_card.read_blocks_dma (lba, buf, ok);
+      -- Reading
+      stm32f4.sdio.sd_card.read_blocks_dma
+        (lba, stm32f4.byte_array (buf_a.all), ok);
 
       if not ok then
          serial.put_line ("error: stm32f4.sdio.sd_card.read_blocks");
       end if;
 
       --serial.put_line ("buf:"); dump (buf);
-      serial.put_line ("cksum (buf):" & stm32f4.word'image (cksum(buf)));
+      serial.put_line 
+        ("cksum (buf):" & 
+         stm32f4.word'image (cksum (stm32f4.byte_array (buf_a.all))));
+
+      free_dma_array (buf_a); 
+
       serial.put_line ("--- /TEST ---");
    end read_with_dma;
 
 
-   procedure write_with_dma is
+   procedure write_with_dma 
+     (lba   : in stm32f4.word;
+      size  : in natural)
+   is
       ok       : boolean;
       pattern  : stm32f4.byte;
+      buf_a    : dma_array_access;
    begin
       serial.put_line ("--- TEST: sdio.sd_card.write_blocks_dma () ---");
 
+      -- Allocate the input buffer
+      buf_a := new dma_array (1 .. size);
+
       -- Set input buffer with a recognizable pattern
       pattern := 16#10#;
-      for i in buf'range loop
-         buf(i) := pattern;
+      for i in buf_a'range loop
+         buf_a(i) := pattern;
          if i mod 8 = 0 then
             if pattern < 16#7D# then
                pattern := pattern + 1;
@@ -76,10 +98,20 @@ package body tests.sdio is
          end if;
       end loop;
 
-      stm32f4.sdio.sd_card.write_blocks_dma (lba, buf, ok);
+      -- Display the expected cksum
+      serial.put_line
+        ("expected cksum (buf):" & 
+         stm32f4.word'image (cksum (stm32f4.byte_array (buf_a.all))));
+
+      -- Write the buffer 
+      stm32f4.sdio.sd_card.write_blocks_dma 
+        (lba, stm32f4.byte_array (buf_a.all), ok);
+
       if not ok then
          serial.put_line ("error: stm32f4.sdio.sd_card.write_blocks_dma");
       end if;
+
+      free_dma_array (buf_a); 
 
       serial.put_line ("--- /TEST ---");
    end write_with_dma;
