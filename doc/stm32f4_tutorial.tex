@@ -1,37 +1,40 @@
-\documentclass{FicheLecture}
+\documentclass[12pt]{article}
+\usepackage[margin=1.0in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{textcomp}
 
-\SetTitre{STM32F4-Discovery}
-\SetSousTitre{Tutoriel}
+\title{STM32F4-Discovery}
+\date{\now}
 
-\SetDateEnregistrement{\day}{\month}{\year}
-\SetClassification{}
+\lstset{
+	tabsize=4,
+	basicstyle=\ttfamily\small,
+	%%frame=leftline
+	backgroundcolor=\color{Gray!20}
+}
 
 
 %%----------------------------------------------------------------------------
 %%----------------------------------------------------------------------------
 \begin{document}
 
-{\raggedright\sffamily\bfseries\LARGE\textcolor{RoyalBlue}{\GetTitre}\par}
-{\raggedright\sffamily\bfseries\large {\GetSousTitre} \par}
-\vskip 20pt
-{\raggedright\sffamily\large{\GetAuteur}\par}
-{\raggedright\sffamily\large{\today}}
-\vskip 40pt
-
-\tableofcontents
-
-\AddEntetesPiedsDePage
-
+%%\tableofcontents
 
 %%----------------------------------------------------------------------------
 \section{\emph{Hello, world!} : faire clignoter une led}
 
 \subsection{Un premier programme}
-Utilisation du \emph{cross-compiler} \cmd{arm-none-eabi-gcc}.
+Utilisation du \emph{cross-compiler} \texttt{arm-none-eabi-gcc}.
 La compilation utilise des \emph{flags} spécifiques à l'architecture cible 
 
 \begin{lstlisting} 
-ARMFLAGS = -mlittle-endian -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 
+ARMFLAGS = -mlittle-endian -mthumb -mcpu=cortex-m4 -mfloat-abi=hard \
+           -mfpu=fpv4-sp-d16 
 \end{lstlisting}
 
 Le code source du premier programme fait clignorer une \emph{led} sur la carte
@@ -61,20 +64,20 @@ int main(void) {
 
 Le manuel utilisateur \cite{user:manual} de la carte indique que la led verte est connecté à la sortie GPIO \emph{PD12}, ce qui correspond à la pin "12" du port \emph{general purpose I/O} "D".
 
-Lors de la compilation, le fichier est lié au fichier \texttt{startup\_stm32f4xx.s} dont le rôle est d'initialiser les segments de données du programme (remplir le \emph{bss} avec des valeurs nulles, déplacer les données en SRAM, etc.). La main est ensuite donnée au programme en tant que tel. Celui-ci commence par appeler la fonction \texttt{system\_init()} qui initialise la carte pour la rendre utilisable (cette fonction s'occupe principalement de configurer et de synchroniser entre elles les différentes horloges). Suite à cela, il faut explicitement \emph{activer} l'horloge des périphériques que l'on souhaite utiliser, ici celle du port \cmd{GPIOD}. 
+Lors de la compilation, le fichier est lié au fichier \texttt{startup\_stm32f4xx.s} dont le rôle est d'initialiser les segments de données du programme (remplir le \emph{bss} avec des valeurs nulles, déplacer les données en SRAM, etc.). La main est ensuite donnée au programme en tant que tel. Celui-ci commence par appeler la fonction \texttt{system\_init()} qui initialise la carte pour la rendre utilisable (cette fonction s'occupe principalement de configurer et de synchroniser entre elles les différentes horloges). Suite à cela, il faut explicitement \emph{activer} l'horloge des périphériques que l'on souhaite utiliser, ici celle du port \texttt{GPIOD}. 
 
 \begin{lstlisting}[language=C]
-RCC->AHB1ENR  = RCC_AHB1ENR_GPIODEN;      /* GPIOD Periph clock enable */
+RCC->AHB1ENR  = RCC_AHB1ENR_GPIODEN; /* GPIOD Periph clock enable */
 \end{lstlisting}
 
-Ensuite, la pin doit être configurée en \emph{output} en écrivant dans le registre \cmd{GPIOx\_MODER}. 
+Ensuite, la pin doit être configurée en \emph{output} en écrivant dans le registre \texttt{GPIOx\_MODER}. 
 
 \begin{lstlisting}[language=C]
 /* Set pin to output mode */
 GPIOD->MODER |=1 << (LED_GREEN * 2);
 \end{lstlisting}
 
-Pour émettre un signal sur la pin du port GPIO, il faut écrire dans le registre \cmd{GPIOx\_ODR}.
+Pour émettre un signal sur la pin du port GPIO, il faut écrire dans le registre \texttt{GPIOx\_ODR}.
 Ceci permet par conséquent d'allumer ou d'éteindre la led
 
 \begin{lstlisting}[language=C]
@@ -86,13 +89,15 @@ GPIOD->ODR &= ~(1 << led);  /* led off */
 \subsection{Charger le binaire sur le micro-contrôleur et deboguer avec gdb}
 
 \begin{lstlisting}
-\$ openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg -f ocd.cfg
+\$ openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg \
+   -f ocd.cfg
 \end{lstlisting}
 
-Le programme \cmd{openocd} nécessite un accès au périphérique USB correspondant à la carte. Si la commande renvoie une erreur du type \texttt{Error: libusb\_open() failed}, il faut ajouter une règle à \cmd{udev} pour donner au développeur les droits d'accéder à la carte, en créant par exemple le fichier \texttt{/etc/udev/rules.d/99-STM32.rules} :
+Le programme \texttt{openocd} nécessite un accès au périphérique USB correspondant à la carte. Si la commande renvoie une erreur du type \texttt{Error: libusb\_open() failed}, il faut ajouter une règle à \texttt{udev} pour donner au développeur les droits d'accéder à la carte, en créant par exemple le fichier \texttt{/etc/udev/rules.d/99-STM32.rules} :
 
   \begin{lstlisting}[language=sh]
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", GROUP="am", MODE="0660"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", 
+            GROUP="am", MODE="0660"
   \end{lstlisting}
 
 Avec le fichier \texttt{ocd.cfg} qui contient :
@@ -105,7 +110,7 @@ reset
 shutdown
 \end{lstlisting}
 
-Il est aussi possible de charger le programme à partir de \cmd{gdb}
+Il est aussi possible de charger le programme à partir de \texttt{gdb}
 
 \begin{lstlisting}
 \$ openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg
@@ -162,30 +167,35 @@ GPIOA->OSPEEDR &= ~(3 << (BLUE_BUTTON * 2));   /* clear bits */
 GPIOA->OSPEEDR |=  (2 << (BLUE_BUTTON * 2));
 \end{lstlisting}
 
-On observe toutefois certaines différences. Le registre \cmd{GPIOx\_MODER} est configuré de manière à ce que la pin du bouton soit en \emph{intput}. Le registre \cmd{GPIOx\_PUPDR} permet de configurer la pin en \emph{pull-up} ou en \emph{pull-down}. Dans le cas présent, le circuit est ouvert par défaut, on configure donc la pin en \emph{pull-down}. On note qu'il faut également configurer la vitesse du port. Plus le port va vite, plus il consomme de courant, ce qui peut être pénalisant pour un système alimenté de manière autonome. Dans notre cas, la carte est alimentée en USB, on peut donc utiliser la vitesse maximale.
+On observe toutefois certaines différences. Le registre \texttt{GPIOx\_MODER} est configuré de manière à ce que la pin du bouton soit en \emph{intput}. Le registre \texttt{GPIOx\_PUPDR} permet de configurer la pin en \emph{pull-up} ou en \emph{pull-down}. Dans le cas présent, le circuit est ouvert par défaut, on configure donc la pin en \emph{pull-down}. On note qu'il faut également configurer la vitesse du port. Plus le port va vite, plus il consomme de courant, ce qui peut être pénalisant pour un système alimenté de manière autonome. Dans notre cas, la carte est alimentée en USB, on peut donc utiliser la vitesse maximale.
 
 Cette séquence d'initialisation indique que l'on utilise la pin associée au bouton en entrée, pour recevoir de l'information. Mais ceci ne suffit pas car il faut en plus déclencher une interruption quand le bouton est pressé. C'est ce que réalise le code ci-dessous
 
 \begin{lstlisting}[language=C]
 /* P<port>x interrupts are managed by the EXTIx interrupt line. Thus,
- * interrupts on BLUE_BUTTON are managed by EXTI0. EXTI0 can also manage
- * interrupts on ports PB0, PC0, PD0, etc. We must indicate in SYSCFG_EXTICR1
- * register that EXTI0 will only manage BLUE_BUTTON interrupts (p. 293) */
+ * interrupts on BLUE_BUTTON are managed by EXTI0. EXTI0 can also 
+ * manage interrupts on ports PB0, PC0, PD0, etc. We must indicate 
+ * in SYSCFG_EXTICR1 register that EXTI0 will only manage BLUE_BUTTON 
+ * interrupts (p. 293) */
 SYSCFG->EXTICR[0] &= 0xfffffff0;
 
 /* Clear EXTI line configuration */
-EXTI->IMR |=  EXTI_Line0;  /* Interrupt request from line x is not masked (1) */
-EXTI->EMR &= ~EXTI_Line0;  /* Event Mask Register is masked (0) */
+EXTI->IMR |=  EXTI_Line0; 
+   /* Interrupt request from line x is not masked (1) */
+EXTI->EMR &= ~EXTI_Line0;
+   /* Event Mask Register is masked (0) */
 
 /* Trigger the selected external interrupt on rising edge */
 EXTI->RTSR |= EXTI_Line0;  /* Rising */
 EXTI->FTSR &= ~EXTI_Line0;  /* Clear falling */
 
-/* Set the IRQ priority level (in the range 0-15). The lower the value, the
- * greater the priority is. The Reset, Hard fault, and NMI exceptions, with
- * fixed negative priority values, always have higher priority than any other
- * exception. When the processor is executing an exception handler, the
- * exception handler is preempted if a higher priority exception occurs. 
+/* Set the IRQ priority level (in the range 0-15). 
+ * The lower the value, the greater the priority is. The Reset, 
+ * Hard fault, and NMI exceptions, with fixed negative priority 
+ * values, always have higher priority than any other exception. 
+ * When the processor is executing an exception handler, the
+ * exception handler is preempted if a higher priority exception 
+ * occurs. 
  * Note: 'EXTI0_IRQn' stands for EXTI Line0 Interrupt */
 NVIC->IP[EXTI0_IRQn] = 0;
 
@@ -193,23 +203,25 @@ NVIC->IP[EXTI0_IRQn] = 0;
 NVIC->ISER[0] = (uint32_t) 0x01 << EXTI0_IRQn;
 \end{lstlisting}
 
-Les interruptions externes sont multiplexées, mais non pas en fonction du port GPIO mais en fonction du numéro de pin. Par exemple, les interruptions en provenance des pins PA3, PB3, PC3, PD3, etc. transitent toutes par la ligne d'interruption \cmd{EXTI3}. Dans notre cas, le bouton bleu est sur la pin 0 du port GPIOA, l'interruption sera donc associée à la ligne \cmd{EXTI0}. L'instruction suivante, à la fin du fichier, met en oeuvre les interruptions pour cette ligne
+Les interruptions externes sont multiplexées, mais non pas en fonction du port GPIO mais en fonction du numéro de pin. Par exemple, les interruptions en provenance des pins PA3, PB3, PC3, PD3, etc. transitent toutes par la ligne d'interruption \texttt{EXTI3}. Dans notre cas, le bouton bleu est sur la pin 0 du port GPIOA, l'interruption sera donc associée à la ligne \texttt{EXTI0}. L'instruction suivante, à la fin du fichier, met en oeuvre les interruptions pour cette ligne
 
 \begin{lstlisting}[language=C]
 NVIC->ISER[0] = (uint32_t) 0x01 << EXTI0_IRQn;
 \end{lstlisting}
 
-Il faut configurer le registre \cmd{SYSCFG\_EXTICR} pour indiquer que les interruptions arrivant sur la ligne \cmd{EXTI0} proviennent de la pin \cmd{PA0}. Le démultiplexage est réalisé de manière statique
+Il faut configurer le registre \texttt{SYSCFG\_EXTICR} pour indiquer que les interruptions arrivant sur la ligne \texttt{EXTI0} proviennent de la pin \texttt{PA0}. Le démultiplexage est réalisé de manière statique
 
 \begin{lstlisting}[language=C]
 SYSCFG->EXTICR[0] &= 0xfffffff0;
 \end{lstlisting}
 
-Le processeur supporte deux types d'interruptions : les interruptions à proprement parler et les évènements (\emph{event}). Les évènements sont une signalisation envoyée au processeur dont le but semble essentiellement être de sortir le processeur d'un mode de veille, nous ne les utiliserons donc pas ici. On autorise (démasque) les interruptions sur la ligne \cmd{EXTI0}
+Le processeur supporte deux types d'interruptions : les interruptions à proprement parler et les évènements (\emph{event}). Les évènements sont une signalisation envoyée au processeur dont le but semble essentiellement être de sortir le processeur d'un mode de veille, nous ne les utiliserons donc pas ici. On autorise (démasque) les interruptions sur la ligne \texttt{EXTI0}
 
 \begin{lstlisting}[language=C]
-EXTI->IMR |=  EXTI_Line0;  /* Interrupt request from line x is not masked (1) */
-EXTI->EMR &= ~EXTI_Line0;  /* Event Mask Register is masked (0) */
+EXTI->IMR |=  EXTI_Line0;
+   /* Interrupt request from line x is not masked (1) */
+EXTI->EMR &= ~EXTI_Line0;
+   /* Event Mask Register is masked (0) */
 \end{lstlisting}
 
 L'interruption est déclenchée lors d'un front montant (le signal passe de "bas" à "haut"), c'est-à-dire lorsque l'on ferme le circuit en pressant le bouton 
@@ -219,7 +231,7 @@ EXTI->RTSR |= EXTI_Line0;  /* Rising */
 EXTI->FTSR &= ~EXTI_Line0;  /* Clear falling */
 \end{lstlisting}
 
-Enfin, comme vu précedemment, on active les interruptions pour la ligne \cmd{EXTI0}. Mais avant cela, on peut attribuer une priorité à ce type d'interruptions. La priorité à une valeur sur 4 bits allant de 0 à 15. La valeur 0 correspond à la plus haute priorité. Si deux interruptions avec des priorités différentes sont déclenchées au même moment, celle avec la plus haute priorité sera exécutée. A noter que si le processeur exécute un \emph{handler} d'interruption et qu'une interruption plus prioritaire survient, cette dernière préempte le processeur
+Enfin, comme vu précedemment, on active les interruptions pour la ligne \texttt{EXTI0}. Mais avant cela, on peut attribuer une priorité à ce type d'interruptions. La priorité à une valeur sur 4 bits allant de 0 à 15. La valeur 0 correspond à la plus haute priorité. Si deux interruptions avec des priorités différentes sont déclenchées au même moment, celle avec la plus haute priorité sera exécutée. A noter que si le processeur exécute un \emph{handler} d'interruption et qu'une interruption plus prioritaire survient, cette dernière préempte le processeur
 
 \begin{lstlisting}[language=C]
 NVIC->IP[EXTI0_IRQn] = 0;
@@ -237,12 +249,13 @@ GPIOD->ODR &= ~(1 << currentLED);
 /* Change current led */
 currentLED = (currentLED == LED_GREEN) ? LED_BLUE : LED_GREEN;
 
-/* Clear Pending Request bit to acknowledge the interrupt (this bit is cleared by programming it to 1 ! */
+/* Clear Pending Request bit to acknowledge the interrupt (this bit 
+ * is cleared by programming it to 1 ! */
 EXTI->PR = EXTI_Line0;
 }
 \end{lstlisting}
 
-Le nom de ce \emph{handler} n'est pas choisi au hasard. Il est lié au fichier \texttt{startup\_stm32f4xx.s} qui contient la table des vecteurs d'interruptions du processeur. Chaque entrée de la table contient une valeur par défaut qui peut être surchargée lors de l'édition de lien grâce à une directive spéciale de \cmd{gcc}.
+Le nom de ce \emph{handler} n'est pas choisi au hasard. Il est lié au fichier \texttt{startup\_stm32f4xx.s} qui contient la table des vecteurs d'interruptions du processeur. Chaque entrée de la table contient une valeur par défaut qui peut être surchargée lors de l'édition de lien grâce à une directive spéciale de \texttt{gcc}.
 
 %%----------------------------------------------------------------------------
 %%----------------------------------------------------------------------------
