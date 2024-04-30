@@ -1,58 +1,60 @@
-with Interfaces.STM32.RCC;
-with Interfaces.STM32.GPIO; 
-with System.STM32;
-with Ada.Real_Time; use Ada.Real_Time;
+with interfaces.STM32.RCC;
+with interfaces.STM32.GPIO; 
+with system.STM32;
+with ada.real_time; use ada.real_time;
 
-with buttons;
-with registers;
+with blue_button;
 
 procedure blink is
 
-   led_green   : constant := 12;
-   led_blue    : constant := 15;
-   led         : integer  := led_green;
+   LED_GREEN   : constant := 12;
+   LED_RED     : constant := 14;
+   led         : integer  := LED_GREEN;
 
-   Period      : constant Ada.Real_Time.Time_Span 
-      := Ada.Real_Time.Milliseconds (50);
+   period      : constant ada.real_time.time_span := ada.real_time.milliseconds (200);
 
 begin
 
-   --
-   -- Set the LEDs
-   --
+   ------------------
+   -- Set the LEDs --
+   ------------------
 
    -- Enable GPIOD periph clock
-   Interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIODEN := 1;
+   interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIODEN := 1;
 
-   -- Set GPIOD pin to output mode
-   Interfaces.STM32.GPIO.GPIOD_Periph.MODER.Arr (led_green)
+   -- Set GPIOD pins to output mode
+   interfaces.STM32.GPIO.GPIOD_Periph.MODER.arr (LED_GREEN)
       := System.STM32.Mode_OUT;
 
-   Interfaces.STM32.GPIO.GPIOD_Periph.MODER.Arr (led_blue) :=
+   interfaces.STM32.GPIO.GPIOD_Periph.MODER.arr (LED_RED) :=
       System.STM32.Mode_OUT;
 
    -- Clear the leds
-   Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led_green) := 0;
-   Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led_blue) := 0;
+   interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (LED_GREEN) := 0;
+   interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (LED_RED) := 0;
 
-   -- 
-   -- Init user button
-   -- 
+   ---------------------- 
+   -- Init user button --
+   ---------------------- 
 
-   buttons.initialize;
+   blue_button.initialize;
+
+   ---------------
+   -- Main loop --
+   ---------------
 
    loop
 
-      if buttons.has_been_pressed then
-         Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led) := 0;
-         led := (if led = led_green then led_blue else led_green);
+      if blue_button.has_been_pressed then
+         interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (led) := 0;
+         led := (if led = LED_GREEN then LED_RED else LED_GREEN);
       end if;
 
-      Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led) := 1;
-      delay until Ada.Real_Time.Clock + Period;
+      interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (led) := 1;
+      delay until ada.real_time.clock + period;
 
-      Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (led) := 0;
-      delay until Ada.Real_Time.Clock + Period;
+      interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (led) := 0;
+      delay until ada.real_time.clock + period;
 
    end loop;
 

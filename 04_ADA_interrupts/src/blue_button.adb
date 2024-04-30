@@ -6,9 +6,7 @@ with system.STM32;
 
 with registers;
 
-package body buttons is
-
-   user_button    : constant := 0; -- GPIOA, pin 0
+package body blue_button is
 
    procedure initialize is
    begin
@@ -44,24 +42,35 @@ package body buttons is
    end initialize;
 
 
-   protected button is
-      procedure has_been_pressed (ret : out boolean);
-
-   private
-      pressed        : boolean := false;
-
-      procedure interrupt_handler;
-      pragma attach_handler (interrupt_handler, ada.interrupts.names.EXTI0_Interrupt);
-   end button;
+   procedure has_been_pressed (ret : out boolean) is
+   begin
+      ret      := pressed;
+      pressed  := false;
+   end has_been_pressed;
 
 
-   protected body button is
+   function has_been_pressed return boolean
+   is
+      ret : boolean;
+   begin
+      has_been_pressed (ret);
+      return ret;
+   end has_been_pressed;
 
-      procedure has_been_pressed (ret : out boolean) is
-      begin
-         ret      := pressed;
-         pressed  := false;
-      end has_been_pressed;
+
+   -----------------------------------------
+   -- Interrupt handler MUST be protected --
+   -----------------------------------------
+
+   protected button_handler is
+
+      procedure interrupt_handler
+         with attach_handler => ada.interrupts.names.EXTI0_Interrupt;
+
+   end button_handler;
+
+
+   protected body button_handler is
 
       procedure interrupt_handler is
       begin
@@ -69,15 +78,7 @@ package body buttons is
          pressed  := true;
       end interrupt_handler;
 
-   end button;
+   end button_handler;
 
 
-   function has_been_pressed return boolean is
-      ret : boolean;
-   begin
-      button.has_been_pressed (ret);
-      return ret;
-   end has_been_pressed;
-
-
-end buttons;
+end blue_button;

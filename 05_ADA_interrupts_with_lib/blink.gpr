@@ -1,11 +1,10 @@
-with "../Ada_Drivers_Library/config.gpr";
-with "../Ada_Drivers_Library/boards/stm32f4_discovery.gpr";
+with "../Ada_Drivers_Library/boards/stm32f407_discovery/stm32f407_discovery_sfp.gpr";
 
-project Blink extends "../Ada_Drivers_Library/examples/common/common.gpr" is
+project Blink extends "../Ada_Drivers_Library/examples/shared/common/common.gpr" is
 
    Build := "Debug";
 
-   for Runtime ("Ada") use Config.RTS & "-stm32f4";
+   for Runtime ("Ada") use STM32F407_Discovery_SFP'Runtime("Ada");
    for Target use "arm-eabi";
    for Main use ("blink.adb");
    for Languages use ("Ada");

@@ -1,7 +1,4 @@
 
-GNATDIR = /opt/arm-gnat-2017/bin
-export PATH := $(GNATDIR):$(PATH)
-
 all:
 	gprbuild -P blink.gpr
 

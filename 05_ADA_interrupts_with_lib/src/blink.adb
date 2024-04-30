@@ -1,52 +1,50 @@
 
-with Last_Chance_Handler;  pragma Unreferenced (Last_Chance_Handler);
+with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
-with STM32.Device;
-with STM32.Board;
-with STM32.Button;
-with STM32.GPIO;
-with Ada.Real_Time; use Ada.Real_Time;
+with stm32.board;
+with stm32.user_button;
+with ada.real_time; use ada.real_time;
 
-procedure Blink is
-   Period         : constant Time_Span := Milliseconds (150);
-   Next_Release   : Time := Clock;
+procedure blink is
 
-   type Index is mod 4;
-   Blinking_Leds  : array (Index) of STM32.Board.User_LED :=
-     (STM32.Board.Blue, STM32.Board.Green, STM32.Board.Orange, STM32.Board.Red);
+   period         : constant time_span := milliseconds (150);
+   next_release   : time := clock;
 
-   Current_Led    : Index   := Blinking_Leds'first;
-   CounterWise    : Boolean := True;
+   type index is mod 4;
 
-   procedure Initialize_LEDs is
-      Configuration : STM32.GPIO.GPIO_Port_Configuration;
-   begin
-      STM32.Device.Enable_Clock (STM32.Board.All_LEDs);
-      Configuration.Mode        := STM32.GPIO.Mode_Out;
-      Configuration.Output_Type := STM32.GPIO.Push_Pull;
-      Configuration.Speed       := STM32.GPIO.Speed_100MHz;
-      Configuration.Resistors   := STM32.GPIO.Floating;
-      STM32.GPIO.Configure_IO (STM32.Board.All_LEDs, Configuration);
-   end Initialize_LEDs;
+   blinking_leds  : array (index) of stm32.board.user_led :=
+     (stm32.board.blue_led,
+      stm32.board.green_led,
+      stm32.board.orange_led,
+      stm32.board.red_led);
+
+   current_led    : index   := blinking_leds'first;
+   counterwise    : boolean := true;
 
 begin
 
-   Initialize_LEDs;
-   STM32.Button.Initialize;
+   stm32.board.initialize_leds;
+   stm32.user_button.initialize;
 
-   STM32.Board.All_LEDs_Off;
-   STM32.Board.Turn_On (Blinking_Leds(Current_Led));
+   stm32.board.all_leds_off;
+   stm32.board.turn_on (blinking_leds(current_led));
 
    loop
-      if STM32.Button.Has_Been_Pressed then
-         CounterWise := not CounterWise;
+      if stm32.user_button.has_been_pressed then
+         counterwise := not counterwise;
       end if;
 
-      STM32.Board.Turn_Off (Blinking_leds(Current_Led));
-      Current_Led := (if CounterWise then Current_Led + 1 else Current_Led - 1);
-      STM32.Board.Turn_On (Blinking_leds(Current_Led));
+      stm32.board.turn_off (blinking_leds(current_led));
 
-      Next_Release := Next_Release + Period;
-      delay until Next_Release;
+      if counterwise then
+         current_led := current_led + 1;
+      else
+         current_led := current_led - 1;
+      end if;
+
+      stm32.board.turn_on (blinking_leds(current_led));
+
+      next_release := next_release + period;
+      delay until next_release;
    end loop;
 end Blink;

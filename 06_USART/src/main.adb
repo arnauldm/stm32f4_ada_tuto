@@ -3,21 +3,26 @@ with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
 with stm32.device;
 with stm32.usarts; 
-with stm32.gpio;
+with stm32.board; 
 with ada.real_time;  use ada.real_time;
 
-with leds; pragma unreferenced (leds); -- task blinking_leds
 with serial;
+
+-- Task blinking the RED led
+--with blink; pragma unreferenced (blink);
+
 
 procedure main is
    pragma priority (system.priority'first);
-   counter : integer := 0;
+
+   subtype small is natural range 0 .. 1000;
+   counter : small := 0;
 begin
 
    serial.initialize_gpio
      (tx_pin => stm32.device.PB6,
       rx_pin => stm32.device.PB7,
-      af     => stm32.gpio.gpio_af_usart1);
+      af     => stm32.device.gpio_af_usart1_7);
 
    serial.configure
      (device      => stm32.device.USART_1'access,
@@ -28,18 +33,19 @@ begin
       end_bits    => stm32.usarts.STOPBITS_1,
       control     => stm32.usarts.NO_FLOW_CONTROL);
 
+   stm32.board.initialize_leds;
+
    loop
 
-      delay until clock + milliseconds (1000);
+      delay until clock + milliseconds (200);
+
+      stm32.board.toggle (stm32.board.green_led);
 
       serial.put (stm32.device.USART_1,
          "[" & integer'image(counter) & "]  hello, world!" & ASCII.CR);
 
-      if counter < integer'last then
-         counter := counter + 1;
-      else
-         counter := 0;
-      end if;
+      -- Buggy! The counter will overflow
+      counter := counter + 1;
 
    end loop;
 
