@@ -6,9 +6,8 @@
 
 Connect USB/TTL like this:
 
-   USB/TTL
-     RX pin <-> PB6
-     TX pin <-> PB7
+	USB/TTL RX pin <-> PB6
+	USB/TTL TX pin <-> PB7
 
 ## On a shell launch
 
