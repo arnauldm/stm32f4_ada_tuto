@@ -1,30 +1,36 @@
-with Interfaces.STM32.RCC;
-with Interfaces.STM32.GPIO; use Interfaces.STM32.GPIO;
-with System.STM32;
-with Ada.Real_Time; use Ada.Real_Time;
+with interfaces.stm32.rcc;
+with interfaces.stm32.gpio; use interfaces.stm32.gpio;
+with system.stm32;
+with ada.real_time; use ada.real_time;
 
 procedure blink is
-   Green_Led   : constant := 12;
-   Period      : constant Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds (500);
+   GREEN_LED   : constant := 12;
+   RED_LED     : constant := 14;
+   period      : constant ada.real_time.time_span := ada.real_time.milliseconds (500);
 begin
 
-   -- Enable GPIOD periph clock
-   Interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIODEN := 1;
+   -- Enable gpiod periph clock
+   interfaces.stm32.rcc.rcc_periph.ahb1enr.gpioden := 1;
 
-   -- Set GPIOD pin to output mode
-   Interfaces.STM32.GPIO.GPIOD_Periph.MODER.Arr (Green_Led)
-      := System.STM32.Mode_OUT;
+   -- Set gpiod pins to output mode
+   interfaces.stm32.gpio.gpiod_periph.moder.arr (GREEN_LED)
+      := system.stm32.mode_out;
+
+   interfaces.stm32.gpio.gpiod_periph.moder.arr (RED_LED)
+      := system.stm32.mode_out;
    
    loop
-      -- led on
-      Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (Green_Led) := 1;
+      -- Led on / off
+      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (GREEN_LED)  := 1;
+      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (RED_LED)    := 0;
 
-      delay until Ada.Real_Time.Clock + Period;
+      delay until ada.real_time.clock + period;
 
-      -- led off
-      Interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.Arr (Green_Led) := 0;
+      -- Led on / off
+      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (GREEN_LED)  := 0;
+      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (RED_LED)    := 1;
 
-      delay until Ada.Real_Time.Clock + Period;
+      delay until ada.real_time.clock + period;
 
    end loop;
 

@@ -3,7 +3,7 @@
 #include "init.h"
 
 #define LED_GREEN       12
-#define LED_BLUE        15
+#define LED_RED         14
 #define BLUE_BUTTON     0
 
 #define DELAY           2600000 //200ms
@@ -21,7 +21,7 @@ void EXTI0_IRQHandler(void)
    GPIOD->ODR &= ~(1 << currentLED);   
 
    /* Change current led */
-   currentLED = (currentLED == LED_GREEN) ? LED_BLUE : LED_GREEN;
+   currentLED = (currentLED == LED_GREEN) ? LED_RED : LED_GREEN;
 
    /* Clear Pending Request bit to acknowledge the interrupt (this bit is
     * cleared by programming it to 1 ! */
@@ -41,11 +41,11 @@ int main(void) {
 
    /* Set pins to output mode */
    GPIOD->MODER |=1 << (LED_GREEN * 2);
-   GPIOD->MODER |=1 << (LED_BLUE * 2);
+   GPIOD->MODER |=1 << (LED_RED * 2);
 
    /* Clear the leds (write low signal to the outputs) */
    GPIOD->ODR &= ~(1 << LED_GREEN);
-   GPIOD->ODR &= ~(1 << LED_BLUE);
+   GPIOD->ODR &= ~(1 << LED_RED);
 
    /* 
     * Enable the blue button

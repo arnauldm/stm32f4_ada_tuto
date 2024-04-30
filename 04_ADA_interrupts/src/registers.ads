@@ -1,21 +1,23 @@
-with Interfaces.Bit_Types;
-with System;
+with system;
 
 package registers is
 
-   type Bits_32x1 is array (0 .. 31) of Interfaces.Bit_Types.Bit
-      with Pack, Size => 32;
+   type bit is range 0 .. 1;
+   for bit'size use 1;
 
-   type EXTI_Register is record
-      IMR   : Bits_32x1;
-      EMR   : Bits_32x1;
-      RTSR  : Bits_32x1;
-      FTSR  : Bits_32x1;
-      SWIER : Bits_32x1;
-      PR    : Bits_32x1;
+   type bits_32 is array (0 .. 31) of bit
+      with pack, size => 32;
+
+   type EXTI_register is record
+      IMR   : bits_32;
+      EMR   : bits_32;
+      RTSR  : bits_32;
+      FTSR  : bits_32;
+      SWIER : bits_32;
+      PR    : bits_32;
    end record;
 
-   for EXTI_Register use record
+   for EXTI_register use record
       IMR   at 0  range 0 .. 31;
       EMR   at 4  range 0 .. 31;
       RTSR  at 8  range 0 .. 31;
@@ -24,9 +26,9 @@ package registers is
       PR    at 20 range 0 .. 31;
    end record;
 
-   EXTI : EXTI_Register with
-     Volatile,
-     Address => System'To_Address (16#40013C00#), -- EXTI_Base
-     Import;
+   EXTI : EXTI_register with
+     volatile,
+     address => system'to_address (16#40013C00#), -- EXTI_Base
+     import;
 
 end registers;

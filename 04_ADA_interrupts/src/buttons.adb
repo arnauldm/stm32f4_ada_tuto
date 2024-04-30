@@ -1,38 +1,38 @@
-with Ada.Interrupts.Names;
-with Interfaces.STM32.RCC;
-with Interfaces.STM32.SYSCFG;
-with Interfaces.STM32.GPIO; 
-with System.STM32;
+with ada.interrupts.names;
+with interfaces.STM32.RCC;
+with interfaces.STM32.SYSCFG;
+with interfaces.STM32.GPIO; 
+with system.STM32;
 
 with registers;
 
 package body buttons is
 
-   user_button    : constant := 0;
+   user_button    : constant := 0; -- GPIOA, pin 0
 
    procedure initialize is
    begin
       -- Enable GPIOA periph clock
-      Interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIOAEN := 1;
+      interfaces.STM32.RCC.RCC_Periph.AHB1ENR.GPIOAEN := 1;
    
       -- Set GPIOA pin to input mode
-      Interfaces.STM32.GPIO.GPIOA_Periph.MODER.Arr (user_button)
+      interfaces.STM32.GPIO.GPIOA_Periph.MODER.arr (user_button)
          := System.STM32.Mode_IN;
    
       -- Push-pull mode 
-      Interfaces.STM32.GPIO.GPIOA_Periph.OTYPER.OT.Arr (user_button)
+      interfaces.STM32.GPIO.GPIOA_Periph.OTYPER.OT.arr (user_button)
          := System.STM32.Push_Pull;
    
       -- Pull-down
-      Interfaces.STM32.GPIO.GPIOA_Periph.PUPDR.Arr (user_button)
+      interfaces.STM32.GPIO.GPIOA_Periph.PUPDR.arr (user_button)
          := System.STM32.Pull_Down;
    
       -- High speed
-      Interfaces.STM32.GPIO.GPIOA_Periph.OSPEEDR.Arr (user_button)
+      interfaces.STM32.GPIO.GPIOA_Periph.OSPEEDR.arr (user_button)
          := System.STM32.Speed_100MHz;
 
       -- Select PA for EXTI0
-      Interfaces.STM32.SYSCFG.SYSCFG_Periph.EXTICR1.EXTI.Arr (user_button)
+      interfaces.STM32.SYSCFG.SYSCFG_Periph.EXTICR1.EXTI.arr (user_button)
          := 2#0000#;
 
       -- Unmask interrupts 
@@ -46,12 +46,12 @@ package body buttons is
 
    protected button is
       procedure has_been_pressed (ret : out boolean);
+
    private
       pressed        : boolean := false;
-      procedure Interrupt_Handler;
-         pragma Attach_Handler
-           (Interrupt_Handler,
-            Ada.Interrupts.Names.EXTI0_Interrupt);
+
+      procedure interrupt_handler;
+      pragma attach_handler (interrupt_handler, ada.interrupts.names.EXTI0_Interrupt);
    end button;
 
 
@@ -63,11 +63,11 @@ package body buttons is
          pressed  := false;
       end has_been_pressed;
 
-      procedure Interrupt_Handler is
+      procedure interrupt_handler is
       begin
-         registers.EXTI.PR (0)       := 1; --  Clear interrupt
+         registers.EXTI.PR (0)   := 1; --  Clear interrupt
          pressed  := true;
-      end Interrupt_Handler;
+      end interrupt_handler;
 
    end button;
 
