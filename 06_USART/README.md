@@ -24,8 +24,8 @@ In `main.adb`, you can enable an Ada task by uncommenting the line below :
 
 	with blink; pragma unreferenced (blink);
 
-That task blinks the red led. Notice that the blinking frequency is not
-the same that green led's frequency, defined in `main.adb`.
+It will blinks the red led. Notice that the blinking frequency is not
+the same as the green led's frequency, defined in `main.adb`.
 
 
 # Debugging
