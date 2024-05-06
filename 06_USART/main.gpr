@@ -27,7 +27,7 @@ project Main is
 
    package Linker is
       for Default_Switches ("Ada") use
-        ("-Wl,--defsym=__stack_size=32768", 
+        ("-Wl,--defsym=__stack_size=32768",
          "-Wl,--gc-sections",
          "-Wl,--print-memory-usage");
    end Linker;

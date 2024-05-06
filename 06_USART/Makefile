@@ -1,5 +1,5 @@
 
-all:
+all: submodule
 	gprbuild -P main.gpr
 
 clean:
@@ -11,3 +11,8 @@ flash:
 
 nucleo:
 	openocd -f /usr/share/openocd/scripts/board/st_nucleo_f4.cfg -f ocd.cfg
+
+submodule:
+	cd ../
+	git pull
+

@@ -1,6 +1,20 @@
 
+# Compile and flash the board
 
-# Serial port setting
+	make
+	make flash
+
+## Optionnal task
+
+In `main.adb`, you can enable an Ada task by uncommenting the line below :
+
+	with blink; pragma unreferenced (blink);
+
+It will blinks the red led. Notice that the blinking frequency is not
+the same as the green led's frequency, defined in `main.adb`.
+
+
+# Minicom / Serial port setting
 
 ## Hardware settings
 
@@ -16,16 +30,6 @@ Connect USB/TTL like this:
 ## Configure Minicom
 
 Set `serial port setup` to `9600 8N1`
-
-
-# Task
-
-In `main.adb`, you can enable an Ada task by uncommenting the line below :
-
-	with blink; pragma unreferenced (blink);
-
-It will blinks the red led. Notice that the blinking frequency is not
-the same as the green led's frequency, defined in `main.adb`.
 
 
 # Debugging
@@ -50,7 +54,7 @@ Then, launch the debugger in another term with the following commands:
 	> b _ada_main
 	> c
 
-# Testing Ada exception
+## Testing Ada exception
 
 In `main.adb`, change the `type small` to a lower range, for example:
 
