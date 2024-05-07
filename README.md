@@ -14,4 +14,7 @@ Simple examples to program STM32F407 board in Ada
 - Ada_Drivers_Library
   Clone of https://github.com/AdaCore/Ada_Drivers_Library
 
+For Ada examples, you need to add and initialise AdaCore drivers:
+
+	git submodule update
 
