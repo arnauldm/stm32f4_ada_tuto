@@ -19,3 +19,9 @@ For Ada examples, you need to add and initialise AdaCore drivers:
 	git submodule init
 	git submodule update
 
+To run each example, connect the stm32f407 discovery board, compile the firmware
+and flash it with openocd:
+
+	make
+	make flash
+
