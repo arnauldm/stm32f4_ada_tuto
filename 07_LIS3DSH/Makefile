@@ -1,7 +1,4 @@
 
-GNATDIR = /opt/arm-gnat-2016/bin
-export PATH := $(GNATDIR):$(PATH)
-
 all:
 	gprbuild -P main.gpr
 
