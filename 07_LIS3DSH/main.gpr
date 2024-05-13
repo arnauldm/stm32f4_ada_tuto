@@ -1,5 +1,4 @@
-with "../Ada_Drivers_Library/config.gpr";
-with "../Ada_Drivers_Library/boards/stm32f4_discovery.gpr";
+with "../Ada_Drivers_Library/boards/stm32f407_discovery/stm32f407_discovery_sfp.gpr";
 
 project Main is
 
@@ -9,9 +8,7 @@ project Main is
       ("RAM", "ROM");
    LOADER : LOADER_Type := external ("LOADER", "ROM");
 
-   RTS : Config.RTS_Profile_Type := Config.RTS;
-
-   for Runtime ("Ada") use Config.RTS & "-stm32f4";
+   for Runtime ("Ada") use STM32F407_Discovery_SFP'Runtime("Ada");
    for Target use "arm-eabi";
    for Main use ("main.adb");
    for Languages use ("Ada");
@@ -20,7 +17,7 @@ project Main is
 
    package Compiler is
       for Default_Switches ("ada") use
-        ("-O0", "-g", "-fstack-usage", 
+        ("-O0", "-g", "-fstack-usage",
          "-gnatwa"); -- turn on all info/warnings marked below with +
    end Compiler;
 
@@ -30,7 +27,7 @@ project Main is
 
    package Linker is
       for Default_Switches ("Ada") use
-        ("-Wl,--defsym=__stack_size=32768", 
+        ("-Wl,--defsym=__stack_size=32768",
          "-Wl,--gc-sections",
          "-Wl,--print-memory-usage");
    end Linker;

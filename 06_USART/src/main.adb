@@ -1,10 +1,10 @@
 with system;
 with last_chance_handler;  pragma unreferenced (last_chance_handler);
+with ada.real_time;  use ada.real_time;
 
 with stm32.device;
 with stm32.usarts;
 with stm32.board;
-with ada.real_time;  use ada.real_time;
 
 with serial;
 

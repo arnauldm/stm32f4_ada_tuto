@@ -1,6 +1,5 @@
 
 with stm32.board;       use stm32.board;
-with stm32.gpio;        use stm32.gpio;
 with stm32.device;
 
 with serial;
@@ -39,9 +38,8 @@ package body last_chance_handler is
 
    procedure last_chance_handler (msg : system.address; line : integer) is
    begin
-      initialize_leds;  -- in case no other use in the application
-      all_leds_off;
-      turn_on (red);
+      stm32.board.initialize_leds;  -- in case no other use in the application
+      stm32.board.all_leds_off;
 
       if line /= 0 then
          serial.put (stm32.device.USART_1, ">>> exception at ");
@@ -56,7 +54,7 @@ package body last_chance_handler is
       serial.putc (stm32.device.USART_1, ASCII.CR);
 
       loop
-         toggle (red);
+         stm32.board.toggle_leds (all_leds);
          delay until clock + milliseconds (500);
       end loop;
    end last_chance_handler;

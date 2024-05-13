@@ -25,11 +25,9 @@ Connect USB/TTL like this:
 
 ## On a shell launch
 
-	minicom -D /dev/ttyUSB0
+	minicom -D /dev/ttyUSB0 -b 9600
 
-## Configure Minicom
-
-Set `serial port setup` to `9600 8N1`
+Note: serial port should be set to `9600 8N1`.
 
 
 # Debugging

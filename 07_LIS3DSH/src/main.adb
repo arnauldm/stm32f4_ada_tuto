@@ -1,37 +1,39 @@
 with system;
+with last_chance_handler;  pragma unreferenced (last_chance_handler);
 with ada.real_time;  use ada.real_time;
-with interfaces; use interfaces;
 
 with stm32.device;
+with stm32.usarts;
 with stm32.board;
-with stm32.gpio;
-with stm32.usarts; 
-with lis3dsh;       use lis3dsh;
+with lis3dsh;        use lis3dsh;
+with hal;            use hal;
 
-with last_chance_handler;  pragma unreferenced (last_chance_handler);
-with leds; pragma unreferenced (leds); -- task blinking_leds
 with serial;
+
+-- Task blinking the RED led
+--with blink; pragma unreferenced (blink);
 
 procedure main is
    pragma priority (system.priority'first);
-
 begin
 
    serial.initialize_gpio
      (tx_pin => stm32.device.PB6,
       rx_pin => stm32.device.PB7,
-      af     => stm32.gpio.GPIO_AF_USART1);
+      af     => stm32.device.gpio_af_usart1_7);
 
    serial.configure
-     (device      => stm32.device.usart_1'access,
+     (device      => stm32.device.USART_1'access,
       baud_rate   => 9600,
-      mode        => stm32.usarts.tx_mode,
-      parity      => stm32.usarts.no_parity,
-      data_bits   => stm32.usarts.word_length_8,
-      end_bits    => stm32.usarts.stopbits_1,
-      control     => stm32.usarts.no_flow_control);
+      mode        => stm32.usarts.TX_MODE,
+      parity      => stm32.usarts.NO_PARITY,
+      data_bits   => stm32.usarts.WORD_LENGTH_8,
+      end_bits    => stm32.usarts.STOPBITS_1,
+      control     => stm32.usarts.NO_FLOW_CONTROL);
 
-   serial.put (stm32.device.usart_1, "hello, world!" & ascii.cr);
+   stm32.board.initialize_leds;
+
+   serial.put (stm32.device.usart_1, "Hello, world!" & ascii.cr);
 
    stm32.board.initialize_accelerometer;
 
@@ -55,8 +57,7 @@ begin
          serial.put (stm32.device.usart_1,
             "x: " & lis3dsh.axis_acceleration'image (values.x) &
             ", y: " & lis3dsh.axis_acceleration'image (values.y) &
-            ", z: " & lis3dsh.axis_acceleration'image (values.z) &
-            ascii.cr);
+            "          " & ascii.lf & ascii.cr);
       end;
       delay until clock + milliseconds (250);
    end loop;
