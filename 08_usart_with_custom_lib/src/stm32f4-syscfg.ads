@@ -1,11 +1,13 @@
 --
 -- Ref. : RM0090, p. 373-389
 --
-package stm32f4.syscfg is
+package stm32f4.syscfg
+   with spark_mode => off
+is
 
-   -- 
+   --
    -- SYSCFG external interrupt configuration registers
-   -- 
+   --
 
    type t_exti_port is
      (GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG, GPIOH, GPIOI)

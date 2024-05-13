@@ -4,7 +4,9 @@
 -- Note: GPIO registers can be accessed by byte, half-words or words
 --
 
-package stm32f4.gpio is
+package stm32f4.gpio
+   with spark_mode => off
+is
 
    subtype t_GPIO_pin_index is natural range 0 .. 15;
 
@@ -22,7 +24,7 @@ package stm32f4.gpio is
    end record
       with pack, size => 32, volatile_full_access;
    -- Note: 'volatile_full_access aspect': the register is volatile and
-   -- the full 32-bits needs to be written at once. 
+   -- the full 32-bits needs to be written at once.
 
    MODE_IN     : constant t_pin_mode := 2#00#; -- Input (reset state)
    MODE_OUT    : constant t_pin_mode := 2#01#; -- Output
@@ -44,7 +46,7 @@ package stm32f4.gpio is
    end record
       with pack, size => 32, volatile_full_access;
 
-   PUSH_PULL    : constant t_pin_output_type := 0; 
+   PUSH_PULL    : constant t_pin_output_type := 0;
    OPEN_DRAIN   : constant t_pin_output_type := 1;
 
    -----------------------------------------------------

@@ -1,21 +1,24 @@
 with system; use system;
 with System.STM32; -- System package
 with stm32f4.periphs;
+with interfaces.stm32; use interfaces.stm32;
 
-package body stm32f4.usart is
+package body stm32f4.usart
+   with spark_mode => off
+is
 
    procedure set_baud
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : Interfaces.Stm32.UInt32)
+      baudrate : interfaces.stm32.uint32)
    is
-      APB_clock   : Interfaces.Stm32.UInt32;
-      mantissa    : Interfaces.Stm32.UInt32;
-      fraction    : Interfaces.Stm32.UInt32;
+      APB_clock   : interfaces.stm32.uint32;
+      mantissa    : interfaces.stm32.uint32;
+      fraction    : interfaces.stm32.uint32;
    begin
       -- Configuring the baud rate is a tricky part. See RM0090 p. 982-983
       -- for further informations
       if USARTx.all'address = periphs.USART1_Base or
-         USARTx.all'address = periphs.USART6_Base 
+         USARTx.all'address = periphs.USART6_Base
       then
          APB_clock   := System.STM32.System_Clocks.PCLK2;
       else
@@ -33,7 +36,7 @@ package body stm32f4.usart is
 
    procedure configure
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : Interfaces.Stm32.UInt32;
+      baudrate : interfaces.stm32.uint32;
       data     : t_data_len;
       parity   : t_parity_select;
       stop     : t_stop_bits)

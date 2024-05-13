@@ -1,5 +1,7 @@
 
-package body stm32f4.gpio is
+package body stm32f4.gpio
+   with spark_mode => off
+is
 
    procedure configure
      (pin      : t_GPIO_pin;

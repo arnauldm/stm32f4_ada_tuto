@@ -1,9 +1,10 @@
 with system;
 with ada.unchecked_conversion;
 with interfaces;  use interfaces;
-with interfaces.stm32;  use interfaces.stm32;
 
-package stm32f4 is
+package stm32f4
+   with spark_mode => off
+is
 
    subtype byte  is unsigned_8;
    subtype short is unsigned_16;

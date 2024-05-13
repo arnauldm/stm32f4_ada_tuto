@@ -1,5 +1,7 @@
 
-package serial is
+package serial
+   with spark_mode => off
+is
    enabled : boolean := false;
 
    procedure initialize;

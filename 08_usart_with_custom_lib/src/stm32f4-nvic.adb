@@ -1,7 +1,8 @@
-with stm32f4;
 with stm32f4.periphs;
 
-package body stm32f4.nvic is
+package body stm32f4.nvic
+   with spark_mode => off
+is
 
 
    procedure set_priority (irq : interrupt; priority : uint4) is

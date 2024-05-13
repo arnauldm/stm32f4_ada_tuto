@@ -1,5 +1,8 @@
+with interfaces.stm32;
 
-package stm32f4.usart is
+package stm32f4.usart
+   with spark_mode => off
+is
 
    --------------------------------
    -- Status register (USART_SR) --
@@ -28,16 +31,16 @@ package stm32f4.usart is
    type t_USART_DR is record
       -- Data value that contains the Received or Transmitted data character,
       -- depending on whether it is read from or written to.
-      data : uint9; 
+      data : uint9;
    end record
       with size => 32, volatile_full_access;
 
    for t_USART_DR use record
       data at 0 range 0 .. 8;
    end record;
-   
+
    ------------------------------------
-   -- Baud rate register (USART_BRR) -- 
+   -- Baud rate register (USART_BRR) --
    ------------------------------------
 
    type t_USART_BRR is record
@@ -76,12 +79,12 @@ package stm32f4.usart is
       WAKE        : bit;         -- Wakeup method
       M           : t_data_len;  -- Word length
       UE          : bit;         -- USART enable
-      reserved_14 : bit; 
+      reserved_14 : bit;
       OVER8       : bit;         -- Oversampling mode
       reserved_16_31 : short;
    end record
       with pack, size => 32, volatile_full_access;
-   
+
    ------------------------------------
    -- Control register 2 (USART_CR2) --
    ------------------------------------
@@ -112,7 +115,7 @@ package stm32f4.usart is
       reserved_16_31 : short;
    end record
       with pack, size => 32, volatile_full_access;
-   
+
    ------------------------------------
    -- Control register 3 (USART_CR3) --
    ------------------------------------
@@ -134,15 +137,15 @@ package stm32f4.usart is
       reserved_16_31 : short;
    end record
       with pack, size => 32, volatile_full_access;
-   
+
 
    ----------------------------------------------------
-   -- Guard time and prescaler register (USART_GTPR) -- 
+   -- Guard time and prescaler register (USART_GTPR) --
    ----------------------------------------------------
    -- TODO
 
    ----------------------
-   -- USART Peripheral -- 
+   -- USART Peripheral --
    ----------------------
 
    type t_USART_periph is record
@@ -170,15 +173,15 @@ package stm32f4.usart is
    ---------------
    -- Utilities --
    ---------------
-   type t_parity_select is (PARITY_EVEN, PARITY_ODD, PARITY_NONE); 
+   type t_parity_select is (PARITY_EVEN, PARITY_ODD, PARITY_NONE);
 
    procedure set_baud
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : Interfaces.Stm32.UInt32);
+      baudrate : interfaces.stm32.uint32);
 
    procedure configure
      (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : Interfaces.Stm32.UInt32;
+      baudrate : interfaces.stm32.uint32;
       data     : t_data_len;
       parity   : t_parity_select;
       stop     : t_stop_bits);

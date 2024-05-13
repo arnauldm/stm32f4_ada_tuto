@@ -1,7 +1,9 @@
 with system; use system;
 with stm32f4.periphs;
 
-package body stm32f4.rcc is
+package body stm32f4.rcc
+   with spark_mode => off
+is
 
    procedure enable_gpio_clock
      (GPIOx : aliased in gpio.t_GPIO_port)

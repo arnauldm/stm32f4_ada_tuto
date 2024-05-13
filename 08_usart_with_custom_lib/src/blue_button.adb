@@ -1,14 +1,16 @@
 with ada.real_time; use ada.real_time;
 with Ada.Interrupts.Names;
 
-with stm32f4.gpio; 
+with stm32f4.gpio;
 with stm32f4.periphs;
 with stm32f4.syscfg;
 with stm32f4.exti;
 with stm32f4.nvic;
 with stm32f4.rcc;
 
-package body buttons is
+package body blue_button
+   with spark_mode => off
+is
 
    BB : stm32f4.gpio.t_GPIO_pin renames stm32f4.periphs.BLUE_BUTTON;
 
@@ -34,7 +36,7 @@ package body buttons is
       -- PAx, PBx, PCx (...) are multiplexed on EXTIx (ie. PA0
       -- interrupts are managed by the EXTI0 line). Note that they are up
       -- to 23 external interrupts lines.
-      -- The user button, which is on PA0, is managed by EXTI0. 
+      -- The user button, which is on PA0, is managed by EXTI0.
       stm32f4.periphs.SYSCFG.EXTICR1.EXTI0 := stm32f4.syscfg.GPIOA;
 
       -- Set interrupt/event masks
@@ -52,7 +54,7 @@ package body buttons is
       -- exceptions, with fixed negative priority values, always have higher
       -- priority than any other exception. When the processor is executing
       -- an exception handler, the exception handler is preempted if a higher
-      -- priority exception occurs. 
+      -- priority exception occurs.
       stm32f4.nvic.set_priority
         (irq      => stm32f4.nvic.EXTI_line_0,
          priority => 0);
@@ -116,4 +118,4 @@ package body buttons is
    end has_been_pressed;
 
 
-end buttons;
+end blue_button;

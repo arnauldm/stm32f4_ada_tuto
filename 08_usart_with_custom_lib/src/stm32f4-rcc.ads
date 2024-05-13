@@ -4,7 +4,9 @@ with stm32f4.gpio;
 -- Ref. : RM0090, p. 224-268
 --
 
-package stm32f4.rcc is
+package stm32f4.rcc
+   with spark_mode => off
+is
 
    type t_RCC_CR is record
       HSION          : boolean;  -- Internal high-speed clock enable
@@ -47,7 +49,7 @@ package stm32f4.rcc is
    -- RCC_AHB1ENR --
    -----------------
 
-   -- RCC AHB1 peripheral clock enable register 
+   -- RCC AHB1 peripheral clock enable register
    -- Ref. : RM0090, p. 242
 
    type t_RCC_AHB1ENR is record
@@ -113,7 +115,7 @@ package stm32f4.rcc is
       PWREN          : boolean;  -- Power interface clock enable
       DACEN          : boolean;  -- DAC interface clock enable
       UART7EN        : boolean;  -- UART7 clock enable
-      UART8EN        : boolean;  -- UART8 clock enable   
+      UART8EN        : boolean;  -- UART8 clock enable
    end record
       with pack, size => 32, volatile_full_access;
 
@@ -121,7 +123,7 @@ package stm32f4.rcc is
    -- RCC_APB2ENR --
    -----------------
 
-   -- RCC APB2 peripheral clock enable register 
+   -- RCC APB2 peripheral clock enable register
    -- Ref. : RM0090, p. 248
 
    type t_RCC_APB2ENR is record
@@ -147,7 +149,7 @@ package stm32f4.rcc is
       reserved_24_31 : byte;
    end record
       with pack, size => 32, volatile_full_access;
-   
+
    --------------------
    -- RCC peripheral --
    --------------------

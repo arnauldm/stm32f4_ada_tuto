@@ -3,13 +3,15 @@ with stm32f4; use stm32f4;
 with stm32f4.periphs;
 with stm32f4.usart;
 with stm32f4.rcc;
-with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_port_access;
+with stm32f4.gpio;
 
-package body serial is
+package body serial
+   with spark_mode => off
+is
 
    USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
-   TX_pin   : stm32f4.gpio.t_GPIO_pin      renames periphs.USART1_TX;
-   RX_pin   : stm32f4.gpio.t_GPIO_pin      renames periphs.USART1_RX;
+   TX_pin   : constant stm32f4.gpio.t_GPIO_pin := periphs.USART1_TX;
+   RX_pin   : constant stm32f4.gpio.t_GPIO_pin := periphs.USART1_RX;
 
    procedure initialize
    is

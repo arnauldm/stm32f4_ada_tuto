@@ -7,7 +7,9 @@ with stm32f4.gpio;
 with stm32f4.nvic;
 with stm32f4.usart;
 
-package stm32f4.periphs is
+package stm32f4.periphs
+   with spark_mode => off
+is
 
    --------------------
    -- Base addresses --

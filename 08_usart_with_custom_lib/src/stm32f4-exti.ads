@@ -4,7 +4,9 @@
 -- Ref. : RM0090, p. 373-389
 --
 
-package stm32f4.exti is
+package stm32f4.exti
+   with spark_mode => off
+is
 
    subtype EXTI_line_index is natural range 0 .. 22;
 
@@ -43,7 +45,7 @@ package stm32f4.exti is
    end record;
 
    --
-   -- Rising trigger selection register (EXTI_RTSR) 
+   -- Rising trigger selection register (EXTI_RTSR)
    --
 
    type t_trigger is (TRIGGER_DISABLED, TRIGGER_ENABLED) with size => 1;
@@ -64,7 +66,7 @@ package stm32f4.exti is
    end record;
 
    --
-   -- Falling trigger selection register (EXTI_RTSR) 
+   -- Falling trigger selection register (EXTI_RTSR)
    --
 
    type t_EXTI_FTSR is record

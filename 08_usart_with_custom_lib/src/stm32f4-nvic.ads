@@ -3,7 +3,9 @@ with ada.interrupts;
 -- Nested vectored interrupt controller (NVIC)
 -- (see STM32F4xxx Cortex-M4 Programming Manual, p. 194-205)
 
-package stm32f4.nvic is
+package stm32f4.nvic
+   with spark_mode => off
+is
 
    -- Up to 81 interrupts (see Cortex-M4 prog. manual, p. 194)
    type interrupt is new ada.interrupts.interrupt_id range 0 .. 80;

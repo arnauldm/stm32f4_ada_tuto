@@ -1,8 +1,10 @@
 with stm32f4; use stm32f4;
-with stm32f4.gpio; use type stm32f4.gpio.t_GPIO_pin;
+with stm32f4.gpio;
 with stm32f4.periphs;
 
-package body leds is
+package body leds
+   with spark_mode => off
+is
 
    procedure initialize is
    begin
@@ -14,16 +16,16 @@ package body leds is
       -- (see RM0090, p. 270)
       gpio.configure (periphs.LED_GREEN,
          gpio.MODE_OUT, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.PULL_DOWN);
-   
+
       gpio.configure (periphs.LED_RED,
          gpio.MODE_OUT, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.PULL_DOWN);
-   
+
       gpio.configure (periphs.LED_ORANGE,
          gpio.MODE_OUT, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.PULL_DOWN);
-   
+
       gpio.configure (periphs.LED_BLUE,
          gpio.MODE_OUT, gpio.PUSH_PULL, gpio.SPEED_HIGH, gpio.PULL_DOWN);
-   
+
       -- Led off
       gpio.turn_off (periphs.LED_GREEN);
       gpio.turn_off (periphs.LED_RED);

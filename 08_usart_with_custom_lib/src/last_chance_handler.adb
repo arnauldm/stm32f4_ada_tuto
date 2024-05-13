@@ -5,7 +5,9 @@ with stm32f4.gpio;      use stm32f4.gpio;
 with stm32f4.periphs;   use stm32f4.periphs;
 with serial;
 
-package body last_chance_handler is
+package body last_chance_handler
+   with spark_mode => off
+is
 
    procedure put (ptr : system.address);
 
@@ -37,7 +39,7 @@ package body last_chance_handler is
    procedure last_chance_handler (file : system.address; line : integer) is
    begin
 
-      -- The leds are on GPIOD pins. We have to enable GPIOD clock 
+      -- The leds are on GPIOD pins. We have to enable GPIOD clock
       periphs.RCC.AHB1ENR.GPIODEN := true;
       configure (LED_GREEN, MODE_OUT, PUSH_PULL, SPEED_HIGH, PULL_DOWN);
       configure (LED_ORANGE, MODE_OUT, PUSH_PULL, SPEED_HIGH, PULL_DOWN);
@@ -59,7 +61,7 @@ package body last_chance_handler is
             serial.put (">>> user-defined exception, message: ");
             put (file);
          end if;
-   
+
          serial.put (ASCII.CR);
       end if;
 

@@ -13,6 +13,7 @@ project Main is
          "-g",
          "-gnata",      -- Enable assertions
          "-gnatwa",     -- Turn on all info/warnings
+         "-gnatwI",     -- Turn off warnings for implementation unit
          "-gnatw.X");   -- Turn off warnings for "No_Exception_Propagation"
    end Compiler;
 
@@ -30,6 +31,17 @@ project Main is
    package Make is
       for Makefile use "Makefile";
    end Make;
+
+   package Prove is
+      for Proof_Switches ("Ada") use
+        ("-j0",         -- will use all cores of the machine
+         "--no-subprojects",
+         "--counterexamples=on",
+         "--steps=0",   -- maximum number of proof steps (0 = unlimited)
+         "--level=4",   -- level of proof (0 = faster to 4 = more powerful)
+         "--prover=all",
+         "--timeout=5"); -- prover timeout in seconds
+   end Prove;
 
 end Main;
 
