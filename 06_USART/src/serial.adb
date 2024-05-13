@@ -1,5 +1,4 @@
 with stm32.device;
-with stm32.board;
 
 package body serial is
 
@@ -13,7 +12,6 @@ package body serial is
 
       stm32.device.enable_clock (rx_pin & tx_pin);
 
-      
       config := (mode           => stm32.gpio.mode_af,
                  AF             => af,
                  AF_speed       => stm32.gpio.speed_50mhz,
