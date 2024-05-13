@@ -114,7 +114,8 @@ is
       ISER1 : t_NVIC_ISER1;
       ISER2 : t_NVIC_ISER2;
       IPR   : t_IPRs;
-   end record;
+   end record
+      with volatile;
 
    for t_NVIC use record
       ISER0 at 16#00# range 0 .. 31;
