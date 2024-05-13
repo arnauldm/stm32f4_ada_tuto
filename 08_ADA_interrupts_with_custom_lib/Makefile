@@ -4,10 +4,10 @@ all:
 
 clean:
 	gprclean -P main.gpr
-	rm build/*.su
+	rm -rf build/
 
 flash:
-	openocd -f stm32f4disco1.cfg -f ocd.cfg
+	openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg -f ocd.cfg
 
 nucleo:
 	openocd -f /usr/share/openocd/scripts/board/st_nucleo_f4.cfg -f ocd.cfg

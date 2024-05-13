@@ -16,7 +16,7 @@ with tests.sdio;  pragma unreferenced (tests.sdio);
 procedure main is
    pragma priority (system.priority'first);
    ok       : boolean;
-   period   : constant ada.real_time.time_span := 
+   period   : constant ada.real_time.time_span :=
       ada.real_time.milliseconds (250);
 begin
 
