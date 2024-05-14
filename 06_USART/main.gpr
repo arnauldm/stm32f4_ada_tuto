@@ -17,8 +17,12 @@ project Main is
 
    package Compiler is
       for Default_Switches ("ada") use
-        ("-O0", "-g", "-fstack-usage",
-         "-gnatwa"); -- turn on all info/warnings marked below with +
+        ("-O0",
+         "-g",
+         "-fstack-usage",
+         "-gnatwa",     -- Turn on all info/warnings
+         "-gnatwI",     -- Turn off warnings for implementation unit
+         "-gnatw.X");   -- Turn off warnings for "No_Exception_Propagation"
    end Compiler;
 
    package Builder is

@@ -21,6 +21,7 @@ For Ada examples, you need to add and initialise AdaCore drivers:
 
 Install GNAT toolchain:
 
+	cd /opt
 	alr get arm_gnat_elf
 	alr get gnatprove
 
