@@ -1,5 +1,16 @@
 
-# Compile and flash the board
+Description
+===========
+
+That code enables the USART_1 serial line to provide an output. It's very
+convenient for debugging purposes because we can write anything on the console.
+The Ada exception handler will also be able to write a message on the console,
+to give us some very important insight about bugs.
+
+Compile and flash the board
+===========================
+
+As usual, to compile and flash the firmware:
 
 	make
 	make flash
@@ -14,7 +25,8 @@ It will blinks the red led. Notice that the blinking frequency is not
 the same as the green led's frequency, defined in `main.adb`.
 
 
-# Minicom / Serial port setting
+Minicom / Serial port setting
+=============================
 
 ## Hardware settings
 
@@ -30,7 +42,8 @@ Connect USB/TTL like this:
 Note: serial port should be set to `9600 8N1`.
 
 
-# Debugging
+Debugging
+=========
 
 For further informations: https://openocd.org/doc/html/GDB-and-OpenOCD.html
 

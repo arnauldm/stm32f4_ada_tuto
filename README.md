@@ -25,6 +25,10 @@ Install GNAT toolchain:
 	alr get arm_gnat_elf
 	alr get gnatprove
 
+You will need to adjust your PATH:
+
+	export PATH=/opt/arm_gnat_elf_{version}/bin:/opt/gnatprove_{version}/bin:$PATH
+
 To run each example, connect the stm32f407 discovery board, compile the firmware
 and flash it with openocd:
 
