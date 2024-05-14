@@ -20,7 +20,6 @@ project Main is
         ("-O0",
          "-g",
          "-fstack-usage",
-         "-gnatd.n",    -- Debug options
          "-gnatwa",     -- Turn on all info/warnings
          "-gnatwI",     -- Turn off warnings for implementation unit
          "-gnatw.X");   -- Turn off warnings for "No_Exception_Propagation"

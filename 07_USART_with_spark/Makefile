@@ -4,7 +4,7 @@ all:
 
 clean:
 	gprclean -P main.gpr
-	rm build/*
+	rm -rf build/
 
 prove:
 	gnatprove -P main.gpr
