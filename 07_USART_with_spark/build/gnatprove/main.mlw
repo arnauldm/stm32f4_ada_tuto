@@ -1,0 +1,1234 @@
+module Standard__integer [@GNAT-comment:Module for axiomatizing type "integer", created in Gnat2Why.Types.Translate_Type]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  
+  type integer = <range -2147483648 2147483647>
+  
+  val function first : int
+    ensures { result = ((- 2147483648) : int) }
+  
+  val function last : int
+    ensures { result = (2147483647 : int) }
+  
+  predicate in_range [@GP_Inline] (x: int) =
+    (([@GP_Pretty_Ada:-1] (first <= x)) /\ ([@GP_Pretty_Ada:-2] (x <= last)))
+  
+  val in_range [@GP_Inline] (x: int) : bool
+    ensures { result <-> (in_range (x : int)) }
+  
+  clone export ada__model.Static_Discrete with
+    axiom .,
+    type t = integer,
+    function first = first,
+    function last = last,
+    predicate in_range = in_range
+  
+  type integer__ref = { mutable integer__content : integer }
+  
+  function integer__ref_integer__content__projection (a: integer__ref) : integer =
+    a.integer__content
+  
+  meta "model_projection" function integer__ref_integer__content__projection
+  
+  meta "inline:no" function integer__ref_integer__content__projection
+  
+  val integer__havoc (x: integer__ref) : unit
+    writes { x }
+end
+
+module Standard__positive [@GNAT-comment:Module for axiomatizing type "positive", created in Gnat2Why.Types.Translate_Type]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  
+  type positive = <range 1 2147483647>
+  
+  val function first : int
+    ensures { result = (1 : int) }
+  
+  val function last : int
+    ensures { result = (2147483647 : int) }
+  
+  predicate in_range [@GP_Inline] (x: int) =
+    (([@GP_Pretty_Ada:-1] (first <= x)) /\ ([@GP_Pretty_Ada:-2] (x <= last)))
+  
+  val in_range [@GP_Inline] (x: int) : bool
+    ensures { result <-> (in_range (x : int)) }
+  
+  clone export ada__model.Static_Discrete with
+    axiom .,
+    type t = positive,
+    function first = first,
+    function last = last,
+    predicate in_range = in_range
+  
+  type positive__ref = { mutable positive__content : positive }
+  
+  function positive__ref_positive__content__projection (a: positive__ref) : positive =
+    a.positive__content
+  
+  meta "model_projection" function positive__ref_positive__content__projection
+  
+  meta "inline:no" function positive__ref_positive__content__projection
+  
+  val positive__havoc (x: positive__ref) : unit
+    writes { x }
+end
+
+module Standard__character [@GNAT-comment:Module for axiomatizing type "character", created in Gnat2Why.Types.Translate_Type]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  
+  type character
+  
+  val function first : int
+    ensures { result = (0 : int) }
+  
+  val function last : int
+    ensures { result = (255 : int) }
+  
+  predicate in_range [@GP_Inline] (x: int) =
+    (([@GP_Pretty_Ada:-1] (first <= x)) /\ ([@GP_Pretty_Ada:-2] (x <= last)))
+  
+  val in_range [@GP_Inline] (x: int) : bool
+    ensures { result <-> (in_range (x : int)) }
+  
+  clone export ada__model.Static_Discrete with
+    axiom .,
+    type t = character,
+    function first = first,
+    function last = last,
+    predicate in_range = in_range
+  
+  type character__ref = { mutable character__content : character }
+  
+  function character__ref_character__content__projection (a: character__ref) : character =
+    a.character__content
+  
+  meta "model_projection" function character__ref_character__content__projection
+  
+  meta "inline:no" function character__ref_character__content__projection
+  
+  val character__havoc (x: character__ref) : unit
+    writes { x }
+end
+
+module Standard__character__rep [@GNAT-comment:Module defining to_rep/of_rep for type "character", created in Gnat2Why.Types.Translate_Type]
+  use Standard__character as Standard__character
+  use _gnatprove_standard.Main
+  use int.Int
+  clone export ada__model.Rep_Proj_Int with
+    axiom .,
+    type t = Standard__character.character,
+    predicate in_range = Standard__character.in_range
+  
+  meta "model_projection" function to_rep
+  
+  meta "inline:no" function to_rep
+end
+
+module Array__Int__Standard__character [@GNAT-comment:Module for axiomatizing the array theory associated to type "string", created in Why.Gen.Arrays.Create_Rep_Array_Theory]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__character as Standard__character
+  use Standard__character__rep as Standard__character__rep
+  
+  function index_I1_one : int = 1 : int
+  
+  type component_type = Standard__character.character
+  
+  clone export _gnatprove_standard.Array__1 with
+    axiom .,
+    type I1.t = int,
+    predicate I1.le = Int.( <= ),
+    predicate I1.lt = Int.( < ),
+    predicate I1.gt = Int.( > ),
+    function I1.add = Int.( + ),
+    function I1.sub = Int.( - ),
+    function I1.one = index_I1_one,
+    type component_type = component_type
+  
+  function bool_eq (a: map) (a__first: int) (a__last: int) (b: map) (b__first: int) (b__last: int) : bool =
+    ((if (a__first <= a__last) then
+        ((b__first <= b__last) /\
+           (([@rac:call_id:1] (a__last - a__first))
+              = ([@rac:call_id:2] (b__last - b__first))))
+      else (b__first > b__last)) /\
+       (forall temp___idx_105 : int.
+          if ((a__first <= temp___idx_105) /\ (temp___idx_105 <= a__last)) then
+            (([@rac:call_id:4]
+              (Standard__character__rep.to_rep
+                 ([@rac:call_id:3] (get a temp___idx_105))))
+               = ([@rac:call_id:8]
+                  (Standard__character__rep.to_rep
+                     ([@rac:call_id:7]
+                      (get
+                         b
+                         ([@rac:call_id:6]
+                          (([@rac:call_id:5] (b__first - a__first))
+                             + temp___idx_105)))))))
+          else true))
+  
+  val bool_eq (a: map) (a__first: int) (a__last: int) (b: map) (b__first: int) (b__last: int) : 
+    bool
+    ensures { result
+      =
+      (bool_eq
+         (a : map)
+         (a__first : int)
+         (a__last : int)
+         (b : map)
+         (b__first : int)
+         (b__last : int)) }
+  
+  axiom bool_eq_rev:
+    forall a : map, b : map.
+      forall a__first : int, a__last : int, b__first : int, b__last : int.
+        ((([@rac:call_id:9] (bool_eq b b__first b__last a a__first a__last))
+            = True) ->
+           ((if (a__first <= a__last) then
+               ((b__first <= b__last) /\
+                  (([@rac:call_id:10] (a__last - a__first))
+                     = ([@rac:call_id:11] (b__last - b__first))))
+             else (b__first > b__last)) /\
+              (forall temp___idx_105 : int.
+                 if ((a__first <= temp___idx_105) /\
+                       (temp___idx_105 <= a__last)) then
+                   (([@rac:call_id:13]
+                     (Standard__character__rep.to_rep
+                        ([@rac:call_id:12] (get a temp___idx_105))))
+                      = ([@rac:call_id:17]
+                         (Standard__character__rep.to_rep
+                            ([@rac:call_id:16]
+                             (get
+                                b
+                                ([@rac:call_id:15]
+                                 (([@rac:call_id:14] (b__first - a__first))
+                                    + temp___idx_105)))))))
+                 else true)))
+end
+
+module Standard__integer__rep [@GNAT-comment:Module defining to_rep/of_rep for type "integer", created in Gnat2Why.Types.Translate_Type]
+  use Standard__integer as Standard__integer
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  function to_rep (x: Standard__integer.integer) : int =
+    [@rac:call_id:18] (Standard__integer.integer'int x)
+  
+  clone export ada__model.Rep_Proj_Int with
+    axiom .,
+    type t = Standard__integer.integer,
+    predicate in_range = Standard__integer.in_range,
+    function to_rep = to_rep
+  
+  meta "model_projection" function to_rep
+  
+  meta "inline:no" function to_rep
+end
+
+module Standard__string [@GNAT-comment:Module for axiomatizing type "string", created in Gnat2Why.Types.Translate_Type]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__integer as Standard__integer
+  use Standard__positive as Standard__positive
+  use Standard__character as Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Standard__integer__rep as Standard__integer__rep
+  
+  type component_type = Standard__character.character
+  
+  function index_1_id (x: int) : int = x
+  
+  clone export ada__model.Unconstr_Array with
+    axiom .,
+    type map = Array__Int__Standard__character.map,
+    function array_bool_eq = Array__Int__Standard__character.bool_eq,
+    type index_base_type = Standard__integer.integer,
+    type index_rep_type = int,
+    function to_rep = Standard__integer__rep.to_rep,
+    function rep_to_int = index_1_id,
+    predicate in_range_base = Standard__integer.in_range,
+    predicate index_dynamic_property = Standard__positive.dynamic_property,
+    predicate index_rep_le = Int.( <= )
+  
+  type string__ = __t
+  
+  meta "model_projection" function to_array
+  
+  meta "inline:no" function to_array
+  
+  meta "model_projection" function first
+  
+  meta "inline:no" function first
+  
+  meta "model_projection" function last
+  
+  meta "inline:no" function last
+  
+  type string____ref = { mutable string____content : string__ }
+  
+  function string____ref_string____content__projection (a: string____ref) : string__ =
+    a.string____content
+  
+  meta "model_projection" function string____ref_string____content__projection
+  
+  meta "inline:no" function string____ref_string____content__projection
+  
+  val string____havoc (x: string____ref) : unit
+    writes { x }
+end
+
+module Standard_String__Img [@GNAT-comment:Module defining to_string/of_string functions, created in Gnat2Why.Types.Translate_Type]
+  use int.Int
+  use Standard__string as Standard__string
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val function to_string (x: Main.__image) (s: int) : Standard__string.string__
+  
+  val function from_string (x: Standard__string.string__) : Main.__image
+  
+  axiom to_string__first:
+    forall x : Main.__image.
+      forall s : int [[@rac:call_id:19] (to_string x s)].
+        (([@rac:call_id:21]
+          (Standard__string.first ([@rac:call_id:20] (to_string x s))))
+           = (1 : int))
+  
+  axiom to_string__length:
+    forall x : Main.__image.
+      forall s : int [[@rac:call_id:22] (to_string x s)].
+        ((s >= (0 : int)) ->
+           (([@rac:call_id:24]
+             (Standard__string.length ([@rac:call_id:23] (to_string x s))))
+              <= s))
+end
+
+module Array__Int__Standard__character__Concat [@GNAT-comment:Module for axiomatizing concatenation for the array theory associated to type "string", created in Why.Gen.Arrays.Declare_Concatenation_Symbols]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  
+  function index_Index_one : int = 1 : int
+  
+  clone export _gnatprove_standard.Array__1__Concat with
+    axiom .,
+    type component_type = Array__Int__Standard__character.component_type,
+    type map = Array__Int__Standard__character.map,
+    type Index.t = int,
+    predicate Index.le = Int.( <= ),
+    predicate Index.lt = Int.( < ),
+    predicate Index.gt = Int.( > ),
+    function Index.add = Int.( + ),
+    function Index.sub = Int.( - ),
+    function Index.one = index_Index_one,
+    function get = Array__Int__Standard__character.get
+end
+
+module Main__counter [@GNAT-comment:Module for defining a ref holding the value of variable "counter" defined at main.adb:13, created in Gnat2Why.Decls.Translate_Variable]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val counter [@model_trace:857] [@model_projected] [@name:counter] [#"main.adb" 13 0 0] : 
+    int__ref
+end
+
+module Ada___stm32__device__usart_1 [@GNAT-comment:Module declaring the external object "ada___stm32__device__usart_1," created in Gnat2Why.Decls.Translate_External_Object]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val usart_1 : Main.__private__ref
+end
+
+module Ada___stm32_svd__rcc__rcc_periph [@GNAT-comment:Module declaring the external object "ada___stm32_svd__rcc__rcc_periph," created in Gnat2Why.Decls.Translate_External_Object]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val rcc_periph : Main.__private__ref
+end
+
+module Ada___stm32__board__all_leds [@GNAT-comment:Module declaring the external object "ada___stm32__board__all_leds," created in Gnat2Why.Decls.Translate_External_Object]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val all_leds : Main.__private__ref
+end
+
+module Ada___stm32__device__pb6 [@GNAT-comment:Module declaring the external object "ada___stm32__device__pb6," created in Gnat2Why.Decls.Translate_External_Object]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val pb6 : Main.__private__ref
+end
+
+module Ada___stm32__device__pb7 [@GNAT-comment:Module declaring the external object "ada___stm32__device__pb7," created in Gnat2Why.Decls.Translate_External_Object]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val pb7 : Main.__private__ref
+end
+
+module Board__init___axiom [@GNAT-comment:Module for declaring a program function (and possibly an axiom) for "init" defined at board.ads:6, created in Gnat2Why.Subprograms.Generate_Subprogram_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use Ada___stm32__device__usart_1 as Ada___stm32__device__usart_1
+  use Ada___stm32_svd__rcc__rcc_periph as Ada___stm32_svd__rcc__rcc_periph
+  use Ada___stm32__board__all_leds as Ada___stm32__board__all_leds
+  use Ada___stm32__device__pb6 as Ada___stm32__device__pb6
+  use Ada___stm32__device__pb7 as Ada___stm32__device__pb7
+  use Ada___stm32__device__usart_1 as Ada___stm32__device__usart_1
+  use Ada___stm32_svd__rcc__rcc_periph as Ada___stm32_svd__rcc__rcc_periph
+  
+  val init (__void_param: unit) : unit
+    reads { Ada___stm32__board__all_leds.all_leds,
+      Ada___stm32__device__pb6.pb6,
+      Ada___stm32__device__pb7.pb7,
+      Ada___stm32__device__usart_1.usart_1,
+      __HEAP,
+      Ada___stm32_svd__rcc__rcc_periph.rcc_periph }
+    requires { true }
+    writes { Ada___stm32__device__usart_1.usart_1, __HEAP, Ada___stm32_svd__rcc__rcc_periph.rcc_periph }
+    ensures { true }
+end
+
+module Ada___stm32__device__pd12 [@GNAT-comment:Module declaring the external object "ada___stm32__device__pd12," created in Gnat2Why.Decls.Translate_External_Object]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  val pd12 : Main.__private__ref
+end
+
+module Board__toggle_green_led___axiom [@GNAT-comment:Module for declaring a program function (and possibly an axiom) for "toggle_green_led" defined at board.ads:8, created in Gnat2Why.Subprograms.Generate_Subprogram_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use Ada___stm32__device__pd12 as Ada___stm32__device__pd12
+  
+  val toggle_green_led (__void_param: unit) : unit
+    reads { Ada___stm32__device__pd12.pd12, __HEAP }
+    requires { true }
+    writes { __HEAP }
+    ensures { true }
+end
+
+module Board__put___axiom [@GNAT-comment:Module for declaring a program function (and possibly an axiom) for "put" defined at board.ads:7, created in Gnat2Why.Subprograms.Generate_Subprogram_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use Standard__string as Standard__string
+  use Ada___stm32__device__usart_1 as Ada___stm32__device__usart_1
+  use Ada___stm32__device__usart_1 as Ada___stm32__device__usart_1
+  
+  val put (s: Standard__string.string__) : unit
+    reads { Ada___stm32__device__usart_1.usart_1, __HEAP }
+    requires { true }
+    writes { Ada___stm32__device__usart_1.usart_1, __HEAP }
+    ensures { true }
+end
+
+module System__priority [@GNAT-comment:Module for axiomatizing type "priority" defined at system.ads:127, created in Gnat2Why.Types.Translate_Type]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  
+  type priority = <range 0 240>
+  
+  val function first : int
+    ensures { result = (0 : int) }
+  
+  val function last : int
+    ensures { result = (240 : int) }
+  
+  predicate in_range [@GP_Inline] (x: int) =
+    (([@GP_Pretty_Ada:-1] (first <= x)) /\ ([@GP_Pretty_Ada:-2] (x <= last)))
+  
+  val in_range [@GP_Inline] (x: int) : bool
+    ensures { result <-> (in_range (x : int)) }
+  
+  clone export ada__model.Static_Discrete with
+    axiom .,
+    type t = priority,
+    function first = first,
+    function last = last,
+    predicate in_range = in_range
+  
+  type priority__ref = { mutable priority__content : priority }
+  
+  function priority__ref_priority__content__projection (a: priority__ref) : priority =
+    a.priority__content
+  
+  meta "model_projection" function priority__ref_priority__content__projection
+  
+  meta "inline:no" function priority__ref_priority__content__projection
+  
+  val priority__havoc (x: priority__ref) : unit
+    writes { x }
+end
+
+module Main__small [@GNAT-comment:Module for axiomatizing type "small" defined at main.adb:12, created in Gnat2Why.Types.Translate_Type]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  
+  type small = <range 0 1000>
+  
+  val function first : int
+    ensures { result = (0 : int) }
+  
+  val function last : int
+    ensures { result = (1000 : int) }
+  
+  predicate in_range [@GP_Inline] (x: int) =
+    (([@GP_Pretty_Ada:-1] (first <= x)) /\ ([@GP_Pretty_Ada:-2] (x <= last)))
+  
+  val in_range [@GP_Inline] (x: int) : bool
+    ensures { result <-> (in_range (x : int)) }
+  
+  clone export ada__model.Static_Discrete with
+    axiom .,
+    type t = small,
+    function first = first,
+    function last = last,
+    predicate in_range = in_range
+  
+  type small__ref = { mutable small__content : small }
+  
+  function small__ref_small__content__projection (a: small__ref) : small =
+    a.small__content
+  
+  meta "model_projection" function small__ref_small__content__projection
+  
+  meta "inline:no" function small__ref_small__content__projection
+  
+  val small__havoc (x: small__ref) : unit
+    writes { x }
+end
+
+module Main__small___axiom [@GNAT-comment:Module giving axioms for type "small" defined at main.adb:12, created in Gnat2Why.Types.Generate_Type_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Main__small as Main__small
+  
+  predicate dynamic_invariant (temp___expr_193: int) (temp___is_init_189: bool) (temp___skip_constant_190: bool) (temp___do_toplevel_191: bool) (temp___do_typ_inv_192: bool) =
+    if ((temp___is_init_189 = True) \/
+          (Main__small.first <= Main__small.last)) then
+      ([@rac:call_id:25]
+       (Main__small.dynamic_property
+          Main__small.first
+          Main__small.last
+          temp___expr_193))
+    else true
+  
+  val dynamic_invariant (temp___expr_193: int) (temp___is_init_189: bool) (temp___skip_constant_190: bool) (temp___do_toplevel_191: bool) (temp___do_typ_inv_192: bool) : 
+    bool
+    ensures { result
+                <->
+                (dynamic_invariant
+                   (temp___expr_193 : int)
+                   (temp___is_init_189 : bool)
+                   (temp___skip_constant_190 : bool)
+                   (temp___do_toplevel_191 : bool)
+                   (temp___do_typ_inv_192 : bool)) }
+  
+  predicate default_initial_assumption (temp___expr_194: int) (temp___skip_top_level_195: bool) =
+    true
+  
+  val default_initial_assumption (temp___expr_194: int) (temp___skip_top_level_195: bool) : 
+    bool
+    ensures { result
+                <->
+                (default_initial_assumption
+                   (temp___expr_194 : int)
+                   (temp___skip_top_level_195 : bool)) }
+end
+
+module Main__L_1 [@GNAT-comment:Module for defining the loop exit exception for the loop "L_1" defined at main.adb:18, created in Gnat2Why.Decls.Translate_Loop_Entity]
+  use _gnatprove_standard.Main
+  use int.Int
+  
+  exception L_1
+end
+
+module Temp___String_Literal_197 [@GNAT-comment:Module for defining a value for string literal  defined at main.adb:23, created in Gnat2Why.Expr.Transform_String_Literal]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__character as Standard__character
+  use Standard__character__rep as Standard__character__rep
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  
+  val function temp___String_Literal_197 (__void_param: unit) : Array__Int__Standard__character.map
+  
+  axiom temp___String_Literal_197__def_axiom:
+    forall __void_param : unit
+          [[@rac:call_id:26] (temp___String_Literal_197 __void_param)].
+      (((([@rac:call_id:29]
+          (Standard__character__rep.to_rep
+             ([@rac:call_id:28]
+              (Array__Int__Standard__character.get
+                 ([@rac:call_id:27] (temp___String_Literal_197 __void_param))
+                 (1 : int)))))
+           = (93 : int)) /\
+          (([@rac:call_id:32]
+            (Standard__character__rep.to_rep
+               ([@rac:call_id:31]
+                (Array__Int__Standard__character.get
+                   ([@rac:call_id:30]
+                    (temp___String_Literal_197 __void_param))
+                   (2 : int)))))
+             = (32 : int))) /\
+         (((((([@rac:call_id:35]
+               (Standard__character__rep.to_rep
+                  ([@rac:call_id:34]
+                   (Array__Int__Standard__character.get
+                      ([@rac:call_id:33]
+                       (temp___String_Literal_197 __void_param))
+                      (3 : int)))))
+                = (32 : int)) /\
+               (([@rac:call_id:38]
+                 (Standard__character__rep.to_rep
+                    ([@rac:call_id:37]
+                     (Array__Int__Standard__character.get
+                        ([@rac:call_id:36]
+                         (temp___String_Literal_197 __void_param))
+                        (4 : int)))))
+                  = (104 : int))) /\
+              ((([@rac:call_id:41]
+                 (Standard__character__rep.to_rep
+                    ([@rac:call_id:40]
+                     (Array__Int__Standard__character.get
+                        ([@rac:call_id:39]
+                         (temp___String_Literal_197 __void_param))
+                        (5 : int)))))
+                  = (101 : int)) /\
+                 (([@rac:call_id:44]
+                   (Standard__character__rep.to_rep
+                      ([@rac:call_id:43]
+                       (Array__Int__Standard__character.get
+                          ([@rac:call_id:42]
+                           (temp___String_Literal_197 __void_param))
+                          (6 : int)))))
+                    = (108 : int)))) /\
+             (((([@rac:call_id:47]
+                 (Standard__character__rep.to_rep
+                    ([@rac:call_id:46]
+                     (Array__Int__Standard__character.get
+                        ([@rac:call_id:45]
+                         (temp___String_Literal_197 __void_param))
+                        (7 : int)))))
+                  = (108 : int)) /\
+                 (([@rac:call_id:50]
+                   (Standard__character__rep.to_rep
+                      ([@rac:call_id:49]
+                       (Array__Int__Standard__character.get
+                          ([@rac:call_id:48]
+                           (temp___String_Literal_197 __void_param))
+                          (8 : int)))))
+                    = (111 : int))) /\
+                (([@rac:call_id:53]
+                  (Standard__character__rep.to_rep
+                     ([@rac:call_id:52]
+                      (Array__Int__Standard__character.get
+                         ([@rac:call_id:51]
+                          (temp___String_Literal_197 __void_param))
+                         (9 : int)))))
+                   = (44 : int)))) /\
+            ((((([@rac:call_id:56]
+                 (Standard__character__rep.to_rep
+                    ([@rac:call_id:55]
+                     (Array__Int__Standard__character.get
+                        ([@rac:call_id:54]
+                         (temp___String_Literal_197 __void_param))
+                        (10 : int)))))
+                  = (32 : int)) /\
+                 (([@rac:call_id:59]
+                   (Standard__character__rep.to_rep
+                      ([@rac:call_id:58]
+                       (Array__Int__Standard__character.get
+                          ([@rac:call_id:57]
+                           (temp___String_Literal_197 __void_param))
+                          (11 : int)))))
+                    = (119 : int))) /\
+                ((([@rac:call_id:62]
+                   (Standard__character__rep.to_rep
+                      ([@rac:call_id:61]
+                       (Array__Int__Standard__character.get
+                          ([@rac:call_id:60]
+                           (temp___String_Literal_197 __void_param))
+                          (12 : int)))))
+                    = (111 : int)) /\
+                   (([@rac:call_id:65]
+                     (Standard__character__rep.to_rep
+                        ([@rac:call_id:64]
+                         (Array__Int__Standard__character.get
+                            ([@rac:call_id:63]
+                             (temp___String_Literal_197 __void_param))
+                            (13 : int)))))
+                      = (114 : int)))) /\
+               (((([@rac:call_id:68]
+                   (Standard__character__rep.to_rep
+                      ([@rac:call_id:67]
+                       (Array__Int__Standard__character.get
+                          ([@rac:call_id:66]
+                           (temp___String_Literal_197 __void_param))
+                          (14 : int)))))
+                    = (108 : int)) /\
+                   (([@rac:call_id:71]
+                     (Standard__character__rep.to_rep
+                        ([@rac:call_id:70]
+                         (Array__Int__Standard__character.get
+                            ([@rac:call_id:69]
+                             (temp___String_Literal_197 __void_param))
+                            (15 : int)))))
+                      = (100 : int))) /\
+                  (([@rac:call_id:74]
+                    (Standard__character__rep.to_rep
+                       ([@rac:call_id:73]
+                        (Array__Int__Standard__character.get
+                           ([@rac:call_id:72]
+                            (temp___String_Literal_197 __void_param))
+                           (16 : int)))))
+                     = (33 : int))))))
+end
+
+module Temp___String_Literal_198 [@GNAT-comment:Module for defining a value for string literal  defined at main.adb:23, created in Gnat2Why.Expr.Transform_String_Literal]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__character as Standard__character
+  use Standard__character__rep as Standard__character__rep
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  
+  val function temp___String_Literal_198 (__void_param: unit) : Array__Int__Standard__character.map
+  
+  axiom temp___String_Literal_198__def_axiom:
+    forall __void_param : unit
+          [[@rac:call_id:75] (temp___String_Literal_198 __void_param)].
+      (([@rac:call_id:78]
+        (Standard__character__rep.to_rep
+           ([@rac:call_id:77]
+            (Array__Int__Standard__character.get
+               ([@rac:call_id:76] (temp___String_Literal_198 __void_param))
+               (1 : int)))))
+         = (91 : int))
+end
+
+module Standard__integer___axiom [@GNAT-comment:Module giving axioms for type "integer", created in Gnat2Why.Types.Generate_Type_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__integer as Standard__integer
+  
+  predicate dynamic_invariant (temp___expr_18: int) (temp___is_init_14: bool) (temp___skip_constant_15: bool) (temp___do_toplevel_16: bool) (temp___do_typ_inv_17: bool) =
+    if ((temp___is_init_14 = True) \/
+          (Standard__integer.first <= Standard__integer.last)) then
+      ([@rac:call_id:79]
+       (Standard__integer.dynamic_property
+          Standard__integer.first
+          Standard__integer.last
+          temp___expr_18))
+    else true
+  
+  val dynamic_invariant (temp___expr_18: int) (temp___is_init_14: bool) (temp___skip_constant_15: bool) (temp___do_toplevel_16: bool) (temp___do_typ_inv_17: bool) : 
+    bool
+    ensures { result
+                <->
+                (dynamic_invariant
+                   (temp___expr_18 : int)
+                   (temp___is_init_14 : bool)
+                   (temp___skip_constant_15 : bool)
+                   (temp___do_toplevel_16 : bool)
+                   (temp___do_typ_inv_17 : bool)) }
+  
+  predicate default_initial_assumption (temp___expr_19: int) (temp___skip_top_level_20: bool) =
+    true
+  
+  val default_initial_assumption (temp___expr_19: int) (temp___skip_top_level_20: bool) : 
+    bool
+    ensures { result
+                <->
+                (default_initial_assumption
+                   (temp___expr_19 : int)
+                   (temp___skip_top_level_20 : bool)) }
+end
+
+module Standard__positive___axiom [@GNAT-comment:Module giving axioms for type "positive", created in Gnat2Why.Types.Generate_Type_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__positive as Standard__positive
+  
+  predicate dynamic_invariant (temp___expr_53: int) (temp___is_init_49: bool) (temp___skip_constant_50: bool) (temp___do_toplevel_51: bool) (temp___do_typ_inv_52: bool) =
+    if ((temp___is_init_49 = True) \/
+          (Standard__positive.first <= Standard__positive.last)) then
+      ([@rac:call_id:80]
+       (Standard__positive.dynamic_property
+          Standard__positive.first
+          Standard__positive.last
+          temp___expr_53))
+    else true
+  
+  val dynamic_invariant (temp___expr_53: int) (temp___is_init_49: bool) (temp___skip_constant_50: bool) (temp___do_toplevel_51: bool) (temp___do_typ_inv_52: bool) : 
+    bool
+    ensures { result
+                <->
+                (dynamic_invariant
+                   (temp___expr_53 : int)
+                   (temp___is_init_49 : bool)
+                   (temp___skip_constant_50 : bool)
+                   (temp___do_toplevel_51 : bool)
+                   (temp___do_typ_inv_52 : bool)) }
+  
+  predicate default_initial_assumption (temp___expr_54: int) (temp___skip_top_level_55: bool) =
+    true
+  
+  val default_initial_assumption (temp___expr_54: int) (temp___skip_top_level_55: bool) : 
+    bool
+    ensures { result
+                <->
+                (default_initial_assumption
+                   (temp___expr_54 : int)
+                   (temp___skip_top_level_55 : bool)) }
+end
+
+module Standard__character___axiom [@GNAT-comment:Module giving axioms for type "character", created in Gnat2Why.Types.Generate_Type_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use Standard__character as Standard__character
+  
+  predicate dynamic_invariant (temp___expr_88: int) (temp___is_init_84: bool) (temp___skip_constant_85: bool) (temp___do_toplevel_86: bool) (temp___do_typ_inv_87: bool) =
+    if ((temp___is_init_84 = True) \/
+          (Standard__character.first <= Standard__character.last)) then
+      ([@rac:call_id:81]
+       (Standard__character.dynamic_property
+          Standard__character.first
+          Standard__character.last
+          temp___expr_88))
+    else true
+  
+  val dynamic_invariant (temp___expr_88: int) (temp___is_init_84: bool) (temp___skip_constant_85: bool) (temp___do_toplevel_86: bool) (temp___do_typ_inv_87: bool) : 
+    bool
+    ensures { result
+                <->
+                (dynamic_invariant
+                   (temp___expr_88 : int)
+                   (temp___is_init_84 : bool)
+                   (temp___skip_constant_85 : bool)
+                   (temp___do_toplevel_86 : bool)
+                   (temp___do_typ_inv_87 : bool)) }
+  
+  predicate default_initial_assumption (temp___expr_89: int) (temp___skip_top_level_90: bool) =
+    true
+  
+  val default_initial_assumption (temp___expr_89: int) (temp___skip_top_level_90: bool) : 
+    bool
+    ensures { result
+                <->
+                (default_initial_assumption
+                   (temp___expr_89 : int)
+                   (temp___skip_top_level_90 : bool)) }
+end
+
+module Standard__string___axiom [@GNAT-comment:Module giving axioms for type "string", created in Gnat2Why.Types.Generate_Type_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use Standard__positive as Standard__positive
+  use Standard__string as Standard__string
+  
+  predicate dynamic_invariant (temp___expr_110: Standard__string.string__) (temp___is_init_106: bool) (temp___skip_constant_107: bool) (temp___do_toplevel_108: bool) (temp___do_typ_inv_109: bool) =
+    if temp___skip_constant_107 then true
+    else
+      ([@rac:call_id:84]
+       (Standard__string.dynamic_property
+          Standard__positive.first
+          Standard__positive.last
+          ([@rac:call_id:82] (Standard__string.first temp___expr_110))
+          ([@rac:call_id:83] (Standard__string.last temp___expr_110))))
+  
+  val dynamic_invariant (temp___expr_110: Standard__string.string__) (temp___is_init_106: bool) (temp___skip_constant_107: bool) (temp___do_toplevel_108: bool) (temp___do_typ_inv_109: bool) : 
+    bool
+    ensures { result
+                <->
+                (dynamic_invariant
+                   (temp___expr_110 : Standard__string.string__)
+                   (temp___is_init_106 : bool)
+                   (temp___skip_constant_107 : bool)
+                   (temp___do_toplevel_108 : bool)
+                   (temp___do_typ_inv_109 : bool)) }
+end
+
+module Main__counter___axiom [@GNAT-comment:Module giving an empty axiom for the entity "counter" defined at main.adb:13, created in Gnat2Why.Driver.Translate_Entity.Generate_Empty_Axiom_Theory]
+  use _gnatprove_standard.Main
+  use int.Int
+end
+
+module Main__L_1___axiom [@GNAT-comment:Module giving an empty axiom for the entity "L_1" defined at main.adb:18, created in Gnat2Why.Driver.Translate_Entity.Generate_Empty_Axiom_Theory]
+  use _gnatprove_standard.Main
+  use int.Int
+end
+
+module System__priority___axiom [@GNAT-comment:Module giving axioms for type "priority" defined at system.ads:127, created in Gnat2Why.Types.Generate_Type_Completion]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use System__priority as System__priority
+  
+  predicate dynamic_invariant (temp___expr_179: int) (temp___is_init_175: bool) (temp___skip_constant_176: bool) (temp___do_toplevel_177: bool) (temp___do_typ_inv_178: bool) =
+    if ((temp___is_init_175 = True) \/
+          (System__priority.first <= System__priority.last)) then
+      ([@rac:call_id:85]
+       (System__priority.dynamic_property
+          System__priority.first
+          System__priority.last
+          temp___expr_179))
+    else true
+  
+  val dynamic_invariant (temp___expr_179: int) (temp___is_init_175: bool) (temp___skip_constant_176: bool) (temp___do_toplevel_177: bool) (temp___do_typ_inv_178: bool) : 
+    bool
+    ensures { result
+                <->
+                (dynamic_invariant
+                   (temp___expr_179 : int)
+                   (temp___is_init_175 : bool)
+                   (temp___skip_constant_176 : bool)
+                   (temp___do_toplevel_177 : bool)
+                   (temp___do_typ_inv_178 : bool)) }
+  
+  predicate default_initial_assumption (temp___expr_180: int) (temp___skip_top_level_181: bool) =
+    true
+  
+  val default_initial_assumption (temp___expr_180: int) (temp___skip_top_level_181: bool) : 
+    bool
+    ensures { result
+                <->
+                (default_initial_assumption
+                   (temp___expr_180 : int)
+                   (temp___skip_top_level_181 : bool)) }
+end
+
+module Main__subprogram_def [@GNAT-comment:Module for checking contracts and absence of run-time errors in subprogram "main" defined at main.adb:7, created in Gnat2Why.Subprograms.Generate_VCs_For_Subprogram]
+  use _gnatprove_standard.Main
+  use int.Int
+  use int.Int
+  use _gnatprove_standard.Integer as Integer
+  use Standard_String__Img as Standard_String__Img
+  use Standard__integer as Standard__integer
+  use Standard__positive as Standard__positive
+  use Standard__character as Standard__character
+  use Standard__character__rep as Standard__character__rep
+  use Array__Int__Standard__character__Concat as Array__Int__Standard__character__Concat
+  use Standard__string as Standard__string
+  use Main__counter as Main__counter
+  use Board__init___axiom as Board__init___axiom
+  use Board__toggle_green_led___axiom as Board__toggle_green_led___axiom
+  use Board__put___axiom as Board__put___axiom
+  use System__priority as System__priority
+  use Main__small as Main__small
+  use Main__small___axiom as Main__small___axiom
+  use Main__L_1 as Main__L_1
+  use Temp___String_Literal_197 as Temp___String_Literal_197
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Temp___String_Literal_198 as Temp___String_Literal_198
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Array__Int__Standard__character as Array__Int__Standard__character
+  use Standard__integer___axiom as Standard__integer___axiom
+  use Standard__positive___axiom as Standard__positive___axiom
+  use Standard__character___axiom as Standard__character___axiom
+  use Standard__string___axiom as Standard__string___axiom
+  use Standard__integer___axiom as Standard__integer___axiom
+  use Main__small___axiom as Main__small___axiom
+  use Main__counter___axiom as Main__counter___axiom
+  use Main__L_1___axiom as Main__L_1___axiom
+  use System__priority___axiom as System__priority___axiom
+  use Board__init___axiom as Board__init___axiom
+  use Board__put___axiom as Board__put___axiom
+  use Board__toggle_green_led___axiom as Board__toggle_green_led___axiom
+  
+  let def [#"main.adb" 7 0 0] (__void_param : unit)
+    requires { [#"main.adb" 7 0 0] true }
+  = [@vc:divergent]
+    (([@GNAT-comment:Assume dynamic invariants of inputs of the subprogram main.adb:7]
+      ());
+     ([@GNAT-comment:Assume moved pointers in outputs of the subprogram main.adb:7]
+      ());
+     ([@GNAT-comment:Check for RTE in the Pre of the subprogram main.adb:7]
+      ());
+     ([#"main.adb" 7 0 0] ());
+     ([@GNAT-comment:Assume Pre of the subprogram main.adb:7] ());
+     ([#"main.adb" 7 0 0]
+      (try
+         ([#"main.adb" 8 0 0] ());
+         ([#"main.adb" 10 0 0]
+          [#"main.adb" 10 0 0]
+          check {
+            [#"main.adb" 10 0 0]
+            [#"main.adb" 10 0 0]
+            [@GP_Shape:pragargs]
+            [@vc:annotation]
+            [@GP_Check:0:VC_RANGE_CHECK:main.adb:10:36]
+            ((System__priority.first <= (0 : int)) /\
+               ((0 : int) <= System__priority.last)) });
+         ([#"main.adb" 12 0 0] ());
+         ([#"main.adb" 13 0 0]
+          (([#"main.adb" 13 0 0]
+            (Main__counter.counter.int__content <- (0 : int)));
+           ([#"main.adb" 13 0 0]
+            assume {
+              [#"main.adb" 13 0 0]
+              [@rac:call_id:86]
+              (Main__small___axiom.dynamic_invariant
+                 (Main__counter.counter.int__content)
+                 True
+                 False
+                 True
+                 True) })));
+         ([#"main.adb" 18 0 0] ());
+         ([#"main.adb" 16 0 0] ());
+         ([#"main.adb" 16 0 0]
+          (([#"main.adb" 16 0 0]
+            (let _f = [@rac:call_id:87] (any unit) in _f));
+           ([@rac:call_id:88] (Board__init___axiom.init ()))));
+         ([#"main.adb" 18 0 0]
+          (([@GNAT-comment:Translation of an Ada loop from main.adb:18] ());
+           (if True then
+              ([#"main.adb" 18 0 0]
+               (try
+                  ([@GNAT-comment:While loop translating the Ada loop from main.adb:18]
+                   ());
+                  ([#"main.adb" 18 0 0]
+                   [#"main.adb" 18 0 0]
+                   (([@GNAT-comment:Check for absence of RTE in the loop invariant and variant]
+                     ());
+                    while True do
+                      ([@GNAT-comment:gnat_ast_to_ptree: code after the loop invariant]
+                       (([@GNAT-comment:Assume implicit invariants from the loop main.adb:18]
+                         ());
+                        ([#"main.adb" 18 0 0]
+                         assume {
+                           [#"main.adb" 18 0 0]
+                           ((true /\
+                               ([@rac:call_id:89]
+                                (Main__small___axiom.dynamic_invariant
+                                   (Main__counter.counter.int__content)
+                                   True
+                                   True
+                                   True
+                                   True))) /\
+                              (true /\ true)) });
+                        ([@GNAT-comment:Continuation of loop after loop invariant and variant]
+                         ());
+                        ([#"main.adb" 22 0 0] ());
+                        ([#"main.adb" 22 0 0]
+                         (([#"main.adb" 22 0 0]
+                           (let _f = [@rac:call_id:90] (any unit) in _f));
+                          ([@rac:call_id:91]
+                           (Board__toggle_green_led___axiom.toggle_green_led
+                              ()))));
+                        ([#"main.adb" 23 0 0] ());
+                        ([#"main.adb" 23 0 0]
+                         (([#"main.adb" 23 0 0]
+                           (let _f = [@rac:call_id:92] (any unit) in _f));
+                          ([@rac:call_id:146]
+                           (Board__put___axiom.put
+                              (let temp___204 [@mlw:proxy_symbol] [@introduced] =
+                                 13 : int in
+                               let temp___203 [@mlw:proxy_symbol] [@introduced] =
+                                 let temp___202 [@mlw:proxy_symbol] [@introduced] =
+                                   [@rac:call_id:93]
+                                   (Temp___String_Literal_197.temp___String_Literal_197
+                                      ()) in
+                                 let temp___201 [@mlw:proxy_symbol] [@introduced] =
+                                   let temp___200 [@mlw:proxy_symbol] [@introduced] =
+                                     [@rac:call_id:95]
+                                     (Standard_String__Img.to_string
+                                        ([@rac:call_id:94]
+                                         (Standard__integer.attr__ATTRIBUTE_IMAGE
+                                            (Main__counter.counter.int__content)))
+                                        (12 : int)) in
+                                   let temp___199 [@mlw:proxy_symbol] [@introduced] =
+                                     [@rac:call_id:96]
+                                     (Temp___String_Literal_198.temp___String_Literal_198
+                                        ()) in
+                                   [@rac:call_id:109]
+                                   (Standard__string.of_array
+                                      ([@rac:call_id:100]
+                                       (Array__Int__Standard__character__Concat.concat
+                                          temp___199
+                                          (1 : int)
+                                          (1 : int)
+                                          ([@rac:call_id:97]
+                                           (Standard__string.to_array
+                                              temp___200))
+                                          ([@rac:call_id:98]
+                                           (Standard__string.first temp___200))
+                                          ([@rac:call_id:99]
+                                           (Standard__string.last temp___200))))
+                                      (1 : int)
+                                      ([#"main.adb" 23 0 0]
+                                       [@GP_Shape:L_1_loop__call_put__concat__concat__concat]
+                                       [@vc:annotation]
+                                       [@GP_Check:1:VC_RANGE_CHECK:main.adb:23:22]
+                                       [@rac:call_id:108]
+                                       (Standard__positive.range_check_
+                                          ([@rac:call_id:107]
+                                           (([@rac:call_id:106]
+                                             ((1 : int)
+                                                + ([@rac:call_id:105]
+                                                   (([@rac:call_id:101]
+                                                     (Integer.length
+                                                        (1 : int)
+                                                        (1 : int)))
+                                                      + ([@rac:call_id:104]
+                                                         (Integer.length
+                                                            ([@rac:call_id:102]
+                                                             (Standard__string.first
+                                                                temp___200))
+                                                            ([@rac:call_id:103]
+                                                             (Standard__string.last
+                                                                temp___200))))))))
+                                              - (1 : int)))))) in
+                                 if (([@rac:call_id:110]
+                                      (Standard__string.length temp___201))
+                                       = (0 : int)) then
+                                   ([@rac:call_id:111]
+                                    (Standard__string.of_array
+                                       temp___202
+                                       (1 : int)
+                                       (16 : int)))
+                                 else
+                                   ([@rac:call_id:126]
+                                    (Standard__string.of_array
+                                       ([@rac:call_id:115]
+                                        (Array__Int__Standard__character__Concat.concat
+                                           ([@rac:call_id:112]
+                                            (Standard__string.to_array
+                                               temp___201))
+                                           ([@rac:call_id:113]
+                                            (Standard__string.first
+                                               temp___201))
+                                           ([@rac:call_id:114]
+                                            (Standard__string.last temp___201))
+                                           temp___202
+                                           (1 : int)
+                                           (16 : int)))
+                                       ([@rac:call_id:116]
+                                        (Standard__string.first temp___201))
+                                       ([#"main.adb" 23 0 0]
+                                        [@vc:annotation]
+                                        [@GP_Check:2:VC_RANGE_CHECK:main.adb:23:47]
+                                        [@GP_Shape:L_1_loop__call_put__concat__concat]
+                                        [@rac:call_id:125]
+                                        (Standard__positive.range_check_
+                                           ([@rac:call_id:124]
+                                            (([@rac:call_id:123]
+                                              (([@rac:call_id:117]
+                                                (Standard__string.first
+                                                   temp___201))
+                                                 + ([@rac:call_id:122]
+                                                    (([@rac:call_id:120]
+                                                      (Integer.length
+                                                         ([@rac:call_id:118]
+                                                          (Standard__string.first
+                                                             temp___201))
+                                                         ([@rac:call_id:119]
+                                                          (Standard__string.last
+                                                             temp___201))))
+                                                       + ([@rac:call_id:121]
+                                                          (Integer.length
+                                                             (1 : int)
+                                                             (16 : int)))))))
+                                               - (1 : int))))))) in
+                               if (([@rac:call_id:127]
+                                    (Standard__string.length temp___203))
+                                     = (0 : int)) then
+                                 ([@rac:call_id:130]
+                                  (Standard__string.of_array
+                                     ([@rac:call_id:129]
+                                      (Array__Int__Standard__character__Concat.singleton
+                                         ([@rac:call_id:128]
+                                          (Standard__character__rep.of_rep
+                                             temp___204))
+                                         Standard__positive.first))
+                                     Standard__positive.first
+                                     Standard__positive.first))
+                               else
+                                 ([@rac:call_id:145]
+                                  (Standard__string.of_array
+                                     ([@rac:call_id:135]
+                                      (Array__Int__Standard__character__Concat.concat_singleton_right
+                                         ([@rac:call_id:131]
+                                          (Standard__string.to_array
+                                             temp___203))
+                                         ([@rac:call_id:132]
+                                          (Standard__string.first temp___203))
+                                         ([@rac:call_id:133]
+                                          (Standard__string.last temp___203))
+                                         ([@rac:call_id:134]
+                                          (Standard__character__rep.of_rep
+                                             temp___204))))
+                                     ([@rac:call_id:136]
+                                      (Standard__string.first temp___203))
+                                     ([#"main.adb" 23 0 0]
+                                      [@GP_Shape:L_1_loop__call_put__concat]
+                                      [@vc:annotation]
+                                      [@GP_Check:3:VC_RANGE_CHECK:main.adb:23:68]
+                                      [@rac:call_id:144]
+                                      (Standard__positive.range_check_
+                                         ([@rac:call_id:143]
+                                          (([@rac:call_id:142]
+                                            (([@rac:call_id:137]
+                                              (Standard__string.first
+                                                 temp___203))
+                                               + ([@rac:call_id:141]
+                                                  (([@rac:call_id:140]
+                                                    (Integer.length
+                                                       ([@rac:call_id:138]
+                                                        (Standard__string.first
+                                                           temp___203))
+                                                       ([@rac:call_id:139]
+                                                        (Standard__string.last
+                                                           temp___203))))
+                                                     + (1 : int)))))
+                                             - (1 : int))))))))))));
+                        ([#"main.adb" 26 0 0] ());
+                        ([#"main.adb" 26 0 0] ());
+                        ([#"main.adb" 26 0 0]
+                         [#"main.adb" 26 0 0]
+                         (Main__counter.counter.int__content <-
+                            ([#"main.adb" 26 0 0]
+                             [@GP_Shape:L_1_loop__counter_assign__add]
+                             [@vc:annotation]
+                             [@GP_Check:4:VC_RANGE_CHECK:main.adb:26:26]
+                             [@rac:call_id:148]
+                             (Main__small.range_check_
+                                ([@rac:call_id:147]
+                                 ((Main__counter.counter.int__content)
+                                    + (1 : int)))))));
+                        ([@GNAT-comment:Check for the exit condition and loop statements appearing before the loop invariant of loop main.adb:18]
+                         ());
+                        (if False then (raise Main__L_1.L_1)
+                         else ())));
+                      ([@GNAT-comment:gnat_ast_to_ptree: code before the loop invariant]
+                       [@GNAT-comment:Check for absence of RTE in the loop invariant and variant]
+                       ());
+                      ([@GNAT-comment:gnat_ast_to_ptree: code checking the variants]
+                       ())
+                    done))
+                with Main__L_1.L_1 -> ()
+                end))
+            else ())));
+         (raise Return__exc)
+       with Return__exc -> ()
+       end)))
+end

@@ -1,9 +1,9 @@
 
---  This version is for use with the ravenscar-sfp runtime.
-
 with System;
 
-package Last_Chance_Handler is
+package Last_Chance_Handler
+   with spark_mode => on
+is
 
    procedure Last_Chance_Handler (Msg : System.Address; Line : Integer);
    pragma Export (C, Last_Chance_Handler, "__gnat_last_chance_handler");

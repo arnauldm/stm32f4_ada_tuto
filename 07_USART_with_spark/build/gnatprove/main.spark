@@ -1,0 +1,447 @@
+{
+  "spark": [
+    {
+      "name": "main",
+      "sloc": [
+        {
+          "file": "main.adb",
+          "line": 7
+        }
+      ],
+      "spark": "all"
+    }
+  ],
+  "flow": [
+    {
+      "file": "main.adb",
+      "line": 16,
+      "col": 9,
+      "rule": "UNINITIALIZED",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": {
+      },
+      "tracefile": "main__flow__0.trace",
+      "msg_id": 0,
+      "how_proved": "flow"
+    },
+    {
+      "file": "main.adb",
+      "line": 16,
+      "col": 9,
+      "rule": "UNINITIALIZED",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": {
+      },
+      "tracefile": "main__flow__1.trace",
+      "msg_id": 1,
+      "how_proved": "flow"
+    },
+    {
+      "file": "main.adb",
+      "line": 16,
+      "col": 9,
+      "rule": "UNINITIALIZED",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": {
+      },
+      "tracefile": "main__flow__2.trace",
+      "msg_id": 2,
+      "how_proved": "flow"
+    },
+    {
+      "file": "main.adb",
+      "line": 22,
+      "col": 12,
+      "rule": "UNINITIALIZED",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": {
+      },
+      "tracefile": "main__flow__3.trace",
+      "msg_id": 3,
+      "how_proved": "flow"
+    },
+    {
+      "file": "main.adb",
+      "line": 16,
+      "col": 9,
+      "rule": "UNINITIALIZED",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": {
+      },
+      "tracefile": "main__flow__4.trace",
+      "msg_id": 4,
+      "how_proved": "flow"
+    },
+    {
+      "file": "main.adb",
+      "line": 16,
+      "col": 9,
+      "rule": "UNINITIALIZED",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": {
+      },
+      "tracefile": "main__flow__5.trace",
+      "msg_id": 5,
+      "how_proved": "flow"
+    }
+  ],
+  "pragma_assume": [
+  ],
+  "session_map": {
+    " 1": "/home/am/WORK/github/stm32f4_ada_tuto/07_USART_with_spark/build/gnatprove/main"
+  },
+  "proof": [
+    {
+      "file": "main.adb",
+      "line": 10,
+      "col": 36,
+      "rule": "VC_RANGE_CHECK",
+      "severity": "info",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": [
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        },
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        }
+      ],
+      "check_file": "main.adb",
+      "check_line": 10,
+      "check_col": 36,
+      "session_dir": 1,
+      "how_proved": "prover",
+      "stats": {
+        "CVC4": {
+          "count": 2,
+          "max_steps": 1,
+          "max_time": 0.00000000000000E+00
+        }
+      }
+    },
+    {
+      "file": "main.adb",
+      "line": 23,
+      "col": 22,
+      "rule": "VC_RANGE_CHECK",
+      "severity": "info",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": [
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        },
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        }
+      ],
+      "check_file": "main.adb",
+      "check_line": 23,
+      "check_col": 22,
+      "session_dir": 1,
+      "how_proved": "prover",
+      "stats": {
+        "CVC4": {
+          "count": 2,
+          "max_steps": 1,
+          "max_time": 0.00000000000000E+00
+        }
+      }
+    },
+    {
+      "file": "main.adb",
+      "line": 23,
+      "col": 47,
+      "rule": "VC_RANGE_CHECK",
+      "severity": "info",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": [
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        },
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        }
+      ],
+      "check_file": "main.adb",
+      "check_line": 23,
+      "check_col": 47,
+      "session_dir": 1,
+      "how_proved": "prover",
+      "stats": {
+        "CVC4": {
+          "count": 2,
+          "max_steps": 1,
+          "max_time": 0.00000000000000E+00
+        }
+      }
+    },
+    {
+      "file": "main.adb",
+      "line": 23,
+      "col": 68,
+      "rule": "VC_RANGE_CHECK",
+      "severity": "info",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": [
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        },
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        }
+      ],
+      "check_file": "main.adb",
+      "check_line": 23,
+      "check_col": 68,
+      "session_dir": 1,
+      "how_proved": "prover",
+      "stats": {
+        "CVC4": {
+          "count": 2,
+          "max_steps": 1,
+          "max_time": 0.00000000000000E+00
+        }
+      }
+    },
+    {
+      "file": "main.adb",
+      "line": 26,
+      "col": 26,
+      "rule": "VC_RANGE_CHECK",
+      "severity": "medium",
+      "entity": {
+        "name": "main",
+        "sloc": [
+          {
+            "file": "main.adb",
+            "line": 7
+          }
+        ]
+      },
+      "check_tree": [
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Unknown\n()",
+              "steps": 1,
+              "time": 0
+            },
+            "CVC4_CE": {
+              "result": "Unknown\n(unknown)",
+              "steps": 1,
+              "time": 1.60000000000000E-01
+            },
+            "Z3": {
+              "result": "Unknown\n()",
+              "steps": 1,
+              "time": 0
+            },
+            "altergo": {
+              "result": "Unknown\n()",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        },
+        {
+          "proof_attempts": {
+            "CVC4": {
+              "result": "Valid",
+              "steps": 1,
+              "time": 0
+            }
+          },
+          "transformations": {
+          }
+        }
+      ],
+      "check_file": "main.adb",
+      "check_line": 26,
+      "check_col": 26,
+      "msg_id": 6,
+      "session_dir": 1,
+      "how_proved": "prover"
+    }
+  ],
+  "assumptions": [
+  ],
+  "timings": {
+    "gnatwhy3.transformations.inline_trivial": 8.55499971657991E-03,
+    "codepeer results": 2.37999993260019E-04,
+    "init_why_sections": 8.65000009071082E-04,
+    "gnatwhy3.transformations.detect_polymorphism": 3.06000001728535E-04,
+    "gnatwhy3.transformations.eliminate_literal": 3.29899997450411E-03,
+    "gnatwhy3.run_vcs": 2.04723998904228E-01,
+    "globals (advanced)": 9.16450023651123E-02,
+    "gnatwhy3.transformations.eliminate_algebraic_if_poly": 3.10899992473423E-03,
+    "flow analysis": 3.45900002866983E-03,
+    "gnatwhy3.transformations.simplify_formula": 3.48399998620152E-03,
+    "marking": 9.89999971352518E-05,
+    "translation of standard": 4.51799994334579E-03,
+    "properties (advanced)": 4.60000010207295E-05,
+    "gnatwhy3.transformations.eliminate_definition_conditionally": 5.46400016173720E-03,
+    "gnatwhy3.register_vcs": 2.98799993470311E-03,
+    "gnatwhy3.transformations.eliminate_epsilon": 3.69599997065961E-03,
+    "globals (basic)": 6.24499982222915E-03,
+    "gnatwhy3.schedule_vcs": 4.43000020459294E-03,
+    "gnatwhy3.transformations.prepare_for_counterexmp": 3.98800009861588E-03,
+    "gnatwhy3.save_session": 6.76500005647540E-03,
+    "gnatwhy3.transformations.eliminate_inductive": 2.50900001265109E-03,
+    "gnatwhy3.transformations.encoding_smt_if_poly": 3.99999998990097E-06,
+    "gnatwhy3.transformations.eliminate_builtin": 3.24800005182624E-03,
+    "gnatwhy3.transformations.discriminate_if_poly": 3.99999998990097E-06,
+    "gnatwhy3.init": 5.58686017990112E-01
+  }
+}

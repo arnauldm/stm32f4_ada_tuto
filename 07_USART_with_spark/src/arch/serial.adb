@@ -1,6 +1,8 @@
 with stm32.device;
 
-package body serial is
+package body serial
+   with spark_mode => off
+is
 
    procedure initialize_gpio
      (tx_pin   : stm32.gpio.gpio_point;

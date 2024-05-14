@@ -7,7 +7,9 @@ with serial;
 with ada.real_time;     use ada.real_time;
 with ada.unchecked_conversion;
 
-package body last_chance_handler is
+package body last_chance_handler
+   with spark_mode => off
+is
 
    procedure put (ptr : system.address);
 

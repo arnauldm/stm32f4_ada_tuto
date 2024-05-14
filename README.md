@@ -19,9 +19,15 @@ For Ada examples, you need to add and initialise AdaCore drivers:
 	git submodule init
 	git submodule update
 
+Install GNAT toolchain:
+
+	alr get arm_gnat_elf
+	alr get gnatprove
+
 To run each example, connect the stm32f407 discovery board, compile the firmware
 and flash it with openocd:
 
 	make
 	make flash
+
 

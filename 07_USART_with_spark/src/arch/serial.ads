@@ -2,7 +2,9 @@
 with stm32.usarts;
 with stm32.gpio; use stm32.gpio;
 
-package serial is
+package serial
+   with spark_mode => off
+is
 
    procedure initialize_gpio
      (tx_pin   : stm32.gpio.gpio_point;
