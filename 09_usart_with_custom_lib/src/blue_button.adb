@@ -12,9 +12,11 @@ package body blue_button
    with spark_mode => off
 is
 
-   BB : stm32f4.gpio.t_GPIO_pin renames stm32f4.periphs.BLUE_BUTTON;
+   BB : stm32f4.gpio.t_gpio_point renames stm32f4.periphs.BLUE_BUTTON;
 
    procedure initialize is
+      bb_exti_line : constant stm32f4.exti.EXTI_line_index :=
+         stm32f4.exti.EXTI_line_index (BB.pin);
    begin
 
       ----------------------------
@@ -22,7 +24,7 @@ is
       ----------------------------
 
       -- GPIOA Periph clock enable
-      stm32f4.rcc.enable_gpio_clock (BB.gpio.all);
+      stm32f4.rcc.enable_gpio_clock (BB.port);
 
       -- Set button's pin to input mode
       -- Default (idle) state is at 0V. Set GPIO pin to pull-down
@@ -40,13 +42,13 @@ is
       stm32f4.periphs.SYSCFG.EXTICR1.EXTI0 := stm32f4.syscfg.GPIOA;
 
       -- Set interrupt/event masks
-      stm32f4.periphs.EXTI.IMR.line (BB.pin_number) := stm32f4.exti.NOT_MASKED;
-      stm32f4.periphs.EXTI.EMR.line (BB.pin_number) := stm32f4.exti.MASKED;
+      stm32f4.periphs.EXTI.IMR.line (bb_exti_line) := stm32f4.exti.NOT_MASKED;
+      stm32f4.periphs.EXTI.EMR.line (bb_exti_line) := stm32f4.exti.MASKED;
 
       -- Trigger the selected external interrupt on rising edge
-      stm32f4.periphs.EXTI.RTSR.line (BB.pin_number) :=
+      stm32f4.periphs.EXTI.RTSR.line (bb_exti_line) :=
          stm32f4.exti.TRIGGER_ENABLED;
-      stm32f4.periphs.EXTI.FTSR.line (BB.pin_number) :=
+      stm32f4.periphs.EXTI.FTSR.line (bb_exti_line) :=
          stm32f4.exti.TRIGGER_DISABLED;
 
       -- Set the IRQ priority level (in the range 0-15). The lower the value,
@@ -93,9 +95,11 @@ is
       end has_been_pressed;
 
       procedure Interrupt_Handler is
+         bb_exti_line : constant stm32f4.exti.EXTI_line_index :=
+            stm32f4.exti.EXTI_line_index (BB.pin);
       begin
 
-         stm32f4.periphs.EXTI.PR.line (BB.pin_number) :=
+         stm32f4.periphs.EXTI.PR.line (bb_exti_line) :=
             stm32f4.exti.CLEAR_REQUEST;
 
          if ada.real_time.clock - last_event > debounce_time then

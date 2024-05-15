@@ -23,7 +23,7 @@ is
    counter : small := 0;
 
    type led_index is mod 2;
-   blink_led : constant array (led_index) of stm32f4.gpio.t_GPIO_pin :=
+   blink_led : constant array (led_index) of stm32f4.gpio.t_gpio_point :=
      (periphs.LED_GREEN, periphs.LED_RED);
 
    current : led_index := blink_led'first;

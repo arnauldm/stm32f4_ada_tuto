@@ -1,4 +1,3 @@
-with system; use system;
 with stm32f4; use stm32f4;
 with stm32f4.periphs;
 with stm32f4.usart;
@@ -10,40 +9,24 @@ package body serial
 is
 
    USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
-   TX_pin   : constant stm32f4.gpio.t_GPIO_pin := periphs.USART1_TX;
-   RX_pin   : constant stm32f4.gpio.t_GPIO_pin := periphs.USART1_RX;
+   TX_pin   : constant stm32f4.gpio.t_gpio_point := periphs.USART1_TX;
+   RX_pin   : constant stm32f4.gpio.t_gpio_point := periphs.USART1_RX;
 
    procedure initialize
    is
-      alternate_function : gpio.t_AF;
    begin
 
       --
       -- Enable clocks
       --
 
-      rcc.enable_gpio_clock (TX_pin);
-      rcc.enable_gpio_clock (RX_pin);
+      rcc.enable_gpio_clock (TX_pin.port);
+      rcc.enable_gpio_clock (RX_pin.port);
 
-      if USARTx'address = periphs.USART1_base then
-         periphs.RCC.APB2ENR.USART1EN  := true;
-      elsif USARTx'address = periphs.USART2_base then
-         periphs.RCC.APB1ENR.USART2EN  := true;
-      elsif USARTx'address = periphs.USART3_base then
-         periphs.RCC.APB1ENR.USART3EN  := true;
-      elsif USARTx'address = periphs.UART4_base then
-         periphs.RCC.APB1ENR.UART4EN   := true;
-      elsif USARTx'address = periphs.UART5_base then
-         periphs.RCC.APB1ENR.UART5EN   := true;
-      elsif USARTx'address = periphs.USART6_base then
-         periphs.RCC.APB2ENR.USART6EN  := true;
-      else
-         raise program_error;
-      end if;
+      -- USART 1
+      periphs.RCC.APB2ENR.USART1EN  := true;
 
-      --
-      -- Configure TX and RX pins
-      --
+      -- Configure TX pin
       gpio.configure
         (TX_pin,
          gpio.MODE_AF,
@@ -51,6 +34,7 @@ is
          gpio.SPEED_HIGH,
          gpio.PULL_UP);
 
+      -- Configure RX pin
       gpio.configure
         (RX_pin,
          gpio.MODE_AF,
@@ -58,24 +42,9 @@ is
          gpio.SPEED_HIGH,
          gpio.PULL_UP);
 
-      if USARTx'address = periphs.USART1_base then
-         alternate_function := gpio.GPIO_AF_USART1;
-      elsif USARTx'address = periphs.USART2_base then
-         alternate_function := gpio.GPIO_AF_USART2;
-      elsif USARTx'address = periphs.USART3_base then
-         alternate_function := gpio.GPIO_AF_USART3;
-      elsif USARTx'address = periphs.UART4_base then
-         alternate_function := gpio.GPIO_AF_UART4;
-      elsif USARTx'address = periphs.UART5_base then
-         alternate_function := gpio.GPIO_AF_UART5;
-      elsif USARTx'address = periphs.USART6_base then
-         alternate_function := gpio.GPIO_AF_USART6;
-      else
-         raise program_error;
-      end if;
-
-      gpio.set_alternate_function (TX_pin, alternate_function);
-      gpio.set_alternate_function (RX_pin, alternate_function);
+      -- Set 'alternate function'
+      gpio.set_af (TX_pin.port, TX_pin.pin, stm32f4.gpio.GPIO_AF_USART1);
+      gpio.set_af (RX_pin.port, TX_pin.pin, stm32f4.gpio.GPIO_AF_USART1);
 
       --
       -- Configure USART

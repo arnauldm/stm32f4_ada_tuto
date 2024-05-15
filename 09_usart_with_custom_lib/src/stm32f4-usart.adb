@@ -1,6 +1,6 @@
 with system; use system;
 with System.STM32; -- System package
-with stm32f4.periphs;
+with stm32f4.layout;
 with interfaces.stm32; use interfaces.stm32;
 
 package body stm32f4.usart
@@ -17,8 +17,8 @@ is
    begin
       -- Configuring the baud rate is a tricky part. See RM0090 p. 982-983
       -- for further informations
-      if USARTx.all'address = periphs.USART1_Base or
-         USARTx.all'address = periphs.USART6_Base
+      if USARTx.all'address = layout.USART1_BASE or
+         USARTx.all'address = layout.USART6_BASE
       then
          APB_clock   := System.STM32.System_Clocks.PCLK2;
       else

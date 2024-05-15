@@ -170,9 +170,6 @@ is
 
 
    procedure enable_gpio_clock
-     (GPIOx : aliased in gpio.t_GPIO_port);
-
-   procedure enable_gpio_clock
-     (pin   : gpio.t_GPIO_pin);
+     (port : in stm32f4.gpio.t_gpio_port_index);
 
 end stm32f4.rcc;
