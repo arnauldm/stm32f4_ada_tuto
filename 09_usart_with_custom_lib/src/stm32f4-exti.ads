@@ -5,7 +5,7 @@
 --
 
 package stm32f4.exti
-   with spark_mode => off
+   with spark_mode => on
 is
 
    subtype EXTI_line_index is natural range 0 .. 22;
@@ -112,7 +112,8 @@ is
       RTSR  : t_EXTI_RTSR;
       FTSR  : t_EXTI_FTSR;
       PR    : t_EXTI_PR;
-   end record;
+   end record
+      with volatile ;
 
    for t_EXTI_periph use record
       IMR   at 16#00# range 0 .. 31;

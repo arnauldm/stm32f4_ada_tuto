@@ -1,6 +1,6 @@
 
 package serial
-   with spark_mode => off
+   with spark_mode => on
 is
    enabled : boolean := false;
 

@@ -5,7 +5,7 @@ with stm32f4.gpio;
 --
 
 package stm32f4.rcc
-   with spark_mode => off
+   with spark_mode => on
 is
 
    type t_RCC_CR is record
@@ -159,7 +159,8 @@ is
       AHB1ENR  : t_RCC_AHB1ENR;
       APB1ENR  : t_RCC_APB1ENR;
       APB2ENR  : t_RCC_APB2ENR;
-   end record;
+   end record
+      with volatile;
 
    for t_RCC_periph use record
       CR       at 16#00# range 0 .. 31;

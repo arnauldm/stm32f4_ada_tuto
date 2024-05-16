@@ -3,7 +3,7 @@ with ada.unchecked_conversion;
 with interfaces;  use interfaces;
 
 package stm32f4
-   with spark_mode => off
+   with spark_mode => on
 is
 
    subtype byte  is unsigned_8;

@@ -4,7 +4,7 @@ with ada.interrupts;
 -- (see STM32F4xxx Cortex-M4 Programming Manual, p. 194-205)
 
 package stm32f4.nvic
-   with spark_mode => off
+   with spark_mode => on
 is
 
    -- Up to 81 interrupts (see Cortex-M4 prog. manual, p. 194)

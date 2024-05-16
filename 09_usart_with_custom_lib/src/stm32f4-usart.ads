@@ -156,7 +156,8 @@ is
       CR2   : t_USART_CR2;
       CR3   : t_USART_CR3;
       USART_GTPR  : word;
-   end record;
+   end record
+      with volatile;
 
    for t_USART_periph use record
       SR          at 16#00# range 0 .. 31;

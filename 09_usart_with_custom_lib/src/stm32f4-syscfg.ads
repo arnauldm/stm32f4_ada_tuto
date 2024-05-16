@@ -2,7 +2,7 @@
 -- Ref. : RM0090, p. 373-389
 --
 package stm32f4.syscfg
-   with spark_mode => off
+   with spark_mode => on
 is
 
    --
@@ -59,7 +59,8 @@ is
       EXTICR2 : t_SYSCFG_EXTICR2;
       EXTICR3 : t_SYSCFG_EXTICR3;
       EXTICR4 : t_SYSCFG_EXTICR4;
-   end record;
+   end record
+      with volatile;
 
    for t_SYSCFG_periph use record
       EXTICR1 at 16#08# range 0 .. 31;
