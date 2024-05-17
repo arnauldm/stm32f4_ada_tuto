@@ -4,10 +4,9 @@ with stm32f4.rcc;
 with stm32f4.syscfg;
 with stm32f4.exti;
 with stm32f4.nvic;
-with stm32f4.usart;
 
 package stm32f4.periphs
-   with spark_mode => off
+   with spark_mode => on
 is
 
    -----------------
@@ -15,40 +14,20 @@ is
    -----------------
 
    RCC      : aliased stm32f4.rcc.t_RCC_periph
-      with import,
-           address => stm32f4.layout.RCC_BASE;
+      with import, volatile, address => stm32f4.layout.RCC_BASE;
 
    SYSCFG   : aliased stm32f4.syscfg.t_SYSCFG_periph
-      with import, address => stm32f4.layout.SYSCFG_BASE;
+      with import, volatile, address => stm32f4.layout.SYSCFG_BASE;
 
    EXTI     : aliased stm32f4.exti.t_EXTI_periph
-      with import, address => stm32f4.layout.EXTI_BASE;
+      with import, volatile, address => stm32f4.layout.EXTI_BASE;
 
    NVIC     : aliased stm32f4.nvic.t_NVIC
-      with import, address => stm32f4.layout.NVIC_BASE;
-
-   USART1   : aliased stm32f4.usart.t_USART_periph
-      with import, address => stm32f4.layout.USART1_BASE;
-
-   USART2   : aliased stm32f4.usart.t_USART_periph
-      with import, address => stm32f4.layout.USART2_BASE;
-
-   USART3   : aliased stm32f4.usart.t_USART_periph
-      with import, address => stm32f4.layout.USART3_BASE;
-
-   UART4    : aliased stm32f4.usart.t_USART_periph
-      with import, address => stm32f4.layout.UART4_BASE;
-
-   UART5    : aliased stm32f4.usart.t_USART_periph
-      with import, address => stm32f4.layout.UART5_BASE;
-
-   USART6   : aliased stm32f4.usart.t_USART_periph
-      with import, address => stm32f4.layout.USART6_BASE;
+      with import, volatile, address => stm32f4.layout.NVIC_BASE;
 
    -----------------
    -- GPIO points --
    -----------------
-
 
    PA0   : constant t_gpio_point  := (GPIO_A, 0);
    PA4   : constant t_gpio_point  := (GPIO_A, 4);

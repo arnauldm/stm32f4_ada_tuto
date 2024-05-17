@@ -2,5 +2,5 @@
 package leds
    with spark_mode => on
 is
-   procedure initialize;
+   procedure init;
 end leds;

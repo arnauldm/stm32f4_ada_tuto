@@ -14,7 +14,7 @@ is
 
    BB : stm32f4.gpio.t_gpio_point renames stm32f4.periphs.BLUE_BUTTON;
 
-   procedure initialize is
+   procedure init is
       bb_exti_line : constant stm32f4.exti.EXTI_line_index :=
          stm32f4.exti.EXTI_line_index (BB.pin);
    begin
@@ -64,7 +64,7 @@ is
       -- Enable the Selected IRQ Channels
       stm32f4.nvic.enable_irq (stm32f4.nvic.EXTI_line_0);
 
-   end initialize;
+   end init;
 
 
    -----------------------

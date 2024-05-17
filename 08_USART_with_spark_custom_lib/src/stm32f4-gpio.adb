@@ -13,137 +13,125 @@ is
 
    -- Here we choose to use local accessors instead of
    -- a full switch case, in order to:
-   --   1) reduce the generated asm
-   --   2) avoid writting errors in switch/case write which
-   --      can't be detected through SPARK rules
+   --   1) reduce code size
+   --   2) reduce the generated asm and avoid performance overhead
+   --   3) copy/pasting code line might introduce errors not detected by SPARK!
+   --   4) increase readability
    GPIOx : constant array (t_gpio_port_index) of access t_GPIO_port :=
      (GPIOA'access, GPIOB'access, GPIOC'access, GPIOD'access, GPIOE'access);
 
 
    procedure set_mode
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       mode     : in  t_pin_mode)
    is
    begin
-      GPIOx(port).all.MODER.pin(pin)   := mode;
+      GPIOx(point.port).all.MODER.pin(point.pin)   := mode;
    end set_mode;
 
 
    procedure set_type
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       otype    : in  t_pin_output_type)
    is
    begin
-      GPIOx(port).all.OTYPER.pin(pin)   := otype;
+      GPIOx(point.port).all.OTYPER.pin(point.pin)  := otype;
    end set_type;
 
 
    procedure set_speed
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       ospeed   : in  t_pin_output_speed)
    is
    begin
-      GPIOx(port).all.OSPEEDR.pin(pin)  := ospeed;
+      GPIOx(point.port).all.OSPEEDR.pin(point.pin) := ospeed;
    end set_speed;
 
 
    procedure set_pupd
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       pupd     : in  t_pin_pupd)
    is
    begin
-      GPIOx(port).all.PUPDR.pin(pin)  := pupd;
+      GPIOx(point.port).all.PUPDR.pin(point.pin)   := pupd;
    end set_pupd;
 
 
    procedure set_bsr_r
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       bsr_r    : in  bit)
    is
    begin
-      GPIOx(port).all.BSRR.BR(pin) := bsr_r;
+      GPIOx(point.port).all.BSRR.BR(point.pin)  := bsr_r;
    end set_bsr_r;
 
 
    procedure set_bsr_s
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       bsr_s    : in  bit)
    is
    begin
-      GPIOx(port).all.BSRR.BS(pin) := bsr_s;
+      GPIOx(point.port).all.BSRR.BS(point.pin)  := bsr_s;
    end set_bsr_s;
 
 
    procedure set_lck
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       lck      : in  t_pin_lock)
    is
    begin
-      GPIOx(port).all.LCKR.pin(pin)  := lck;
+      GPIOx(point.port).all.LCKR.pin(point.pin) := lck;
    end set_lck;
 
 
    procedure set_af
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       af       : in  t_pin_alt_func)
    is
    begin
-      if pin < 8 then
-         GPIOx(port).all.AFRL.pin(pin)  := af;
+      if point.pin < 8 then
+         GPIOx(point.port).all.AFRL.pin(point.pin) := af;
       else
-         GPIOx(port).all.AFRH.pin(pin)  := af;
+         GPIOx(point.port).all.AFRH.pin(point.pin) := af;
       end if;
    end set_af;
 
 
    procedure write_pin
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
+     (point    : in  t_gpio_point;
       value    : in  bit)
    is
    begin
-      GPIOx(port).all.ODR.pin (pin) := value;
+      GPIOx(point.port).all.ODR.pin (point.pin) := value;
    end write_pin;
 
 
-   procedure read_pin
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      value    : out bit)
+   function read_pin (point : in  t_gpio_point)
+      return bit
    is
    begin
-      value := GPIOx(port).all.IDR.pin (pin);
+      return GPIOx(point.port).all.IDR.pin (point.pin);
    end read_pin;
 
 
    procedure turn_on (point : in t_gpio_point)
    is
    begin
-      write_pin (point.port, point.pin, 1);
+      write_pin (point, 1);
    end turn_on;
 
 
    procedure turn_off (point : in t_gpio_point)
    is
    begin
-      write_pin (point.port, point.pin, 0);
+      write_pin (point, 0);
    end turn_off;
 
 
    procedure toggle (point : in t_gpio_point)
    is
-      current : bit;
    begin
-      read_pin (point.port, point.pin, current);
-      write_pin (point.port, point.pin, not current);
+      write_pin (point, not read_pin (point));
    end toggle;
 
 
@@ -155,10 +143,10 @@ is
       pupd     : t_pin_pupd)
    is
    begin
-      set_mode (point.port, point.pin, mode);
-      set_type (point.port, point.pin, otype);
-      set_speed (point.port, point.pin, ospeed);
-      set_pupd (point.port, point.pin, pupd);
+      set_mode (point, mode);
+      set_type (point, otype);
+      set_speed (point, ospeed);
+      set_pupd (point, pupd);
    end configure;
 
 
@@ -168,8 +156,8 @@ is
       pupd     : t_pin_pupd)
    is
    begin
-      set_mode (point.port, point.pin, mode);
-      set_pupd (point.port, point.pin, pupd);
+      set_mode (point, mode);
+      set_pupd (point, pupd);
    end configure;
 
 

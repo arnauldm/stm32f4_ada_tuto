@@ -3,10 +3,10 @@ with stm32f4.gpio;
 with stm32f4.periphs;
 
 package body leds
-   with spark_mode => off
+   with spark_mode => on
 is
 
-   procedure initialize is
+   procedure init is
    begin
       -- The leds are on GPIOD pins. We have to enable GPIOD clock (see
       -- RM0090, p. 65,244)
@@ -31,6 +31,6 @@ is
       gpio.turn_off (periphs.LED_RED);
       gpio.turn_off (periphs.LED_ORANGE);
       gpio.turn_off (periphs.LED_BLUE);
-   end initialize;
+   end init;
 
 end leds;

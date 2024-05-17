@@ -4,7 +4,7 @@
 with System;
 
 package Last_Chance_Handler
-   with spark_mode => off
+   with spark_mode => on
 is
 
    procedure Last_Chance_Handler (File : System.Address; Line : Integer);

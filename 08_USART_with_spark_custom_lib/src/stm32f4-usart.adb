@@ -1,72 +1,89 @@
-with system; use system;
-with System.STM32; -- System package
-with stm32f4.layout;
 with interfaces.stm32; use interfaces.stm32;
 
 package body stm32f4.usart
-   with spark_mode => off
+   with spark_mode => on
 is
 
-   procedure set_baud
-     (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : interfaces.stm32.uint32)
+   procedure transmit
+     (usart : in out t_USART_peripheral;
+      data  : in     uint9)
    is
-      APB_clock   : interfaces.stm32.uint32;
-      mantissa    : interfaces.stm32.uint32;
-      fraction    : interfaces.stm32.uint32;
+      exit_cond : bit;
    begin
-      -- Configuring the baud rate is a tricky part. See RM0090 p. 982-983
-      -- for further informations
-      if USARTx.all'address = layout.USART1_BASE or
-         USARTx.all'address = layout.USART6_BASE
-      then
-         APB_clock   := System.STM32.System_Clocks.PCLK2;
-      else
-         APB_clock   := System.STM32.System_Clocks.PCLK1;
-      end if;
+      loop
+         exit_cond := usart.SR.TXE;
+         exit when exit_cond = 1;
+      end loop;
+      usart.DR := t_USART_DR (data);
+   end transmit;
 
-      mantissa    := APB_clock / (16 * baudrate);
-      fraction    := ((APB_clock * 25) / (4 * baudrate)) - mantissa * 100;
-      fraction    := (fraction * 16) / 100;
 
-      USARTx.BRR.DIV_Mantissa   := uint12 (mantissa);
-      USARTx.BRR.DIV_Fraction   := uint4  (fraction);
-   end set_baud;
+   procedure receive
+     (usart : in out t_USART_peripheral;
+      data  : out    uint9)
+   is
+      pragma unmodified (usart);
+      exit_cond : bit;
+   begin
+      loop
+         exit_cond := usart.SR.RXNE;
+         exit when exit_cond = 1;
+      end loop;
+      data := uint9 (usart.DR);
+   end receive;
 
 
    procedure configure
-     (USARTx   : stm32f4.usart.t_USART_periph_access;
-      baudrate : interfaces.stm32.uint32;
-      data     : t_data_len;
-      parity   : t_parity_select;
-      stop     : t_stop_bits)
+     (usartx   : in out t_USART_peripheral;
+      clock    : in     unsigned_32;
+      baudrate : in     unsigned_32;
+      data     : in     t_data_len;
+      parity   : in     t_parity_select;
+      stop     : in     t_stop_bits;
+      success  : out    boolean)
    is
+      mantissa : unsigned_32;
+      fraction : unsigned_32;
    begin
-      USARTx.CR1.UE     := 1;  -- USART enable
-      USARTx.CR1.TE     := 1; -- Transmitter enable
-      USARTx.CR1.RE     := 1; -- Transmitter enable
+      usartx.CR1.UE     := 1; -- USART enable
+      usartx.CR1.TE     := 1; -- Transmitter enable
+      usartx.CR1.RE     := 1; -- Receiver enable
 
-      usart.set_baud (USARTx, baudrate);
+      -- Configuring the baud rate
+      mantissa    := clock / (16 * baudrate);
+      fraction    := ((clock * 25) / (4 * baudrate)) - mantissa * 100;
+      fraction    := (fraction * 16) / 100;
+
+      if fraction > 16#F# or mantissa > 16#FFF# then
+         success := false;
+         return;
+      end if;
+
+      usartx.BRR.DIV_Mantissa   := uint12 (mantissa);
+      usartx.BRR.DIV_Fraction   := uint4  (fraction);
 
       -- Data length, stops bits
-      USARTx.CR1.M      := data;
-      USARTx.CR2.STOP   := stop;
+      usartx.CR1.M      := data;
+      usartx.CR2.STOP   := stop;
 
       -- Parity
       case parity is
-         when usart.PARITY_NONE =>
-            USARTx.CR1.PCE := 0; -- Parity control disable
-         when usart.PARITY_EVEN =>
-            USARTx.CR1.PCE := 1; -- Parity control enable
-            USARTx.CR1.PS  := EVEN;
-         when usart.PARITY_ODD  =>
-            USARTx.CR1.PCE := 1; -- Parity control enable
-            USARTx.CR1.PS  := ODD;
+         when PARITY_NONE =>
+            usartx.CR1.PCE := 0; -- Parity control disable
+         when PARITY_EVEN =>
+            usartx.CR1.PCE := 1; -- Parity control enable
+            usartx.CR1.PS  := EVEN;
+         when PARITY_ODD  =>
+            usartx.CR1.PCE := 1; -- Parity control enable
+            usartx.CR1.PS  := ODD;
       end case;
 
       -- No flow control
-      USARTx.CR3.RTSE := 0;
-      USARTx.CR3.CTSE := 0;
+      usartx.CR3.RTSE := 0;
+      usartx.CR3.CTSE := 0;
+
+      success := true;
    end configure;
+
 
 end stm32f4.usart;

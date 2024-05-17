@@ -1,18 +1,12 @@
 with stm32f4; use stm32f4;
-with stm32f4.periphs;
-with stm32f4.usart;
+with stm32f4.usart; use stm32f4.usart;
 with stm32f4.rcc;
-with stm32f4.gpio;
 
 package body serial
-   with spark_mode => off
+   with spark_mode => on
 is
 
-   USARTx   : stm32f4.usart.t_USART_periph renames periphs.USART1;
-   TX_pin   : constant stm32f4.gpio.t_gpio_point := periphs.USART1_TX;
-   RX_pin   : constant stm32f4.gpio.t_gpio_point := periphs.USART1_RX;
-
-   procedure initialize
+   procedure init
    is
    begin
 
@@ -24,7 +18,14 @@ is
       rcc.enable_gpio_clock (RX_pin.port);
 
       -- USART 1
-      periphs.RCC.APB2ENR.USART1EN  := true;
+      case usart_id is
+         when ID_USART1 => periphs.RCC.APB2ENR.USART1EN  := true;
+         when ID_USART2 => periphs.RCC.APB1ENR.USART2EN  := true;
+         when ID_USART3 => periphs.RCC.APB1ENR.USART3EN  := true;
+         when ID_UART4  => periphs.RCC.APB1ENR.UART4EN  := true;
+         when ID_UART5  => periphs.RCC.APB1ENR.UART5EN  := true;
+         when ID_USART6 => periphs.RCC.APB2ENR.USART6EN  := true;
+      end case;
 
       -- Configure TX pin
       gpio.configure
@@ -43,30 +44,40 @@ is
          gpio.PULL_UP);
 
       -- Set 'alternate function'
-      gpio.set_af (TX_pin.port, TX_pin.pin, stm32f4.gpio.GPIO_AF_USART1);
-      gpio.set_af (RX_pin.port, TX_pin.pin, stm32f4.gpio.GPIO_AF_USART1);
+      case usart_id is
+         when ID_USART1 =>
+            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART1);
+            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART1);
+         when ID_USART2 =>
+            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART2);
+            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART2);
+         when ID_USART3 =>
+            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART3);
+            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART3);
+         when ID_UART4  =>
+            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_UART4);
+            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_UART4);
+         when ID_UART5  =>
+            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_UART5);
+            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_UART5);
+         when ID_USART6 =>
+            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART6);
+            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART6);
+      end case;
 
       --
       -- Configure USART
       --
-      declare
-         use stm32f4.usart;
-      begin
-         usart.configure
-           (USARTx'access, 9600, DATA_9BITS, PARITY_ODD, STOP_1);
-      end;
+      usart.interfaces.configure
+        (usart_id, 9600, DATA_9BITS, PARITY_ODD, STOP_1, enabled);
 
-      ENABLED := true;
-   end initialize;
+   end init;
 
 
    procedure put (c : character)
    is
    begin
-      loop
-         exit when USARTx.SR.TC = 1;
-      end loop;
-      USARTx.DR.data := character'pos (c);
+      usart.interfaces.transmit (usart_id, character'pos (c));
    end put;
 
 

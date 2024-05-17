@@ -233,90 +233,11 @@ is
       AFRH        at 16#24# range 0 .. 31;
    end record;
 
-   ---------------
-   -- Utilities --
-   ---------------
-
-   -- set the GPIO mode (input, output, alternate, analog)
-   procedure set_mode
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      mode     : in  t_pin_mode)
-      with
-         global => null;
-
-   -- set the GPIO type (push-pull, open-drain)
-   procedure set_type
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      otype    : in  t_pin_output_type)
-      with
-         global => null;
-
-   -- set the GPIO speed, from low to very high speed
-   procedure set_speed
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      ospeed   : in  t_pin_output_speed)
-      with
-         global => null;
-
-   -- set the gpio pull mode (no pull, pull-up or pull-down mode)
-   procedure set_pupd
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      pupd     : in  t_pin_pupd)
-      with
-         global => null;
-
-   -- set the GPIO behavior on the output data register bit write action
-   -- (reset action)
-   procedure set_bsr_r
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      bsr_r    : in  bit)
-      with
-         global => null;
-
-   -- set the GPIO behavior on the output data register bit write action
-   -- (set action)
-   procedure set_bsr_s
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      bsr_s    : in  bit)
-      with
-         global => null;
-
-   -- lock the GPIO configuration
-   procedure set_lck
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      lck      : in  t_pin_lock)
-      with
-         global => null;
-
-   -- set the GPIO alternate function (see the SoC datasheet to get the
-   -- list of available alternate functions)
-   procedure set_af
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      af       : in  t_pin_alt_func)
-      with
-         global => null;
-
-   -- set the GPIO output value on GPIO in output mode
-   procedure write_pin
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      value    : in  bit);
-
-   -- set the GPIO input value on GPIO in input mode
-   procedure read_pin
-     (port     : in  t_gpio_port_index;
-      pin      : in  t_gpio_pin_index;
-      value    : out bit)
-      with
-         global => null;
+   -- Facility to help keep tracking of GPIO's
+   type t_gpio_point is record
+      port : t_gpio_port_index;
+      pin  : t_gpio_pin_index;
+   end record;
 
    -----------------
    -- Peripherals --
@@ -340,15 +261,81 @@ is
    GPIOE : aliased stm32f4.gpio.t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOE_BASE;
 
+   ---------------
+   -- Utilities --
+   ---------------
+
+   -- set the GPIO mode (input, output, alternate, analog)
+   procedure set_mode
+     (point    : in  t_gpio_point;
+      mode     : in  t_pin_mode)
+      with
+         global => null;
+
+   -- set the GPIO type (push-pull, open-drain)
+   procedure set_type
+     (point    : in  t_gpio_point;
+      otype    : in  t_pin_output_type)
+      with
+         global => null;
+
+   -- set the GPIO speed, from low to very high speed
+   procedure set_speed
+     (point    : in  t_gpio_point;
+      ospeed   : in  t_pin_output_speed)
+      with
+         global => null;
+
+   -- set the gpio pull mode (no pull, pull-up or pull-down mode)
+   procedure set_pupd
+     (point    : in  t_gpio_point;
+      pupd     : in  t_pin_pupd)
+      with
+         global => null;
+
+   -- set the GPIO behavior on the output data register bit write action
+   -- (reset action)
+   procedure set_bsr_r
+     (point    : in  t_gpio_point;
+      bsr_r    : in  bit)
+      with
+         global => null;
+
+   -- set the GPIO behavior on the output data register bit write action
+   -- (set action)
+   procedure set_bsr_s
+     (point    : in  t_gpio_point;
+      bsr_s    : in  bit)
+      with
+         global => null;
+
+   -- lock the GPIO configuration
+   procedure set_lck
+     (point    : in  t_gpio_point;
+      lck      : in  t_pin_lock)
+      with
+         global => null;
+
+   -- set the GPIO alternate function (see the SoC datasheet to get the
+   -- list of available alternate functions)
+   procedure set_af
+     (point    : in  t_gpio_point;
+      af       : in  t_pin_alt_func)
+      with
+         global => null;
+
+   -- set the GPIO output value on GPIO in output mode
+   procedure write_pin
+     (point    : in  t_gpio_point;
+      value    : in  bit);
+
+   -- set the GPIO input value on GPIO in input mode
+   function read_pin (point : in  t_gpio_point)
+      return bit;
+
    ----------------
    -- Facilities --
    ----------------
-
-   -- Facility to help keep tracking of GPIO's
-   type t_gpio_point is record
-      port : t_gpio_port_index;
-      pin  : t_gpio_pin_index;
-   end record;
 
    procedure turn_on  (point : in t_gpio_point);
    procedure turn_off (point : in t_gpio_point);

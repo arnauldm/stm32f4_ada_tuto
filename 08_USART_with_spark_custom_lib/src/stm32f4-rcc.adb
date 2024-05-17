@@ -2,7 +2,7 @@ with stm32f4.periphs;
 with stm32f4.gpio; use stm32f4.gpio;
 
 package body stm32f4.rcc
-   with spark_mode => off
+   with spark_mode => on
 is
 
    procedure enable_gpio_clock

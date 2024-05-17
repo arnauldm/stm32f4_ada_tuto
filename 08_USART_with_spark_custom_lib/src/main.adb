@@ -1,5 +1,3 @@
-with system;
-with ada.real_time; use ada.real_time;
 with last_chance_handler;  pragma unreferenced (last_chance_handler);
 
 with stm32f4; use stm32f4;
@@ -9,15 +7,12 @@ with stm32f4.periphs;
 with leds;
 with serial;
 with blue_button;
+with timer;
 
 
 procedure main
-   with spark_mode => off
+   with spark_mode => on
 is
-   pragma priority (system.priority'first);
-
-   period   : constant ada.real_time.time_span :=
-      ada.real_time.milliseconds (50);
 
    subtype small is natural range 0 .. 1000;
    counter : small := 0;
@@ -30,9 +25,9 @@ is
 
 begin
 
-   leds.initialize;
-   blue_button.initialize;
-   serial.initialize;
+   leds.init;
+   blue_button.init;
+   serial.init;
 
    serial.put ("-- Hello, world!");
    serial.new_line;
@@ -41,16 +36,15 @@ begin
    gpio.turn_off (periphs.LED_GREEN);
 
    loop
-      delay until ada.real_time.clock + period;
+      timer.wait (50);
       gpio.toggle (blink_led(current));
 
       if blue_button.has_been_pressed then
          gpio.turn_off (blink_led(current));
-         current := current + 1;
+         current := current + 1; -- The counter will overflow!
          gpio.turn_on (blink_led(current));
       end if;
 
-      -- Buggy! The counter will overflow
       serial.put ("small: " & integer'image(counter) & ASCII.CR);
       counter := counter + 1;
    end loop;
