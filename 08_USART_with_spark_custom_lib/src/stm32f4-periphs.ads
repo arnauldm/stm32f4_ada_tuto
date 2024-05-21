@@ -13,40 +13,31 @@ is
    -- Peripherals --
    -----------------
 
-   RCC      : aliased stm32f4.rcc.t_RCC_periph
-      with import, volatile, address => stm32f4.layout.RCC_BASE;
+   RCC      : stm32f4.rcc.t_RCC_periph
+      with import, async_writers, address => stm32f4.layout.RCC_BASE;
 
-   SYSCFG   : aliased stm32f4.syscfg.t_SYSCFG_periph
-      with import, volatile, address => stm32f4.layout.SYSCFG_BASE;
+   SYSCFG   : stm32f4.syscfg.t_SYSCFG_periph
+      with import, address => stm32f4.layout.SYSCFG_BASE;
 
-   EXTI     : aliased stm32f4.exti.t_EXTI_periph
-      with import, volatile, address => stm32f4.layout.EXTI_BASE;
+   EXTI     : stm32f4.exti.t_EXTI_periph
+      with import, address => stm32f4.layout.EXTI_BASE;
 
-   NVIC     : aliased stm32f4.nvic.t_NVIC
-      with import, volatile, address => stm32f4.layout.NVIC_BASE;
+   NVIC     : stm32f4.nvic.t_NVIC
+      with import, address => stm32f4.layout.NVIC_BASE;
 
    -----------------
    -- GPIO points --
    -----------------
 
    PA0   : constant t_gpio_point  := (GPIO_A, 0);
-   PA4   : constant t_gpio_point  := (GPIO_A, 4);
-   PA11  : constant t_gpio_point  := (GPIO_A, 11);
-   PA12  : constant t_gpio_point  := (GPIO_A, 12);
 
    PB6   : constant t_gpio_point  := (GPIO_B, 6);
    PB7   : constant t_gpio_point  := (GPIO_B, 7);
-   PB11   : constant t_gpio_point  := (GPIO_B, 11);
-   PB14   : constant t_gpio_point  := (GPIO_B, 14);
-   PB15   : constant t_gpio_point  := (GPIO_B, 15);
+   PB11  : constant t_gpio_point  := (GPIO_B, 11);
 
-   PC8   : constant t_gpio_point  := (GPIO_C, 8);
-   PC9   : constant t_gpio_point  := (GPIO_C, 9);
-   PC10   : constant t_gpio_point := (GPIO_C, 10);
-   PC11   : constant t_gpio_point := (GPIO_C, 11);
-   PC12   : constant t_gpio_point := (GPIO_C, 12);
+   PC6   : constant t_gpio_point  := (GPIO_C, 6);
+   PC7   : constant t_gpio_point  := (GPIO_C, 7);
 
-   PD2   : constant t_gpio_point  := (GPIO_D, 2);
    PD8   : constant t_gpio_point  := (GPIO_D, 8);
    PD12  : constant t_gpio_point  := (GPIO_D, 12);
    PD13  : constant t_gpio_point  := (GPIO_D, 13);
@@ -65,17 +56,16 @@ is
    BLUE_BUTTON : t_gpio_point renames PA0;
 
    ------------
-   -- USART1 --
+   -- USARTs --
    ------------
 
    USART1_TX   : t_gpio_point renames PB6;
    USART1_RX   : t_gpio_point renames PB7;
 
-   ------------
-   -- USART3 --
-   ------------
-
    USART3_TX   : t_gpio_point renames PD8;
    USART3_RX   : t_gpio_point renames PB11;
+
+   USART6_TX   : t_gpio_point renames PC6;
+   USART6_RX   : t_gpio_point renames PC7;
 
 end stm32f4.periphs;

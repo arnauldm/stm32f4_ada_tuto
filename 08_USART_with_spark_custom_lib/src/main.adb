@@ -3,6 +3,7 @@ with last_chance_handler;  pragma unreferenced (last_chance_handler);
 with stm32f4; use stm32f4;
 with stm32f4.gpio;
 with stm32f4.periphs;
+with stm32f4.usart.interfaces;
 
 with leds;
 with serial;
@@ -27,7 +28,7 @@ begin
 
    leds.init;
    blue_button.init;
-   serial.init;
+   serial.init (stm32f4.usart.interfaces.ID_USART1);
 
    serial.put ("-- Hello, world!");
    serial.new_line;

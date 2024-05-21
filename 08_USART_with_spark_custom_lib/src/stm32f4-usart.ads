@@ -233,21 +233,9 @@ is
       with
          import, volatile, address => stm32f4.layout.USART1_BASE;
 
-   USART2   : t_USART_peripheral
-      with
-         import, volatile, address => stm32f4.layout.USART2_BASE;
-
    USART3   : t_USART_peripheral
       with
          import, volatile, address => stm32f4.layout.USART3_BASE;
-
-   UART4   : t_USART_peripheral
-      with
-         import, volatile, address => stm32f4.layout.UART4_BASE;
-
-   UART5   : t_USART_peripheral
-      with
-         import, volatile, address => stm32f4.layout.UART5_BASE;
 
    USART6   : t_USART_peripheral
       with

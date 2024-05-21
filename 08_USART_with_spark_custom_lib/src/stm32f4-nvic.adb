@@ -1,7 +1,7 @@
 with stm32f4.periphs;
 
 package body stm32f4.nvic
-   with spark_mode => off
+   with spark_mode => on
 is
 
 
@@ -13,15 +13,32 @@ is
 
    procedure enable_irq (irq : interrupt) is
    begin
-      if irq in periphs.NVIC.ISER0.irq'range then
-         periphs.NVIC.ISER0.irq (irq) := IRQ_ENABLED;
-      elsif irq in periphs.NVIC.ISER1.irq'range then
-         periphs.NVIC.ISER1.irq (irq) := IRQ_ENABLED;
-      elsif irq in periphs.NVIC.ISER2.irq'range then
-         periphs.NVIC.ISER2.irq (irq) := IRQ_ENABLED;
-      else
-         raise program_error;
-      end if;
+      case irq is
+         when iser0_range =>
+            -- NOTE: Cumbersome but implied by SPARK verifications
+            declare
+               iser : t_irq_states (iser0_range) := periphs.NVIC.ISER0.irq;
+            begin
+               iser (irq) := IRQ_ENABLED;
+               periphs.NVIC.ISER0.irq := iser;
+            end;
+
+         when iser1_range =>
+            declare
+               iser : t_irq_states (iser1_range) := periphs.NVIC.ISER1.irq;
+            begin
+               iser (irq) := IRQ_ENABLED;
+               periphs.NVIC.ISER1.irq := iser;
+            end;
+
+         when iser2_range =>
+            declare
+               iser : t_irq_states (iser2_range) := periphs.NVIC.ISER2.irq;
+            begin
+               iser (irq) := IRQ_ENABLED;
+               periphs.NVIC.ISER2.irq := iser;
+            end;
+      end case;
    end enable_irq;
 
 

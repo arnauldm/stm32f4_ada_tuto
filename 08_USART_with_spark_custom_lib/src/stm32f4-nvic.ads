@@ -49,39 +49,33 @@ is
    -- Interrupt set-enable registers (NVIC_ISERx) --
    -------------------------------------------------
 
-   type t_interrupt is (IRQ_DISABLED, IRQ_ENABLED) with size => 1;
-   for t_interrupt use
+   type t_irq_state is (IRQ_DISABLED, IRQ_ENABLED) with size => 1;
+   for t_irq_state use
      (IRQ_DISABLED => 0,
       IRQ_ENABLED  => 1);
 
-   type t_interrupts is array (interrupt range <>) of t_interrupt
+   type t_irq_states is array (interrupt range <>) of t_irq_state
       with pack;
 
-   --
+   subtype iser0_range is interrupt range 0 .. 31;
+   subtype iser1_range is interrupt range 32 .. 63;
+   subtype iser2_range is interrupt range 64 .. 80;
+
    -- ISER0
-   --
-
-
    type t_NVIC_ISER0 is record
-      irq : t_interrupts(0..31);
+      irq : t_irq_states (iser0_range);
    end record
       with pack, size => 32, volatile_full_access;
 
-   --
    -- ISER1
-   --
-
    type t_NVIC_ISER1 is record
-      irq : t_interrupts(32..63);
+      irq : t_irq_states (iser1_range);
    end record
       with pack, size => 32, volatile_full_access;
 
-   --
    -- ISER2
-   --
-
    type t_NVIC_ISER2 is record
-      irq : t_interrupts(64..80);
+      irq : t_irq_states (iser2_range);
    end record
       with size => 32, volatile_full_access;
 

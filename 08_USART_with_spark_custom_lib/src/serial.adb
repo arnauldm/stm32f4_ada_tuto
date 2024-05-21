@@ -1,29 +1,45 @@
 with stm32f4; use stm32f4;
 with stm32f4.usart; use stm32f4.usart;
 with stm32f4.rcc;
+with stm32f4.periphs;
 
 package body serial
    with spark_mode => on
 is
 
    procedure init
+     (usartid : in stm32f4.usart.interfaces.t_usart_id)
    is
    begin
+
+      usart_id := usartid;
+
 
       --
       -- Enable clocks
       --
 
+      case usart_id is
+         when ID_USART1 =>
+            TX_pin := stm32f4.periphs.USART1_TX;
+            RX_pin := stm32f4.periphs.USART1_RX;
+
+         when ID_USART3 =>
+            TX_pin := stm32f4.periphs.USART3_TX;
+            RX_pin := stm32f4.periphs.USART3_RX;
+
+         when ID_USART6 =>
+            TX_pin := stm32f4.periphs.USART6_TX;
+            RX_pin := stm32f4.periphs.USART6_RX;
+      end case;
+
       rcc.enable_gpio_clock (TX_pin.port);
       rcc.enable_gpio_clock (RX_pin.port);
 
-      -- USART 1
+      -- USART
       case usart_id is
          when ID_USART1 => periphs.RCC.APB2ENR.USART1EN  := true;
-         when ID_USART2 => periphs.RCC.APB1ENR.USART2EN  := true;
          when ID_USART3 => periphs.RCC.APB1ENR.USART3EN  := true;
-         when ID_UART4  => periphs.RCC.APB1ENR.UART4EN  := true;
-         when ID_UART5  => periphs.RCC.APB1ENR.UART5EN  := true;
          when ID_USART6 => periphs.RCC.APB2ENR.USART6EN  := true;
       end case;
 
@@ -48,18 +64,9 @@ is
          when ID_USART1 =>
             gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART1);
             gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART1);
-         when ID_USART2 =>
-            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART2);
-            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART2);
          when ID_USART3 =>
             gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART3);
             gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART3);
-         when ID_UART4  =>
-            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_UART4);
-            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_UART4);
-         when ID_UART5  =>
-            gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_UART5);
-            gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_UART5);
          when ID_USART6 =>
             gpio.set_af (TX_pin, stm32f4.gpio.GPIO_AF_USART6);
             gpio.set_af (RX_pin, stm32f4.gpio.GPIO_AF_USART6);
