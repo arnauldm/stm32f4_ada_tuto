@@ -1,5 +1,5 @@
-with interfaces.stm32.rcc;
 with interfaces.stm32.gpio; use interfaces.stm32.gpio;
+with interfaces.stm32.rcc;
 with system.stm32;
 with ada.real_time; use ada.real_time;
 

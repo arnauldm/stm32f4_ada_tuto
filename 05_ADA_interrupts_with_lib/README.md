@@ -4,25 +4,26 @@
 That example is the same as `04_ADA_interrupts` but the code makes use of the
 `Ada_Driver_Library`.
 
-You'll note that every drivers related to the board are compiled!
+Every drivers related to the board are compiled, but only the necessary
+object files are included in the binary.
 
 # Note
 
-There's a nice Ada hack to light the leds one after each other.
-
 The array `blinking_leds` defines the array containing the leds we
-want to blink. Note that the index is defined like this:
+want to blink. That the index is a modular type, defined like this:
 
 	type index is mod 4;
 
-And the first led to blink is the first one:
+The first led to blink is the first element in the array:
 
 	current_led    : index   := blinking_leds'first;
 
-Then, the main loop blinks the next one:
+Then, after a delay, the main loop blinks the next led by incrementing the
+counter:
 
 	current_led := current_led + 1;
 
-We always increment `current_led`, even if it's the biggest possible value.
-It's possible because it's a modular type. 
+The code always increments `current_led`, even if it has reached the biggest
+index value. As the `index` type is modular, when `current_led` value is 3,
+it's still possible to increment the counter. The value "rewind" and is then 0.
 
