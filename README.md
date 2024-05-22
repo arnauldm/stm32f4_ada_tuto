@@ -43,3 +43,13 @@ and flash it with openocd:
 	make
 	make flash
 
+For further informations about how to program that board, you might need to read the
+datasheets and the manuals provided by ST micro:
+
+	https://www.st.com/en/microcontrollers-microprocessors/stm32f4-series/documentation.html
+
+The main reference manual for stm32f407 MCU can be found here:
+
+	https://www.st.com/resource/en/reference_manual/dm00031020-stm32f405-415-stm32f407-417-stm32f427-437-and-stm32f429-439-advanced-arm-based-32-bit-mcus-stmicroelectronics.pdf
+
+	
