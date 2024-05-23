@@ -27,6 +27,10 @@ is
 begin
 
    leds.init;
+   pragma Annotate (GNATprove, False_Positive,
+      "memory accessed through objects of access type* might not be initialized after elaboration of main program",
+      "leds.init uses GPIOs whose MMIO accesses don't need to be initialized");
+
    blue_button.init;
    serial.init (stm32f4.usart.interfaces.ID_USART1);
 
@@ -47,7 +51,7 @@ begin
       end if;
 
       serial.put ("small: " & integer'image(counter) & ASCII.CR);
-      counter := counter + 1;
+      counter := counter + 1; -- NOTE: BUG detected by gnatprove!!!
    end loop;
 
 end main;

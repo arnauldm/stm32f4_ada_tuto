@@ -229,6 +229,11 @@ is
       GTPR  at 16#18# range 0 .. 31;
    end record;
 
+   -- Disable some warnings when using gnatprove.
+   -- https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
+   pragma Warnings (Off, "is assumed to have no effects on other non-volatile objects");
+   pragma Warnings (Off, "assuming no concurrent accesses to non-atomic object");
+   pragma Warnings (Off, "assuming valid reads from object");
    USART1   : t_USART_peripheral
       with
          import, volatile, address => stm32f4.layout.USART1_BASE;
@@ -240,6 +245,8 @@ is
    USART6   : t_USART_peripheral
       with
          import, volatile, address => stm32f4.layout.USART6_BASE;
+
+   pragma Warnings (On);
 
    ---------------
    -- Utilities --

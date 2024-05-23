@@ -246,8 +246,14 @@ is
    -- Note: GPIOs are not declared in stm32f4-periphs.ads to avoid
    -- circular dependencies between packages
 
+   -- Disable some warnings when using gnatprove.
+   -- https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
+   pragma Warnings (Off, "is assumed to have no effects on other non-volatile objects");
+   pragma Warnings (Off, "assuming no concurrent accesses to non-atomic object");
+   pragma Warnings (Off, "assuming valid reads from object");
+
    GPIOA : aliased stm32f4.gpio.t_GPIO_port
-      with import, volatile, address => layout.GPIOA_BASE;
+      with import, volatile, address => stm32f4.layout.GPIOA_BASE;
 
    GPIOB : aliased stm32f4.gpio.t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOB_BASE;
@@ -260,6 +266,8 @@ is
 
    GPIOE : aliased stm32f4.gpio.t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOE_BASE;
+
+   pragma Warnings (On);
 
    ---------------
    -- Utilities --

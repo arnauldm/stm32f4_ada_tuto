@@ -13,6 +13,11 @@ is
       success  : out boolean)
    is
    begin
+
+      -- Disable some warnings when using gnatprove.
+      pragma Warnings (Off, "no returning annotation available for ""System_Clocks""");
+      pragma Warnings (Off, "no Global contract available for ""System_Clocks""");
+
       case usart_id is
          when ID_USART1 =>
             stm32f4.usart.configure
@@ -33,6 +38,7 @@ is
                baudrate, data, parity, stop, success);
       end case;
 
+      pragma Warnings (On);
    end configure;
 
 

@@ -13,17 +13,25 @@ is
    -- Peripherals --
    -----------------
 
+   -- Disable some warnings when using gnatprove.
+   -- https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
+   pragma Warnings (Off, "is assumed to have no effects on other non-volatile objects");
+   pragma Warnings (Off, "assuming no concurrent accesses to non-atomic object");
+   pragma Warnings (Off, "assuming valid reads from object");
+
    RCC      : stm32f4.rcc.t_RCC_periph
-      with import, async_writers, address => stm32f4.layout.RCC_BASE;
+      with import, volatile, address => stm32f4.layout.RCC_BASE;
 
    SYSCFG   : stm32f4.syscfg.t_SYSCFG_periph
-      with import, address => stm32f4.layout.SYSCFG_BASE;
+      with import, volatile, address => stm32f4.layout.SYSCFG_BASE;
 
    EXTI     : stm32f4.exti.t_EXTI_periph
-      with import, address => stm32f4.layout.EXTI_BASE;
+      with import, volatile, address => stm32f4.layout.EXTI_BASE;
 
    NVIC     : stm32f4.nvic.t_NVIC
-      with import, address => stm32f4.layout.NVIC_BASE;
+      with import, volatile, address => stm32f4.layout.NVIC_BASE;
+
+   pragma Warnings (On);
 
    -----------------
    -- GPIO points --
