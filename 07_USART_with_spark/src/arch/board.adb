@@ -8,7 +8,6 @@ package body board
 is
 
    procedure init
-      with spark_mode => off
    is
    begin
 
