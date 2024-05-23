@@ -12,11 +12,22 @@ begin
 
    board.init;
 
+   -- Annotation for gnatprove
+   pragma Annotate (GNATprove, False_Positive,
+      "* might not be initialized after elaboration of main program",
+      "components uses MMIO accesses which don't need to be initialized");
+
    loop
 
       timer.wait (200);
 
       board.toggle_green_led;
+
+      -- Annotation for gnatprove
+      pragma Annotate (GNATprove, False_Positive,
+         "* might not be initialized after elaboration of main program",
+         "components uses MMIO accesses which don't need to be initialized");
+
       board.put ("[" & integer'image(counter) & "]  hello, world!" & ASCII.CR);
 
       -- Buggy! The counter will overflow

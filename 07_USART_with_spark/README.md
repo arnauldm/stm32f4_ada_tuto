@@ -1,6 +1,8 @@
 
 # Description
 
+Important note! You should use gnatprove_12.1.1 !
+
 That code makes use of SPARK. To launch the prover, just execute the following:
 
 	make prove
