@@ -11,8 +11,7 @@ your PATH. Read the main `Readme.md` file for some more informations.
 
 You should see the led blinking (which is not very much impressive, btw).
 
-
-## 2.1 Notes
+## 2.1 Note about Ada packages
 
 Those Ada *packages* used by `blink.adb` are provided by the GNAT compiler:
 
@@ -27,8 +26,23 @@ For example, `system.stm32` package is in
 File `blink.gpr` uses *embedded-stm32f4* runtime, which includes about 844
 packages.
 
+## 2.2 Coding style
 
-# 3. To debug the program
+You'll notice that I don't use at all the Camel case. I personnally find programs
+with such a casing unreadables!
+
+
+# 3. Exercise
+
+The current binary blinks 2 leds. Modify the main procedure so that it
+blinks the 4 leds one after the other.
+
+Hint: The leds specification is defined on the stm32f407vg datasheet, available here:
+
+	https://www.st.com/resource/en/user_manual/um1472-discovery-kit-with-stm32f407vg-mcu-stmicroelectronics.pdf
+
+
+# 4. To debug the program
 
 For further informations: https://openocd.org/doc/html/GDB-and-OpenOCD.html
 

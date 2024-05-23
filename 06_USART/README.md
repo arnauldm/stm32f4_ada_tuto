@@ -72,3 +72,7 @@ blinks some leds and print a message on the USART:
 
 	>>> exception at main.adb line 48
 
+# 5. Exercise
+
+Modify the program so that it doesn't trigger an exception anymore.
+
