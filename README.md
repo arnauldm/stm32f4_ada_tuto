@@ -1,6 +1,6 @@
-# stm32f4 - Ada bare metal programming tuto 
+# stm32f4xx - Ada/SPARK bare metal programming tutorial
 
-Simple examples to program STM32F407 board in Ada
+Simple examples to program STM32F407 board in Ada/SPARK
 
 
 - `01_blink_led`, classical "blinky" example in C
