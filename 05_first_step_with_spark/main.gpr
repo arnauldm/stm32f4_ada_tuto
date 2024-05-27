@@ -17,12 +17,17 @@ project Main is
 
    package Compiler is
       for Default_Switches ("ada") use
-        ("-O0",
+        ("-O2",
          "-g",
          "-fstack-usage",
-         "-gnatwa",     -- Turn on all info/warnings
-         "-gnatwI",     -- Turn off warnings for implementation unit
-         "-gnatw.X");   -- Turn off warnings for "No_Exception_Propagation"
+         "-gnatwa",  -- Turn on all info/warnings
+         "-gnatwe",  -- Treat all warnings as errors
+         "-gnatRs",  -- Represantation clauses in files
+         "-gnato",   -- Turn on all checks
+         "-gnatVa",  -- Turn on all validity checks
+         "-gnatwI",  -- Turn off warnings for implementation unit
+         "-gnatw.X", -- Turn off warnings for "No_Exception_Propagation"
+         "-gnata");  -- Enable pragma Assert | Debug
    end Compiler;
 
    package Builder is
