@@ -21,15 +21,15 @@ Those Ada *packages* used by `blink.adb` are provided by the GNAT compiler:
 
 Their content is available in `gnat_arm_elf/arm-eabi/lib/gnat` directory.
 For example, `system.stm32` package is in
-`gnat_arm_elf/arm-eabi/lib/gnat/embedded-stm32f4/gnat/s-stm32.ad{s,b}`.
+`gnat_arm_elf/arm-eabi/lib/gnat/light-tasking-stm32f4/gnat/s-stm32.ad{s,b}`.
 
-File `blink.gpr` uses *embedded-stm32f4* runtime, which includes about 844
+File `blink.gpr` uses *light-tasking-stm32f4* runtime, which includes about 400
 packages.
 
 ## 2.2 Coding style
 
-You'll notice that I don't use at all the Camel case. I personnally find programs
-with such a casing unreadables!
+Ada legit coding style is to use Camel case. You'll notice that I don't use it
+at all as I find programs with such a casing unreadables!
 
 
 # 3. Exercise
