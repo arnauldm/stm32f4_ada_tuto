@@ -16,7 +16,7 @@ is a *modular* type:
 
 Operations on modular integers use modular (wraparound) arithmetic.
 For more info about modulars:
-[https://learn.adacore.com/courses/advanced-ada/parts/data_types/numerics.html#modular-types]
+https://learn.adacore.com/courses/advanced-ada/parts/data_types/numerics.html#modular-types
 
 The first led to blink is the first element in the array:
 
