@@ -21,7 +21,7 @@ is
    blink_led : constant array (led_index) of stm32f4.gpio.t_gpio_point :=
      (periphs.LED_GREEN, periphs.LED_RED);
 
-   led : led_index := blink_led'first;
+   current_led : led_index := blink_led'first;
 
 begin
 
@@ -41,12 +41,12 @@ begin
 
    loop
       timer.wait (50);
-      gpio.toggle (blink_led(led));
+      gpio.toggle (blink_led (current_led));
 
       if blue_button.has_been_pressed then
-         gpio.turn_off (blink_led(led));
-         led := led + 1; -- Blink next led
-         gpio.turn_on (blink_led(led));
+         gpio.turn_off (blink_led (current_led));
+         current_led := current_led + 1; -- Blink next led
+         gpio.turn_on (blink_led (current_led));
       end if;
 
       serial.put ("small: " & integer'image(counter) & ASCII.CR);

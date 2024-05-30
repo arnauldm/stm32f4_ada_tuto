@@ -1,18 +1,23 @@
 
 # Description
 
-That example is the same as `04_ADA_interrupts` but the code makes use of the
+Same example as `02_interrupts` but the code here makes use of the
 `Ada_Driver_Library`.
 
-Every drivers related to the board are compiled, but only the necessary
-object files are included in the binary.
+You'll notice that every drivers related to the board are compiled.
+However, only the necessary object files are included in the binary.
 
 # Note
 
-The array `blinking_leds` defines the array containing the leds we
-want to blink. That the index is a modular type, defined like this:
+The array `blinking_leds` contains the leds we want to blink. The array index
+is a *modular* type:
 
 	type index is mod 4;
+
+Operations on modular integers use modular (wraparound) arithmetic.
+For more info about modulars:
+
+	https://learn.adacore.com/courses/advanced-ada/parts/data_types/numerics.html#modular-types
 
 The first led to blink is the first element in the array:
 
@@ -25,5 +30,6 @@ counter:
 
 The code always increments `current_led`, even if it has reached the biggest
 index value. As the `index` type is modular, when `current_led` value is 3,
-it's still possible to increment the counter. The value "rewind" and is then 0.
+it's still possible to increment the counter. The value wraps around and
+becomes 0.
 
