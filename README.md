@@ -64,6 +64,8 @@ and flash it with openocd:
 
 ## See also
 
+### STM32F4 Discovery
+
 For further informations about how to program that board, you might need to read the
 datasheets and the manuals provided by ST micro:
 
@@ -73,4 +75,12 @@ The main reference manual for stm32f407 MCU can be found here:
 
 	https://www.st.com/resource/en/reference_manual/dm00031020-stm32f405-415-stm32f407-417-stm32f427-437-and-stm32f429-439-advanced-arm-based-32-bit-mcus-stmicroelectronics.pdf
 
+### Ada/SPARK
+
+A lot of useful resources exist to learn Ada/SPARK. My favorite are:
+
+- https://learn.adacore.com/
+- http://www.pchapin.org/Ada/AdaCrash.pdf
+- https://en.wikibooks.org/wiki/Ada_Programming
+- https://github.com/ohenley/awesome-ada
 
