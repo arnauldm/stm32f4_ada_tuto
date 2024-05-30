@@ -243,15 +243,19 @@ is
    -- Peripherals --
    -----------------
 
-   -- Note: GPIOs are not declared in stm32f4-periphs.ads to avoid
-   -- circular dependencies between packages
-
    -- Disable some warnings when using gnatprove.
-   -- https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
-   -- GNATprove warns us because he assumes that:
+   --
+   -- The code uses `with address => ...` clauses which permit aliasing (even
+   -- if the code in src/ doesn't use such aliasing). Thus, GNATprove warns us
+   -- because he assumes that:
+   --
    -- - as the variable is not atomic, it is not accessed concurrently
+   --
    -- - no write through potential aliases can lead to reading an invalid value
    --   for the variable.
+   --
+   -- As a consequence, we have to manually check those assumptions.
+   -- See also: https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
 
    pragma Warnings (Off, "is assumed to have no effects on other non-volatile objects");
    pragma Warnings (Off, "assuming no concurrent accesses to non-atomic object");

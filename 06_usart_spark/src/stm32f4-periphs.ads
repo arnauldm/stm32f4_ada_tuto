@@ -13,8 +13,13 @@ is
    -- Peripherals --
    -----------------
 
+   -- Note: GPIOs are not declared here to avoid circular dependencies
+   -- between packages
+
    -- Disable some warnings when using gnatprove.
    -- https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
+   -- See also comments in stm32f4-gpio.ads
+
    pragma Warnings (Off, "is assumed to have no effects on other non-volatile objects");
    pragma Warnings (Off, "assuming no concurrent accesses to non-atomic object");
    pragma Warnings (Off, "assuming valid reads from object");
