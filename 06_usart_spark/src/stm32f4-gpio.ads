@@ -248,9 +248,15 @@ is
 
    -- Disable some warnings when using gnatprove.
    -- https://github.com/AdaCore/spark2014/blob/master/share/spark/explain_codes/E0012.md
+   -- GNATprove warns us because he assumes that:
+   -- - as the variable is not atomic, it is not accessed concurrently
+   -- - no write through potential aliases can lead to reading an invalid value
+   --   for the variable.
+
    pragma Warnings (Off, "is assumed to have no effects on other non-volatile objects");
    pragma Warnings (Off, "assuming no concurrent accesses to non-atomic object");
    pragma Warnings (Off, "assuming valid reads from object");
+
 
    GPIOA : aliased stm32f4.gpio.t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOA_BASE;

@@ -40,4 +40,3 @@ can launche `gnatprove` with `--report=all`:
 As in the previous example, the prover succesfully detect the
 *integer overflow* in main.adb:34.
 
-

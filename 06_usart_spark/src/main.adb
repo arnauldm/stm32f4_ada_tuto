@@ -15,14 +15,13 @@ procedure main
    with spark_mode => on
 is
 
-   subtype small is natural range 0 .. 1000;
-   counter : small := 0;
+   counter : natural := 0; -- Could have written "natural'first" instead of 0
 
    type led_index is mod 2;
    blink_led : constant array (led_index) of stm32f4.gpio.t_gpio_point :=
      (periphs.LED_GREEN, periphs.LED_RED);
 
-   current : led_index := blink_led'first;
+   led : led_index := blink_led'first;
 
 begin
 
@@ -42,16 +41,22 @@ begin
 
    loop
       timer.wait (50);
-      gpio.toggle (blink_led(current));
+      gpio.toggle (blink_led(led));
 
       if blue_button.has_been_pressed then
-         gpio.turn_off (blink_led(current));
-         current := current + 1; -- The counter will overflow!
-         gpio.turn_on (blink_led(current));
+         gpio.turn_off (blink_led(led));
+         led := led + 1; -- Blink next led
+         gpio.turn_on (blink_led(led));
       end if;
 
       serial.put ("small: " & integer'image(counter) & ASCII.CR);
-      counter := counter + 1; -- NOTE: BUG detected by gnatprove!!!
+      if counter < natural'last then
+         counter := counter + 1;
+      else
+         serial.put ("One turn!" & ASCII.CR);
+         counter := natural'first;
+      end if;
    end loop;
 
 end main;
+

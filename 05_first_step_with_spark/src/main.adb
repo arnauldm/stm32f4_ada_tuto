@@ -21,13 +21,16 @@ begin
 
       timer.wait (200);
 
+      -- Blink the green led
       board.toggle_green_led;
 
-      -- Annotation for gnatprove
+      -- That annotation for gnatprove suppress the warning message (1st quote)
+      -- and give a reason (2nd quote)
       pragma Annotate (GNATprove, False_Positive,
          "* might not be initialized after elaboration of main program",
          "components uses MMIO accesses which don't need to be initialized");
 
+      -- Display a message on the USART
       board.put ("[" & integer'image(counter) & "]  hello, world!" & ASCII.CR);
 
       -- Buggy! The counter will overflow
