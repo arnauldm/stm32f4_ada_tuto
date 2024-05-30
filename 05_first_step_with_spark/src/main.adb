@@ -12,7 +12,8 @@ begin
 
    board.init;
 
-   -- Annotation for gnatprove
+   -- That annotation for gnatprove suppress the warning message (1st quote)
+   -- and gives an explanation (2nd quote)
    pragma Annotate (GNATprove, False_Positive,
       "* might not be initialized after elaboration of main program",
       "components uses MMIO accesses which don't need to be initialized");
@@ -24,8 +25,6 @@ begin
       -- Blink the green led
       board.toggle_green_led;
 
-      -- That annotation for gnatprove suppress the warning message (1st quote)
-      -- and give a reason (2nd quote)
       pragma Annotate (GNATprove, False_Positive,
          "* might not be initialized after elaboration of main program",
          "components uses MMIO accesses which don't need to be initialized");

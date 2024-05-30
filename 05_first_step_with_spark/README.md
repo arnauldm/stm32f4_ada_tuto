@@ -37,9 +37,6 @@ The components provided by the Ada_Driver_Library can't be included
 in the proof. Thus, I had to slightly change the way the "unproved" functions
 are called by the main procedure.
 
-They are some messages about potentially initialized variables. They can be
-ignored.
-
 The prover successfully detect an *integer overflow*:
 
 	main.adb:34:26: medium: range check might fail, cannot prove upper bound for counter + 1
