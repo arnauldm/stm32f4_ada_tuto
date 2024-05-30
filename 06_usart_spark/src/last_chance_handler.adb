@@ -1,12 +1,10 @@
-with ada.unchecked_conversion;
-
 with stm32f4;           use stm32f4;
 with stm32f4.gpio;      use stm32f4.gpio;
 with stm32f4.periphs;   use stm32f4.periphs;
 with serial;
 
 package body last_chance_handler
-   with spark_mode => off
+   with spark_mode => on
 is
 
    procedure put (ptr : system.address);
@@ -17,13 +15,14 @@ is
 
    procedure put (ptr : system.address) is
 
-      type c_string_ptr is access all string (positive)
-         with storage_size => 0, size => standard'address_size;
+      pragma warnings (off, "indirect writes * through a potential alias are ignored");
+      pragma warnings (off, "is assumed to have no effects on other non-volatile objects");
+      pragma warnings (off, "assuming no concurrent accesses to non-atomic object");
+      pragma warnings (off, "assuming valid reads from object");
 
-      function as_c_string_ptr is new ada.unchecked_conversion
-        (system.address, c_string_ptr);
+      msg_str : array (natural) of character with import, address => ptr;
 
-      msg_str : constant c_string_ptr := as_c_string_ptr (ptr);
+      pragma warnings (on);
 
    begin
       for j in msg_str'range loop
