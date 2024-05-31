@@ -113,7 +113,7 @@ And then, on a shell launch:
 
 	minicom -D /dev/ttyUSB0 -b 9600
 
-Note: read [[04_usart/README]] for the full explanation.
+Note: read [04_usart/README.md](04_usart/README.md) for the full explanation.
 
 ## Debugging with gdb
 
