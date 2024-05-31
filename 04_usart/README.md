@@ -39,7 +39,7 @@ And then, on a shell launch:
 Note: serial port should be set to `9600 8N1`.
 
 
-# 4. Debugging
+# 4. Debugging with gdb
 
 For further informations: https://openocd.org/doc/html/GDB-and-OpenOCD.html
 

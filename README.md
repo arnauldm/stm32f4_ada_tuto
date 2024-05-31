@@ -93,9 +93,41 @@ Note that you'll probably have to adjust your PATH:
 
 ## Compile
 
-To run each example, connect the stm32f407 discovery board, compile the firmware
-and flash it with openocd:
+To run each example, connect the stm32f407 discovery board, compile the
+firmware and flash it with openocd:
 
 	make
 	make flash
+
+## Minicom
+
+The example `04_usart/` makes use of the USART, allowing us to connect a
+console and to get some messages from the firmware.
+
+Connect USB/TTL like this:
+
+	USB/TTL RX pin <-> PB6
+	USB/TTL TX pin <-> PB7
+
+And then, on a shell launch:
+
+	minicom -D /dev/ttyUSB0 -b 9600
+
+Note: read [04_usart/README] for the full explanation.
+
+## Debugging with gdb
+
+In a term, launch `openocd`:
+
+	openocd -f /usr/share/openocd/scripts/board/stm32f4discovery.cfg
+
+Then, launch the debugger in another term with the following commands:
+
+	arm-eabi-gdb
+	> target extended-remote 127.0.0.1:3333
+	> mon reset halt
+	> load build/main.elf
+	> symbol-file build/main.elf
+	> b _ada_main
+	> c
 

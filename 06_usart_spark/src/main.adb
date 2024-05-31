@@ -49,7 +49,7 @@ begin
          gpio.turn_on (blink_led (current_led));
       end if;
 
-      serial.put ("small: " & integer'image(counter) & ASCII.CR);
+      serial.put ("counter: " & integer'image(counter) & ASCII.CR);
       if counter < natural'last then
          counter := counter + 1;
       else
