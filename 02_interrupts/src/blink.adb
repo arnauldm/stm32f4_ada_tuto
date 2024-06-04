@@ -1,5 +1,5 @@
 with interfaces.STM32.RCC;
-with interfaces.STM32.GPIO; 
+with interfaces.STM32.GPIO;
 with system.STM32;
 with ada.real_time; use ada.real_time;
 
@@ -33,9 +33,9 @@ begin
    interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (LED_GREEN) := 0;
    interfaces.STM32.GPIO.GPIOD_Periph.ODR.ODR.arr (LED_RED) := 0;
 
-   ---------------------- 
+   ----------------------
    -- Init user button --
-   ---------------------- 
+   ----------------------
 
    blue_button.initialize;
 

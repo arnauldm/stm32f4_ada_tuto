@@ -19,7 +19,8 @@ project Blink extends "../Ada_Drivers_Library/examples/shared/common/common.gpr"
          "-gnatRs",  -- Represantation clauses in files
          "-gnato",   -- Turn on all checks
          "-gnatVa",  -- Turn on all validity checks
-         "-gnata");  -- Enable pragma Assert | Debug
+         "-gnata",   -- Enable pragma Assert | Debug
+         "-gnatw.X");-- Disable warnings for No_Exception_Propagation
    end Compiler;
 
    package Builder is

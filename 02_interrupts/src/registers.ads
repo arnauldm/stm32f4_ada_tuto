@@ -2,19 +2,19 @@ with system;
 
 package registers is
 
-   type bit is range 0 .. 1;
-   for bit'size use 1;
+   type bit is range 0 .. 1
+      with size => 1;
 
    type bits_32 is array (0 .. 31) of bit
       with pack, size => 32;
 
    type EXTI_register is record
-      IMR   : bits_32;
-      EMR   : bits_32;
-      RTSR  : bits_32;
-      FTSR  : bits_32;
-      SWIER : bits_32;
-      PR    : bits_32;
+      IMR   : bits_32;  -- Interrupt mask register
+      EMR   : bits_32;  -- Event mask register
+      RTSR  : bits_32;  -- Rising trigger selection register
+      FTSR  : bits_32;  -- Falling trigger selection register
+      SWIER : bits_32;  -- Software interrupt event register
+      PR    : bits_32;  -- Pending register
    end record;
 
    for EXTI_register use record

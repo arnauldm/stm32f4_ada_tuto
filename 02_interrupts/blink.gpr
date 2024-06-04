@@ -17,7 +17,9 @@ project Blink is
          "-gnato",   -- Turn on all checks
          "-gnatVa",  -- Turn on all validity checks
          "-gnata",   -- Enable pragma Assert | Debug
-         "-gnatwI"); -- Turn off warnings for implementation unit
+         "-gnatwI",  -- Turn off warnings for implementation unit
+         "-gnatw.X"  -- Disable warnings for No_Exception_Propagation
+         );
 
    end Compiler;
 
