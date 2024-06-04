@@ -29,9 +29,12 @@ package body blue_button is
       interfaces.STM32.GPIO.GPIOA_Periph.OSPEEDR.arr (user_button)
          := System.STM32.Speed_100MHz;
 
-      -- Select PA for EXTI0
-      interfaces.STM32.SYSCFG.SYSCFG_Periph.EXTICR1.EXTI.arr (user_button)
-         := 2#0000#;
+      -- The system configuration controller manages the external interrupt
+      -- line connection to the GPIOs (cf. STM32F4xx RM0090 Reference Manual).
+      -- EXTICR1 is an array of 4 external interrupts (from EXTI0 to EXTI3):
+      --    - index 0 selects EXTI0
+      --    - the value 2#0000#, on 4 bits, selects GPIO port A.
+      interfaces.STM32.SYSCFG.SYSCFG_Periph.EXTICR1.EXTI.arr (0) := 2#0000#;
 
       -- Unmask interrupts
       registers.EXTI.IMR (0) := 1;

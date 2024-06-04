@@ -30,25 +30,25 @@ procedure blink is
    period      : constant ada.real_time.time_span := ada.real_time.milliseconds (500);
 begin
 
-   -- Enable gpiod periph clock
+   -- Enable GPIOD periph clock
+   interfaces.stm32.rcc.RCC_periph.AHB1ENR.GPIODEN := 1;
 
-   interfaces.stm32.rcc.rcc_periph.ahb1enr.gpioden := 1;
-
-   -- Set GPIOD pins to output mode
-
-   interfaces.stm32.gpio.gpiod_periph.moder.arr (GREEN_LED) := system.stm32.mode_out;
-   interfaces.stm32.gpio.gpiod_periph.moder.arr (RED_LED)   := system.stm32.mode_out;
+   -- Set GPIOD pins to output mode by setting the GPIO port mode register
+   -- (MODER)
+   interfaces.stm32.gpio.GPIOD_periph.MODER.arr (GREEN_LED) := system.stm32.mode_out;
+   interfaces.stm32.gpio.GPIOD_periph.MODER.arr (RED_LED)   := system.stm32.mode_out;
 
    loop
-      -- Led on / off
-      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (GREEN_LED)  := 1;
-      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (RED_LED)    := 0;
+      -- Blink leds on and off by setting bits in the GPIO output data
+      -- register (ODR)
+      interfaces.stm32.gpio.GPIOD_periph.ODR.odr.arr (GREEN_LED)  := 1;
+      interfaces.stm32.gpio.GPIOD_periph.ODR.odr.arr (RED_LED)    := 0;
 
       delay until ada.real_time.clock + period;
 
       -- Led on / off
-      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (GREEN_LED)  := 0;
-      interfaces.stm32.gpio.gpiod_periph.odr.odr.arr (RED_LED)    := 1;
+      interfaces.stm32.gpio.GPIOD_periph.ODR.odr.arr (GREEN_LED)  := 0;
+      interfaces.stm32.gpio.GPIOD_periph.ODR.odr.arr (RED_LED)    := 1;
 
       delay until ada.real_time.clock + period;
 
