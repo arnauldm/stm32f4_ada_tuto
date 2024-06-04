@@ -5,11 +5,19 @@
 ------------------------------------------------------------------------------
 
 
--- The following included packages describe some registers and peripherals
--- common to STM32F4 socs. The file i-stm32-gpio.ads, i-stm32-rcc.ads and
--- s-stm32.ads are packed with the compiler. See:
---   gnat_arm_elf_{version}/arm-eabi/lib/gnat/light-tasking-stm32f4/gnat/
-
+-- The following packages describe some registers and peripherals common to
+-- the STM32F4 socs.
+-- Note:
+--   1. The underlying hardware interface is included via the `blink.gpr`
+--       file:
+--
+--          for Runtime ("Ada") use "light-tasking-stm32f4";
+--
+--   2. The files i-stm32-gpio.ads, i-stm32-rcc.ads and s-stm32.ads are packed
+--      with the compiler. They can be found in:
+--
+--          gnat_arm_elf/arm-eabi/lib/gnat/light-tasking-stm32f4/gnat/
+--
 with interfaces.stm32.gpio;
 with interfaces.stm32.rcc;
 with system.stm32;
