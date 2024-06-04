@@ -25,8 +25,8 @@ with system.stm32;
 with ada.real_time; use ada.real_time;
 
 procedure blink is
-   GREEN_LED   : constant := 12; -- Green led is on pin 12 of port D
-   RED_LED     : constant := 14; -- Red led is on pin 14
+   GREEN_LED   : constant := 12; -- Green led is on pin 12 of GPIO port D
+   RED_LED     : constant := 14; -- Red led is on pin 14 of GPIO port D
    period      : constant ada.real_time.time_span := ada.real_time.milliseconds (500);
 begin
 
@@ -34,7 +34,7 @@ begin
 
    interfaces.stm32.rcc.rcc_periph.ahb1enr.gpioden := 1;
 
-   -- Set gpiod pins to output mode
+   -- Set GPIOD pins to output mode
 
    interfaces.stm32.gpio.gpiod_periph.moder.arr (GREEN_LED) := system.stm32.mode_out;
    interfaces.stm32.gpio.gpiod_periph.moder.arr (RED_LED)   := system.stm32.mode_out;
