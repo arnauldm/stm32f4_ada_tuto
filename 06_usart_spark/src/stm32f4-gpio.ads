@@ -250,7 +250,7 @@ is
    -- because he assumes that:
    --
    -- - as the variable is not atomic, it is not accessed concurrently
-   --
+--
    -- - no write through potential aliases can lead to reading an invalid value
    --   for the variable.
    --
@@ -262,19 +262,19 @@ is
    pragma Warnings (Off, "assuming valid reads from object");
 
 
-   GPIOA : aliased stm32f4.gpio.t_GPIO_port
+   GPIOA : aliased t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOA_BASE;
 
-   GPIOB : aliased stm32f4.gpio.t_GPIO_port
+   GPIOB : aliased t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOB_BASE;
 
-   GPIOC : aliased stm32f4.gpio.t_GPIO_port
+   GPIOC : aliased t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOC_BASE;
 
-   GPIOD : aliased stm32f4.gpio.t_GPIO_port
+   GPIOD : aliased t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOD_BASE;
 
-   GPIOE : aliased stm32f4.gpio.t_GPIO_port
+   GPIOE : aliased t_GPIO_port
       with import, volatile, address => stm32f4.layout.GPIOE_BASE;
 
    pragma Warnings (On);
