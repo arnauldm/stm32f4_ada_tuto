@@ -1,5 +1,3 @@
-with ada.interrupts;
-
 -- Nested vectored interrupt controller (NVIC)
 -- (see STM32F4xxx Cortex-M4 Programming Manual, p. 194-205)
 
@@ -8,7 +6,7 @@ package stm32f4.nvic
 is
 
    -- Up to 81 interrupts (see Cortex-M4 prog. manual, p. 194)
-   type interrupt is new ada.interrupts.interrupt_id range 0 .. 80;
+   type t_irq is new integer range 0 .. 80;
 
    -- /!\ pragma Attach_Handler directive takes in parameter
    --     Ada.Interrupts.Names.Interrupt_ID.
@@ -19,31 +17,11 @@ is
    ----------------
    -- (see RM0090, p. 374)
 
-   EXTI_Line_0    : constant interrupt := 6;
-   EXTI_Line_1    : constant interrupt := 7;
-   EXTI_Line_2    : constant interrupt := 8;
-   EXTI_Line_3    : constant interrupt := 9;
-   EXTI_Line_4    : constant interrupt := 10;
-
-   DMA1_Stream_0  : constant interrupt := 11;
-   DMA1_Stream_1  : constant interrupt := 12;
-   DMA1_Stream_2  : constant interrupt := 13;
-   DMA1_Stream_3  : constant interrupt := 14;
-   DMA1_Stream_4  : constant interrupt := 15;
-   DMA1_Stream_5  : constant interrupt := 16;
-   DMA1_Stream_6  : constant interrupt := 17;
-   DMA1_Stream_7  : constant interrupt := 47;
-
-   SDIO           : constant interrupt := 49;
-
-   DMA2_Stream_0  : constant interrupt := 56;
-   DMA2_Stream_1  : constant interrupt := 57;
-   DMA2_Stream_2  : constant interrupt := 58;
-   DMA2_Stream_3  : constant interrupt := 59;
-   DMA2_Stream_4  : constant interrupt := 60;
-   DMA2_Stream_5  : constant interrupt := 68;
-   DMA2_Stream_6  : constant interrupt := 69;
-   DMA2_Stream_7  : constant interrupt := 70;
+   EXTI_Line_0    : constant t_irq := 6;
+   EXTI_Line_1    : constant t_irq := 7;
+   EXTI_Line_2    : constant t_irq := 8;
+   EXTI_Line_3    : constant t_irq := 9;
+   EXTI_Line_4    : constant t_irq := 10;
 
    -------------------------------------------------
    -- Interrupt set-enable registers (NVIC_ISERx) --
@@ -54,12 +32,12 @@ is
      (IRQ_DISABLED => 0,
       IRQ_ENABLED  => 1);
 
-   type t_irq_states is array (interrupt range <>) of t_irq_state
+   type t_irq_states is array (t_irq range <>) of t_irq_state
       with pack;
 
-   subtype iser0_range is interrupt range 0 .. 31;
-   subtype iser1_range is interrupt range 32 .. 63;
-   subtype iser2_range is interrupt range 64 .. 80;
+   subtype iser0_range is t_irq range 0 .. 31;
+   subtype iser1_range is t_irq range 32 .. 63;
+   subtype iser2_range is t_irq range 64 .. 80;
 
    -- ISER0
    type t_NVIC_ISER0 is record
@@ -96,7 +74,7 @@ is
    end record
       with pack, size => 8, volatile_full_access;
 
-   type t_IPRs is array (interrupt) of t_IPR
+   type t_IPRs is array (t_irq) of t_IPR
       with pack, size => 8 * 81;
 
    ----------
@@ -118,7 +96,7 @@ is
       IPR   at 16#300# range 0 .. (8*81)-1;
    end record;
 
-   procedure set_priority (irq : interrupt; priority : uint4);
-   procedure enable_irq (irq : interrupt);
+   procedure set_priority (irq : t_irq; priority : uint4);
+   procedure enable_irq (irq : t_irq);
 
 end stm32f4.nvic;

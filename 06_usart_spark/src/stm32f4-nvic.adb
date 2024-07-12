@@ -5,13 +5,13 @@ package body stm32f4.nvic
 is
 
 
-   procedure set_priority (irq : interrupt; priority : uint4) is
+   procedure set_priority (irq : t_irq; priority : uint4) is
    begin
       periphs.NVIC.IPR(irq).priority := priority;
    end set_priority;
 
 
-   procedure enable_irq (irq : interrupt) is
+   procedure enable_irq (irq : t_irq) is
    begin
       case irq is
          when iser0_range =>
