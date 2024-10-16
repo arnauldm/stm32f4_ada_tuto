@@ -15,7 +15,7 @@ with serial;
 procedure main is
    pragma priority (system.priority'first);
 
-   subtype small is natural range 0 .. 1000;
+   subtype small is natural range 0 .. 10;
    counter : small := 0;
 begin
 

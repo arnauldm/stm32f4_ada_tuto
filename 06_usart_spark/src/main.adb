@@ -22,6 +22,7 @@ is
      (periphs.LED_GREEN, periphs.LED_RED);
 
    current_led : led_index := blink_led'first;
+   ok : boolean;
 
 begin
 
@@ -43,7 +44,8 @@ begin
       timer.wait (50);
       gpio.toggle (blink_led (current_led));
 
-      if blue_button.has_been_pressed then
+      ok := blue_button.has_been_pressed;
+      if ok then
          gpio.turn_off (blink_led (current_led));
          current_led := current_led + 1; -- Blink next led
          gpio.turn_on (blink_led (current_led));
