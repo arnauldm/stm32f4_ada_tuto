@@ -29,7 +29,7 @@ packages.
 ## 2.2 Coding style
 
 Ada legit coding style is to use Camel case. I don't use it because I find that programs 
-with such a casing are hardely readables!
+with such a casing are hardely readables.
 
 
 # 3. Exercise
