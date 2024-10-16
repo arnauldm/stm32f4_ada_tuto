@@ -28,8 +28,8 @@ packages.
 
 ## 2.2 Coding style
 
-Ada legit coding style is to use Camel case. You'll notice that I don't use it
-at all as I find programs with such a casing unreadables!
+Ada legit coding style is to use Camel case. I don't use it because I find that programs 
+with such a casing are hardely readables!
 
 
 # 3. Exercise
